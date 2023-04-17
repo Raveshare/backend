@@ -1,0 +1,16 @@
+{
+  "name": "lenspost",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Aryan",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "pg": "^8.10.0",
+    "sequelize": "^6.31.0",
+    "sqlite3": "^5.1.6"
+  }
+}
