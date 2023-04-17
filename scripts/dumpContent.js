@@ -41,4 +41,5 @@ let collectionDetails = {
     openseaLink: "https://opensea.io/collection/wgmis",
 };
 
-dumpContent("wagmi.json", collectionDetails);
+// example usage
+// dumpContent("wagmi.json", collectionDetails);

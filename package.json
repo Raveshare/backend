@@ -12,5 +12,7 @@
     "pg": "^8.10.0",
     "sequelize": "^6.31.0",
     "sqlite3": "^5.1.6"
-  }
+  },
+  "scripts": {
+    "start": "node index.js"}
 }
