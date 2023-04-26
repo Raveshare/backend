@@ -7,7 +7,9 @@ const DATABASE_URI = "postgres://postgres:Aa@904493@localhost:5432/lenspost"
  * Database object
  * @param DATABASE_URI URI of the POSTGRES Database
  */
-const db = new Sequelize(DATABASE_URI)
+const db = new Sequelize(DATABASE_URI , {
+    logging: false,
+})
 
 module.exports = db
 

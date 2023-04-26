@@ -9,6 +9,6 @@ userRouter.get('/', async (req, res) => {
 
 userRouter.use('/nft', nftRouter);
 userRouter.use('/me', meRouter);
-// userRouter.use('/canvas', canvasRouter);
+userRouter.use('/canvas', canvasRouter);
 
 module.exports = userRouter;

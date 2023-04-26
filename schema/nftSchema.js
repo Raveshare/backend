@@ -15,7 +15,7 @@ const nftSchema = db.define('nftData', {
         allowNull: false
     },
     description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
     },
     openseaLink: {
