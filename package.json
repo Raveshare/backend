@@ -10,6 +10,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
+    "nft.storage": "^7.0.3",
     "pg": "^8.10.0",
     "sequelize": "^6.31.0",
     "sqlite3": "^5.1.6"

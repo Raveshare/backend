@@ -11,11 +11,13 @@ const bcrypt = require('bcrypt');
 
 const contentRouter = require('./routes/content/contentRouter');
 const userRouter = require('./routes/user/userRouter');
+const utilRouter = require('./routes/util/utilRouter');
 
 app.use(express.json());
 
 app.use('/content', contentRouter);
 app.use('/user', userRouter);
+app.use('/util', utilRouter);
 
 app.listen(3000, () => {
     console.log('Server started on port 3000');
