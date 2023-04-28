@@ -1,6 +1,6 @@
 const userRouter = require('express').Router();
 const nftRouter = require('./nftRouter');
-// const canvasRouter = require('./canvasRouter');
+const canvasRouter = require('./canvasRouter');
 const meRouter = require('./meRouter');
 
 userRouter.get('/', async (req, res) => {

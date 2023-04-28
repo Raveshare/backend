@@ -9,8 +9,9 @@ utilRouter.get('/', async (req, res) => {
 utilRouter.post('/uploadCanvasImage', async (req, res) => {
     let blob = req.body.blob;
     let name = req.body.name;
+    let description = req.body.description;
     let fileType = req.body.fileType;
-    let result = await uploadCanvasToIpfs(blob, name, fileType);
+    let result = await uploadCanvasToIpfs(blob, name, description,fileType);
     res.send(result);
 });
 

@@ -70,3 +70,5 @@ canvasRouter.put('/visibility', async (req, res) => {
         }
     });
 });
+
+module.exports = canvasRouter;
