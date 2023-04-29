@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const db = require('./utils/db/db');
 // include these 2 lines to sync the database
 
 // const sync = require('./utils/db/sync');
@@ -19,7 +19,6 @@ app.use('/content', contentRouter);
 app.use('/user', userRouter);
 app.use('/util', utilRouter);
 
-app.listen(3000, () => {
-    console.log('Server started on port 3000');
-}
-);  
+app.listen(process.env.PORT || 3000, '0.0.0.0' , () => {
+    console.log("Server started");
+});
