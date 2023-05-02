@@ -2,7 +2,7 @@ require("dotenv").config()
 const { Sequelize } = require("sequelize")
 
 // intialize the db object
-const DATABASE_URI = process.env.POSTGRES_TESTING
+const DATABASE_URI = process.env.DATABASE_URI
 /**
  * Database object
  * @param DATABASE_URI URI of the POSTGRES Database
