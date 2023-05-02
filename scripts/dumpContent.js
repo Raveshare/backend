@@ -16,7 +16,7 @@ const dumpContent = async (fileName, collectionDetails) => {
         collection = await collections.create(collectionDetails);
     }
 
-    let data = JSON.parse(fs.readFileSync("../dumpdata/" + fileName));
+    let data = JSON.parse(fs.readFileSync("./dumpdata/" + fileName));
     for (let i = 1; i < data.length; i++) {
         let contentData = data[i];
         let contentDetails = {
@@ -35,11 +35,7 @@ const dumpContent = async (fileName, collectionDetails) => {
 
 };
 
-let collectionDetails = {
-    address: "0x975d74900ef48F53Fa7d4F3550FA0C89f3B3c1Dc",
-    name: "wgmis",
-    openseaLink: "https://opensea.io/collection/wgmis",
-};
-
 // example usage
 // dumpContent("wagmi.json", collectionDetails);
+
+module.exports = dumpContent;
