@@ -1,0 +1,50 @@
+const { create } = require('ipfs-http-client')
+const { validateMetadata }= require('../lens/api')
+
+const projectId = process.env.IPFS_PROJECT_ID;
+const projectSecret = process.env.IPFS_PROJECT_SECRET;
+const auth =
+    "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+
+const ipfsClient = create({
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+    headers: {
+        authorization: auth,
+    },
+});
+
+const uploaddMetadataToIpfs = async (postData) => {
+
+    const metaData = {
+        version: "2.0.0",
+        content: postData,
+        description: postData.content,
+        name: postData.name,
+        external_url: `https://lenstube.xyz/${handle}`,
+        metadata_id: uuid(),
+        mainContentFocus: "IMAGE",
+        attributes: [],
+        locale: "en-US",
+        media: [
+            {
+                type: "image/png",
+                item: postData.image,
+            },
+        ],
+        appId: videoURL ? "lenstube" : "lensfrens",
+    };
+
+    const { valid, reason } = await validateMetadata(metaData);
+
+    if (!valid) {
+        throw new Error(reason);
+    }
+
+    const { path } = await ipfsClient.add(JSON.stringify(metaData));
+
+    return path.toString();
+}
+
+module.exports = uploaddMetadataToIpfs;

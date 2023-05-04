@@ -14,6 +14,14 @@ const canvasSchema = db.define('canvas', {
         type : DataTypes.BOOLEAN,
         allowNull : false,
         defaultValue : false
+    },
+    ipfsLink : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
+    imageLink : {
+        type : DataTypes.STRING,
+        allowNull : true
     }
 });
 
