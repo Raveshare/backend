@@ -27,14 +27,15 @@ const uploadMediaToIpfs = async (blob, mimeType) => {
         path: `media.${mimeType.split('/')[1]}`
     });
 
-    return result.cid;
+    return result.cid.toString();
 }
 
 const uploaddMetadataToIpfs = async (postData) => {
+    const ipfsClient = await getIpfsClient();
 
     const metaData = {
         version: "2.0.0",
-        content: postData,
+        content: postData.content,
         description: postData.content,
         name: postData.name,
         external_url: `https://lenstube.xyz/${handle}`,
@@ -48,7 +49,7 @@ const uploaddMetadataToIpfs = async (postData) => {
                 item: postData.image,
             },
         ],
-        appId: videoURL ? "lenstube" : "lensfrens",
+        appId: "lensfrens",
     };
 
     const { valid, reason } = await validateMetadata(metaData);

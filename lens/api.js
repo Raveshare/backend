@@ -35,6 +35,23 @@ async function checkAccessToken(accessToken) {
   return resp.data.verify;
 }
 
+const refreshTokenQuery = gql`
+mutation Refresh($refreshToken: Jwt!) {
+  refresh(request: {
+    refreshToken: $refreshToken
+  }) {
+    accessToken
+    refreshToken
+  }
+}`
+
+async function refreshToken(refreshToken) {
+  const variables = { refreshToken };
+  let resp = await request(LENS_API_URL, refreshTokenQuery, variables);
+
+  return resp.data.refresh;
+}
+
 const validateMetadataQuery = gql`
 query ValidatePublicationMetadata ($metadatav2: PublicationMetadataV2Input!) {
   validatePublicationMetadata(request: {
@@ -81,5 +98,6 @@ module.exports = {
     checkDispatcher,
     checkAccessToken,
     validateMetadata,
+    refreshToken,
     createPostViaDispatcher
 }

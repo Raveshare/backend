@@ -3,6 +3,7 @@ const multer = require('multer');
 
 const checkDispatcher = require('../../lens/api').checkDispatcher;
 const uploadMediaToIpfs = require('../../functions/uploadToIPFS').uploadMediaToIpfs;
+const canvasSchema = require('../../schema/canvasSchema');
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -19,8 +20,12 @@ utilRouter.get('/', async (req, res) => {
 utilRouter.post('/uploadCanvasToIpfs', upload.single('canvas'), async (req, res) => {
     let blob = req.file.buffer;
     let fileType = req.file.mimetype;
+    let canvasId = req.body.canvasId;
 
     let result = await uploadMediaToIpfs(blob, fileType);
+
+    let canvas = await canvasSchema.findOneAndUpdate({ _id: canvasId }, { $set: { ipfsHash: result } }, { new: true });
+
     res.send({
         result: result,
     });

@@ -1,6 +1,10 @@
 const canvasRouter = require('express').Router();
 
 const canvasSchema = require('../../schema/canvasSchema');
+const ownerSchema = require('../../schema/ownerSchema');
+
+const createPostViaDispatcher = require('../../lens/api').createPostViaDispatcher;
+const uploadMetadataToIpfs = require('../../functions/uploadToIPFS').uploaddMetadataToIpfs;
 
 canvasRouter.get('/ping', async (req, res) => {
     res.send("Canvas Router");
@@ -80,7 +84,7 @@ canvasRouter.put('/visibility', async (req, res) => {
 
     if (visibility == "public") {
         isPublic = true;
-    } 
+    }
 
     await canvasSchema.update({
         isPublic: isPublic
@@ -95,6 +99,9 @@ canvasRouter.put('/visibility', async (req, res) => {
 
 canvasRouter.post('/publish', async (req, res) => {
     let canvasId = req.body.canvasId;
+    let name = req.body.name;
+    let content = req.body.content;
+
     let canvasData = await canvasSchema.findOne({
         where: {
             id: canvasId
@@ -102,18 +109,41 @@ canvasRouter.post('/publish', async (req, res) => {
     });
 
     let image = canvasData.imageLink;
+    let ownerAddress = canvasData.ownerAddress;
+
+    let owner = await ownerSchema.findOne({
+        where: {
+            address: ownerAddress
+        }
+    });
+
+    let { accessToken, refreshToken } = owner.lens_auth_token;
+
+    const postData = {
+        name: name,
+        content: content,
+        image: image,
+        handle: owner.lens_handle,
+    }
+
+    const ipfsData = await uploadMetadataToIpfs(postData);
 
     const createPostRequest = {
         profileId,
         contentURI: "ipfs://" + ipfsData.path,
         collectModule: {
-          freeCollectModule: { followerOnly: true },
+            freeCollectModule: { followerOnly: true },
         },
         referenceModule: {
-          followerOnlyReferenceModule: false,
+            followerOnlyReferenceModule: false,
         },
-      };
-    }
-)
+    };
+
+    const result = await createPostViaDispatcher(createPostRequest, accessToken, refreshToken);
+
+    res.send(result);
+
+});
+
 
 module.exports = canvasRouter;
