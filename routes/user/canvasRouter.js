@@ -93,4 +93,27 @@ canvasRouter.put('/visibility', async (req, res) => {
     res.status(200).send("Canvas Visibility Updated");
 });
 
+canvasRouter.post('/publish', async (req, res) => {
+    let canvasId = req.body.canvasId;
+    let canvasData = await canvasSchema.findOne({
+        where: {
+            id: canvasId
+        }
+    });
+
+    let image = canvasData.imageLink;
+
+    const createPostRequest = {
+        profileId,
+        contentURI: "ipfs://" + ipfsData.path,
+        collectModule: {
+          freeCollectModule: { followerOnly: true },
+        },
+        referenceModule: {
+          followerOnlyReferenceModule: false,
+        },
+      };
+    }
+)
+
 module.exports = canvasRouter;

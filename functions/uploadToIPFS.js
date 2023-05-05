@@ -1,19 +1,34 @@
-const { create } = require('ipfs-http-client')
-const { validateMetadata }= require('../lens/api')
+const { validateMetadata } = require('../lens/api')
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
 const auth =
     "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 
-const ipfsClient = create({
-    host: "ipfs.infura.io",
-    port: 5001,
-    protocol: "https",
-    headers: {
-        authorization: auth,
-    },
-});
+const getIpfsClient = async () => {
+    const { create } = await import("ipfs-http-client");
+
+    const ipfsClient = create({
+        host: "ipfs.infura.io",
+        port: 5001,
+        protocol: "https",
+        headers: {
+            authorization: auth,
+        },
+    });
+
+    return ipfsClient;
+}
+
+const uploadMediaToIpfs = async (blob, mimeType) => {
+    const ipfsClient = await getIpfsClient();
+    const result = await ipfsClient.add({
+        content: blob,
+        path: `media.${mimeType.split('/')[1]}`
+    });
+
+    return result.cid;
+}
 
 const uploaddMetadataToIpfs = async (postData) => {
 
@@ -47,4 +62,7 @@ const uploaddMetadataToIpfs = async (postData) => {
     return path.toString();
 }
 
-module.exports = uploaddMetadataToIpfs;
+module.exports = {
+    uploadMediaToIpfs,
+    uploaddMetadataToIpfs
+}

@@ -35,7 +35,7 @@ async function checkAccessToken(accessToken) {
   return resp.data.verify;
 }
 
-export const validateMetadataQuery = gql`
+const validateMetadataQuery = gql`
 query ValidatePublicationMetadata ($metadatav2: PublicationMetadataV2Input!) {
   validatePublicationMetadata(request: {
     metadatav2: $metadatav2
@@ -53,8 +53,33 @@ async function validateMetadata(metadatav2) {
   return result.data.validatePublicationMetadata;
 }
 
+const createPostViaDispatcherQuery = gql`
+mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
+  createPostViaDispatcher(
+    request: $request
+  ) {
+    ... on RelayerResult {
+      txHash
+      txId
+    }
+    ... on RelayError {
+      reason
+    }
+  }
+}`
+
+async function createPostViaDispatcher(postRequest,accessToken) {
+  const variables = { postRequest };
+  const result = await request(LENS_API_URL, createPostViaDispatcherQuery, variables , {
+    Authorization: `Bearer ${accessToken}`
+  });
+
+  return result.data.createPostViaDispatcher;
+}
+
 module.exports = {
     checkDispatcher,
     checkAccessToken,
-    validateMetadata
+    validateMetadata,
+    createPostViaDispatcher
 }
