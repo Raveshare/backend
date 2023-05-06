@@ -7,7 +7,12 @@ const ethers = require('ethers');
  * @param {string} message
  */
 const verifySignature = async (address, signature , message) => {
+    try {
     let recoveredAddress = await ethers.utils.verifyMessage(message, signature);
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
     return recoveredAddress === address;
 }
 

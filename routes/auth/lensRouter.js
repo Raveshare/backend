@@ -1,4 +1,4 @@
-const lensRouter = require('./routes/auth/lensRouter');
+const lensRouter = require('express').Router();
 
 const challenge = require('../../lens/api').challenge;
 const authenticate = require('../../lens/api').authenticate;
@@ -18,6 +18,27 @@ lensRouter.post('/authenticate', async (req, res) => {
     let signature = req.body.signature;
 
     let authenticateData = await authenticate(address, signature);
+    const { accessToken, refreshToken } = authenticateData;
+
+    let ownerData = await ownerSchema.findOne({
+        where: {
+            address: address
+        }
+    });
+
+    if (!ownerData) {
+        res.status(401).send({
+            "status": "error",
+            "message": "User not found"
+        });
+    }
+
+    ownerData.lens_auth_token = {
+        accessToken: accessToken,
+        refreshToken: refreshToken
+    }
+    await ownerData.save();
+
     res.status(200).send({
         "status": "success",
     })

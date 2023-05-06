@@ -8,6 +8,12 @@ const jsonwebtoken = require("jsonwebtoken");
  */
 
 function authenticate(req, res, next) {
+    if (!req.headers.authorization) {
+        return res.status(401).send({
+            "status": "error",
+            "message": "Unauthorized"
+        });
+    }
     let token = req.headers.authorization.split(" ")[1];
     let decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
     if (!decoded) {
