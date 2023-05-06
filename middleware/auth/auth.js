@@ -1,25 +1,23 @@
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
+const jsonwebtoken = require("jsonwebtoken");
 
-const checkAccessToken = require('../../lens/api').checkAccessToken;
-const refreshToken = require('../../lens/api').refreshToken;
+/**
+ * Authenticating middleware
+ * @param {object} req - the request object
+ * @param {object} res - the response object
+ * @param {function} next - the next function
+ */
 
-const auth = async (req, res, next) => {
-
-    let accessToken = req.headers['Authorization'];
-    accessToken = accessToken.split(" ")[1];
-
-
-    if (accessToken) {
-        let result = await checkAccessToken(accessToken);
-        if (result) {
-            next();
-        } else {
-            res.status(401).send("Invalid Token");
-        }
-    } else {
-        res.status(401).send("Unauthorized");
+function authenticate(req, res, next) {
+    let token = req.headers.authorization.split(" ")[1];
+    let decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+    if (!decoded) {
+        return res.status(401).send({
+            "status": "error",
+            "message": "Unauthorized"
+        });
     }
+    req.user = decoded;
+    next();
 }
 
-module.exports = auth;
+module.exports = authenticate;
