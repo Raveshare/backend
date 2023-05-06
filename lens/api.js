@@ -21,6 +21,45 @@ async function checkDispatcher(profileId) {
 
 }
 
+const challengeQuery = gql`
+  query Challenge($address: EthereumAddress!) {
+    challenge(request: { address: $address }) {
+      text
+    }
+  }
+`
+
+async function challenge(address) {
+  const variables = { address };
+  let resp = await request(LENS_API_URL, challengeQuery, variables);
+
+  return resp.data.challenge.text;
+}
+
+
+const authenticateQuery = gql`
+  mutation Authenticate(
+    $address: EthereumAddress!
+    $signature: Signature!
+  ) {
+    authenticate(request: {
+      address: $address,
+      signature: $signature
+    }) {
+      accessToken
+      refreshToken
+    }
+  }
+`
+
+const authenticate = async (address, signature) => {
+  const variables = { address, signature };
+  const result = await request(LENS_API_URL, authenticateQuery, variables);
+
+  return result.data.authenticate;
+}
+
+
 const checkAccessTokenQuery = gql`
 query Query($accessToken : jwt!) {
   verify(request: {
@@ -99,5 +138,7 @@ module.exports = {
     checkAccessToken,
     validateMetadata,
     refreshToken,
-    createPostViaDispatcher
+    createPostViaDispatcher,
+    challenge,
+    authenticate
 }

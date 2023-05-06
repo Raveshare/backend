@@ -8,7 +8,7 @@ const canvasSchema = db.define('canvas', {
     },
     params : {
         type : DataTypes.JSONB,
-        allowNull : false
+        allowNull : true
     },
     isPublic : {
         type : DataTypes.BOOLEAN,

@@ -25,7 +25,7 @@ const ownerSchema = db.define('owner', {
     },
     lens_auth_token : {
         type: DataTypes.JSONB,
-        allowNull: true
+        allowNull: true,
     },
     lens_handle : {
         type : DataTypes.STRING,
