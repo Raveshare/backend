@@ -50,6 +50,13 @@ canvasRouter.get('/public', async (req, res) => {
 
 
 canvasRouter.get('/:id', async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            "status": "failed",
+            "message": "Invalid Request Parameters"
+        });
+        return;
+    }
     let id = req.params.id;
     let canvasDatas = await canvasSchema.findOne({
         where: {
@@ -61,8 +68,29 @@ canvasRouter.get('/:id', async (req, res) => {
 })
 
 canvasRouter.post('/create', async (req, res) => {
-    let canvasData = req.body.canvasData;
-    await canvasSchema.create(canvasData);  
+    let address, canvasData
+    address = req.user.address;
+    try {
+        canvasData = req.body.canvasData;
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error: ${error}`);
+    }
+    try {
+        canvas = await canvasSchema.create(canvasData);
+
+        let owner = await ownerSchema.create({
+            where: {
+                address: address,
+            }
+        });
+
+        await owner.addCanvas(canvas);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error: ${error}`);
+    }
 
     res.status(200).send("Canvas Created");
 });
@@ -102,12 +130,12 @@ canvasRouter.put('/visibility', async (req, res) => {
 canvasRouter.post('/publish', async (req, res) => {
 
     let canvasId, name, content;
-    
+
     try {
 
-    canvasId = req.body.canvasId;
-    name = req.body.name;
-    content = req.body.content;
+        canvasId = req.body.canvasId;
+        name = req.body.name;
+        content = req.body.content;
 
     } catch (error) {
         console.log(error);

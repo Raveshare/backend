@@ -35,7 +35,6 @@ app.use(handleError);
 
 app.use("/collection",auth, collectionRouter);
 app.use("/user", userRouter);
-app.use("/util", utilRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
 

@@ -12,37 +12,56 @@ authRouter.get('/', async (req, res) => {
 });
 
 authRouter.post('/login', async (req, res) => {
-    let address = req.body.address;
-    let signature = req.body.signature;
-    let message = req.body.message;
 
-    let isVerified = await verifySignature(address, signature, message);
-    if (isVerified) {
+    let address, signature, message;
 
-        let ownerData = await ownerSchema.findOne({
-            where: {
-                address: address
-            }
-        });
-
-        if (ownerData == null) {
-            ownerData = await ownerSchema.create({
-                address: address
-            });
-            await ownerData.save();
-        }
-
-        let jwt = await generateJwt(address,signature);
-
-        res.status(200).send({
-            "status": "success",
-            "message": "Signature Verified",
-            "jwt": jwt
-        });
-    } else {
-        res.status(200).send({
+    try {
+        address = req.user.address;
+        signature = req.body.signature;
+        message = req.body.message;
+    } catch (error) {
+        res.status(400).send({
             "status": "failed",
-            "message": "Signature Verification Failed"
+            "message": "Invalid Request Parameters"
+        });
+        return;
+    }
+
+    try {
+
+        let isVerified = await verifySignature(address, signature, message);
+        if (isVerified) {
+
+            let ownerData = await ownerSchema.findOne({
+                where: {
+                    address: address
+                }
+            });
+
+            if (ownerData == null) {
+                ownerData = await ownerSchema.create({
+                    address: address
+                });
+                await ownerData.save();
+            }
+
+            let jwt = await generateJwt(address, signature);
+
+            res.status(200).send({
+                "status": "success",
+                "message": "Signature Verified",
+                "jwt": jwt
+            });
+        } else {
+            res.status(200).send({
+                "status": "failed",
+                "message": "Signature Verification Failed"
+            });
+        }
+    } catch (error) {
+        res.status(500).send({
+            "status": "failed",
+            "message": `Internal Server Error ${error.message}`
         });
     }
 });

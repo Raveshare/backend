@@ -16,33 +16,52 @@ lensRouter.get('/challenge', async (req, res) => {
 
 lensRouter.post('/authenticate', async (req, res) => {
     let address = req.user.address;
-    let signature = req.body.signature;
+    let signature
 
-    let authenticateData = await authenticate(address, signature);
-    const { accessToken, refreshToken } = authenticateData;
+    try {
+        signature = req.body.signature;
+    } catch (error) {
+        res.status(400).send({
+            "status": "failed",
+            "message": "Invalid Request Parameters"
+        });
+        return;
+    }
 
-    let ownerData = await ownerSchema.findOne({
-        where: {
-            address: address
+    try {
+        let authenticateData = await authenticate(address, signature);
+        const { accessToken, refreshToken } = authenticateData;
+
+        let ownerData = await ownerSchema.findOne({
+            where: {
+                address: address
+            }
+        });
+
+        if (!ownerData) {
+            res.status(401).send({
+                "status": "error",
+                "message": "User not found"
+            });
         }
-    });
 
-    if (!ownerData) {
-        res.status(401).send({
-            "status": "error",
-            "message": "User not found"
+        ownerData.lens_auth_token = {
+            accessToken: accessToken,
+            refreshToken: refreshToken
+        }
+        await ownerData.save();
+
+        res.status(200).send({
+            "status": "success",
+        })
+
+    } catch (error) {
+        res.status(400).send({
+            "status": "failed",
+            "message": `Invalid Server Error: ${error}`
         });
     }
 
-    ownerData.lens_auth_token = {
-        accessToken: accessToken,
-        refreshToken: refreshToken
-    }
-    await ownerData.save();
-
-    res.status(200).send({
-        "status": "success",
-    })
 });
 
 module.exports = lensRouter;

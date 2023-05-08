@@ -10,6 +10,7 @@ nftRouter.get('/', async (req, res) => {
 );
 
 nftRouter.get('/all', async (req, res) => {
+    
     let limit = req.query.limit || 50;
     let offset = req.query.offset || 0;
 
@@ -25,6 +26,13 @@ nftRouter.get('/all', async (req, res) => {
 });
 
 nftRouter.get('/:id', async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            "status": "failed",
+            "message": "Invalid Request Parameters"
+        });
+        return;
+    }
     let id = req.params.id;
     let nftDatas = await nftSchema.findOne({
         where: {
@@ -36,15 +44,9 @@ nftRouter.get('/:id', async (req, res) => {
 }
 );
 
-nftRouter.post('/create', async (req, res) => {
-    let nftData = req.body;
-    let nftDatas = await nftData.create(nftData);
-
-    res.send(nftDatas);
-});
 
 nftRouter.get('/owned', async (req, res) => {
-    let address = req.body.address;
+    let address = req.user.address;
     
     let nfts = await nftSchema.findAll({
         where : {
@@ -56,7 +58,7 @@ nftRouter.get('/owned', async (req, res) => {
 });
 
 nftRouter.post('/update', async (req, res) => {
-    let address = req.body.address;
+    let address = req.user.address;
 
     let nftDump = await getNftsForOwner(address);
     let nfts = nftDump["nftMetadata"];
