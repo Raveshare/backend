@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const handleError = require("./middleware/error/error");
+const auth = require('./middleware/auth/auth');
+
 
 // include these 2 lines to sync the database
 
@@ -31,7 +33,7 @@ app.use(express.json());
 app.use(handleError);
 
 
-app.use("/collection", collectionRouter);
+app.use("/collection",auth, collectionRouter);
 app.use("/user", userRouter);
 app.use("/util", utilRouter);
 app.use("/admin", adminRouter);

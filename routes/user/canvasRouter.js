@@ -101,12 +101,13 @@ canvasRouter.put('/visibility', async (req, res) => {
 
 canvasRouter.post('/publish', async (req, res) => {
 
+    let canvasId, name, content;
     
     try {
 
-    let canvasId = req.body.canvasId;
-    let name = req.body.name;
-    let content = req.body.content;
+    canvasId = req.body.canvasId;
+    name = req.body.name;
+    content = req.body.content;
 
     } catch (error) {
         console.log(error);
