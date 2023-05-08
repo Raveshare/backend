@@ -56,7 +56,9 @@ const authenticate = async (address, signature) => {
   const variables = { address, signature };
   const result = await request(LENS_API_URL, authenticateQuery, variables);
 
-  return result.data.authenticate;
+  console.log("result" , result)
+
+  return result.authenticate;
 }
 
 
