@@ -9,11 +9,13 @@ const ethers = require('ethers');
 const verifySignature = async (address, signature , message) => {
     try {
     let recoveredAddress = await ethers.utils.verifyMessage(message, signature);
+    
+    return recoveredAddress == address;
+
     } catch (err) {
         console.log(err);
         return false;
     }
-    return recoveredAddress === address;
 }
 
 module.exports = verifySignature;

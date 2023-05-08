@@ -5,8 +5,9 @@ const authenticate = require('../../lens/api').authenticate;
 
 const ownerSchema = require('../../schema/ownerSchema');
 
-lensRouter.get('/challenge/:address', async (req, res) => {
-    let address = req.params.address;
+lensRouter.get('/challenge', async (req, res) => {
+    let address = req.user.address;
+    console.log(address);
     let challengeData = await challenge(address);
     res.status(200).send({
         "challenge": challengeData
@@ -14,7 +15,7 @@ lensRouter.get('/challenge/:address', async (req, res) => {
 });
 
 lensRouter.post('/authenticate', async (req, res) => {
-    let address = req.body.address;
+    let address = req.user.address;
     let signature = req.body.signature;
 
     let authenticateData = await authenticate(address, signature);

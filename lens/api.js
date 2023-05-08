@@ -32,8 +32,8 @@ const challengeQuery = gql`
 async function challenge(address) {
   const variables = { address };
   let resp = await request(LENS_API_URL, challengeQuery, variables);
-
-  return resp.data.challenge.text;
+  console.log("response" , resp)
+  return resp.challenge.text;
 }
 
 
