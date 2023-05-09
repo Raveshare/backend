@@ -14,8 +14,10 @@ async function getImageBuffer(imageJSON) {
   const json = JSON.parse(imageJSON);
 
   const imageBase64 = await instance.jsonToImageBase64(json); 
+
+  let imageBuffer = Buffer.from(imageBase64, 'base64');
   
-  return imageBase64;
+  return imageBuffer;
 }
 
 module.exports = getImageBuffer;

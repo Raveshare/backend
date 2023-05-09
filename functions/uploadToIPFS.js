@@ -24,10 +24,7 @@ const getIpfsClient = async () => {
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
     const ipfsClient = await getIpfsClient();
-    const result = await ipfsClient.add({
-        content: blob,
-        path: `media.${mimeType.split('/')[1]}`
-    });
+    const result = await ipfsClient.add(blob);
 
     return result.cid.toString();
 }
