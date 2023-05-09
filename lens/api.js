@@ -1,4 +1,5 @@
-const { request , gql } = require('graphql-request');
+const { request, gql } = require('graphql-request');
+const ownerSchema = require('../schema/ownerSchema');
 
 const LENS_API_URL = 'https://api-mumbai.lens.dev/';
 
@@ -14,10 +15,10 @@ query Profile($profileId: ProfileId!) {
 `;
 
 async function checkDispatcher(profileId) {
-    const variables = { profileId };
-    let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
+  const variables = { profileId };
+  let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
 
-    return resp.profile.dispatcher.canUseRelay;
+  return resp.profile.dispatcher.canUseRelay;
 
 }
 
@@ -58,9 +59,22 @@ const authenticate = async (address, signature) => {
   return result.authenticate;
 }
 
+const getProfileQuery = gql`
+query DefaultProfile($address: EthereumAddress!) {
+  defaultProfile(request: { ethereumAddress: $address}) {
+    handle
+  }
+}`
+
+async function getProfileHandle(address) {
+  const variables = { address };
+  let resp = await request(LENS_API_URL, getProfileQuery, variables);
+
+  return resp.defaultProfile.handle;
+}
 
 const checkAccessTokenQuery = gql`
-query Query($accessToken : jwt!) {
+query Query($accessToken : Jwt!) {
   verify(request: {
     accessToken: $accessToken
   })
@@ -70,7 +84,7 @@ async function checkAccessToken(accessToken) {
   const variables = { accessToken };
   let resp = await request(LENS_API_URL, checkAccessTokenQuery, variables);
 
-  return resp.data.verify;
+  return resp.verify;
 }
 
 const refreshTokenQuery = gql`
@@ -87,7 +101,7 @@ async function refreshToken(refreshToken) {
   const variables = { refreshToken };
   let resp = await request(LENS_API_URL, refreshTokenQuery, variables);
 
-  return resp.data.refresh;
+  return resp.refresh;
 }
 
 const validateMetadataQuery = gql`
@@ -105,7 +119,7 @@ async function validateMetadata(metadatav2) {
   const variables = { metadatav2 };
   const result = await request(LENS_API_URL, validateMetadataQuery, variables);
 
-  return result.data.validatePublicationMetadata;
+  return result.validatePublicationMetadata;
 }
 
 const createPostViaDispatcherQuery = gql`
@@ -123,21 +137,42 @@ mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
   }
 }`
 
-async function createPostViaDispatcher(postRequest,accessToken) {
-  const variables = { postRequest };
-  const result = await request(LENS_API_URL, createPostViaDispatcherQuery, variables , {
+async function createPostViaDispatcher(postRequest, accessToken, refreshAccessToken, address) {
+  const variables = {
+    "request": postRequest,
+  };
+
+  // let isAccessTokenValid = await checkAccessToken(accessToken);
+  let isAccessTokenValid = false;
+  console.log("isAccessTokenValid", isAccessTokenValid);
+
+  if (!isAccessTokenValid) {
+    const tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      "accessToken" : accessToken,
+      "refreshToken" : refreshAccessToken
+    }
+    let owner = await ownerSchema.findOneAndUpdate({ address: address }, lens_auth_token, { new: true });
+    await owner.save();
+  }
+
+  const result = await request(LENS_API_URL, createPostViaDispatcherQuery, variables, {
     Authorization: `Bearer ${accessToken}`
   });
 
-  return result.data.createPostViaDispatcher;
+  return result.createPostViaDispatcher;
 }
 
 module.exports = {
-    checkDispatcher,
-    checkAccessToken,
-    validateMetadata,
-    refreshToken,
-    createPostViaDispatcher,
-    challenge,
-    authenticate
+  checkDispatcher,
+  checkAccessToken,
+  validateMetadata,
+  refreshToken,
+  createPostViaDispatcher,
+  challenge,
+  authenticate,
+  getProfileHandle
 }

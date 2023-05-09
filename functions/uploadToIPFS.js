@@ -4,6 +4,8 @@ const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
 const auth =
     "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+const { v4: uuid } = require('uuid');
+
 
 const getIpfsClient = async () => {
     const { create } = await import("ipfs-http-client");
@@ -38,7 +40,7 @@ const uploaddMetadataToIpfs = async (postData) => {
         content: postData.content,
         description: postData.content,
         name: postData.name,
-        external_url: `https://lenstube.xyz/${handle}`,
+        external_url: `https://lenstube.xyz/${postData.handle}`,
         metadata_id: uuid(),
         mainContentFocus: "IMAGE",
         attributes: [],

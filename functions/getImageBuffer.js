@@ -8,7 +8,7 @@ const { createInstance } = require('polotno-node');
 async function getImageBuffer(imageJSON) {
 
     const instance = await createInstance({
-    key: process.env.POLOTNO_API_KEY,
+    key: process.env.POLONTO_API_KEY,
   });
 
   const json = JSON.parse(imageJSON);

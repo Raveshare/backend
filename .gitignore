@@ -3,3 +3,5 @@
 node_modules
 dumpdata
 yarn-error.log
+
+plotno_json_file.json

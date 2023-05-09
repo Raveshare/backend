@@ -79,9 +79,9 @@ canvasRouter.post('/create', async (req, res) => {
     try {
         canvas = await canvasSchema.create(canvasData);
 
-        let owner = await ownerSchema.create({
+        let owner = await ownerSchema.findOne({
             where: {
-                address: address,
+                address: address
             }
         });
 
@@ -92,11 +92,28 @@ canvasRouter.post('/create', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
 
-    res.status(200).send("Canvas Created");
+    res.status(200).send({
+        "status": "success",
+        "message": "Canvas Created",
+        "canvasId": canvas.id
+    });
 });
 
 canvasRouter.put('/update', async (req, res) => {
     let canvasData = req.body.canvasData;
+    let ownerAddress = req.user.address;
+
+    let canvas = await canvasSchema.findOne({
+        where: {
+            id: canvasData.id
+        }
+    });
+
+    if (canvas.ownerAddress != ownerAddress) {
+        res.status(401).send("Unauthorized");
+        return;
+    }
+
     await canvasSchema.update(canvasData, {
         where: {
             id: canvasData.id
@@ -129,13 +146,16 @@ canvasRouter.put('/visibility', async (req, res) => {
 
 canvasRouter.post('/publish', async (req, res) => {
 
+    let canvasData = req.body.canvasData;
+    let ownerAddress = req.user.address;
+
     let canvasId, name, content;
 
     try {
 
-        canvasId = req.body.canvasId;
-        name = req.body.name;
-        content = req.body.content;
+        canvasId = canvasData.id;
+        name = canvasData.name;
+        content = canvasData.content;
 
     } catch (error) {
         console.log(error);
@@ -143,13 +163,16 @@ canvasRouter.post('/publish', async (req, res) => {
     }
 
 
-    let canvasData = await canvasSchema.findOne({
+    let canvas = await canvasSchema.findOne({
         where: {
             id: canvasId
         }
     });
 
-    let ownerAddress = canvasData.ownerAddress;
+    if (canvas.ownerAddress != ownerAddress) {
+        res.status(401).send("Unauthorized");
+        return;
+    }
 
     let owner = await ownerSchema.findOne({
         where: {
@@ -157,51 +180,55 @@ canvasRouter.post('/publish', async (req, res) => {
         }
     });
 
-    if (!owner) {
-        res.status(404).send("Owner not found");
-    }
-
-
     let { accessToken, refreshToken } = owner.lens_auth_token;
 
     if (!accessToken || !refreshToken) {
         res.status(404).send("Owner not authenticated");
     }
 
-    let json = JSON.stringify(canvasData.data);
+    let json = JSON.stringify(canvas.data);
 
     if (!json) {
         res.status(404).send("Canvas data not found");
     }
 
-    let image = await getImageBuffer(json);
+    let image;
+    try {
+        image = await getImageBuffer(json);
+        if (!image) {
+            res.status(404).send("Canvas image not found");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error: ${error}`);
+    }
+    let cid = await uploadMediaToIpfs(image, "image/png");
 
-    let cid = await uploadMediaToIpfs(image);
 
-    canvasData.image = image;
-    await canvasData.save();
+    canvas.image = `ipfs://${cid}`;
+    await canvas.save();
 
-    const postData = {
+    let postMetadata = {
         name: name,
         content: content,
-        image: image,
         handle: owner.lens_handle,
+        image: `ipfs://${cid}`
     }
 
-    const ipfsData = await uploadMetadataToIpfs(postData);
-
+    const ipfsData = await uploadMetadataToIpfs(postMetadata);
+    let profileId = "0x7e27";
     const createPostRequest = {
-        profileId,
-        contentURI: "ipfs://" + ipfsData.path,
-        collectModule: {
-            freeCollectModule: { followerOnly: true },
+        "profileId": profileId,
+        "contentURI": "ipfs://" + ipfsData,
+        "collectModule": {
+            "freeCollectModule": { "followerOnly": true },
         },
-        referenceModule: {
-            followerOnlyReferenceModule: false,
+        "referenceModule": {
+            "followerOnlyReferenceModule": false,
         },
     };
 
-    const result = await createPostViaDispatcher(createPostRequest, accessToken, refreshToken);
+    const result = await createPostViaDispatcher(createPostRequest,accessToken, refreshToken, ownerAddress);
 
     res.send(result);
 

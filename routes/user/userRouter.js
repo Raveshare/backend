@@ -1,7 +1,6 @@
 const userRouter = require('express').Router();
 const nftRouter = require('./nftRouter');
 const canvasRouter = require('./canvasRouter');
-const meRouter = require('./meRouter');
 const auth = require('../../middleware/auth/auth');
 
 userRouter.get('/', async (req, res) => {
