@@ -152,10 +152,17 @@ async function createPostViaDispatcher(postRequest, accessToken, refreshAccessTo
     refreshAccessToken = tokens.refreshToken;
 
     const lens_auth_token = {
-      "accessToken" : accessToken,
-      "refreshToken" : refreshAccessToken
+      "accessToken": accessToken,
+      "refreshToken": refreshAccessToken
     }
-    let owner = await ownerSchema.findOneAndUpdate({ address: address }, lens_auth_token, { new: true });
+
+    let owner = await ownerSchema.findOne({
+      where: {
+        address: address
+      }
+    }
+    );
+    owner.lens_auth_token = lens_auth_token;
     await owner.save();
   }
 
