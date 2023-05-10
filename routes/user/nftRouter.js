@@ -25,25 +25,6 @@ nftRouter.get('/all', async (req, res) => {
     res.send(nftDatas);
 });
 
-nftRouter.get('/:id', async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({
-            "status": "failed",
-            "message": "Invalid Request Parameters"
-        });
-        return;
-    }
-    let id = req.params.id;
-    let nftDatas = await nftSchema.findOne({
-        where: {
-            id: id
-        }
-    });
-
-    res.send(nftDatas);
-}
-);
-
 
 nftRouter.get('/owned', async (req, res) => {
     let address = req.user.address;
@@ -89,5 +70,26 @@ nftRouter.post('/update', async (req, res) => {
     res.status(200).send("NFTs updated");
 });
         
+
+
+nftRouter.get('/:id', async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send({
+            "status": "failed",
+            "message": "Invalid Request Parameters"
+        });
+        return;
+    }
+    let id = req.params.id;
+    let nftDatas = await nftSchema.findOne({
+        where: {
+            id: id
+        }
+    });
+
+    res.send(nftDatas);
+}
+);
+
 
 module.exports = nftRouter;
