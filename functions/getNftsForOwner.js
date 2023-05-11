@@ -9,7 +9,7 @@ const eth_config = {
 
 const poly_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
-  network: Network.POLYGON_MAINNET, // Replace with your network
+  network: Network.MATIC_MAINNET, // Replace with your network
 };
 
 // Creates an Alchemy object instance with the config to use for making requests

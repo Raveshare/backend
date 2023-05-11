@@ -26,15 +26,13 @@ templateRouter.post('/', async (req, res) => {
     }
 
     try {
-        console.log("here")
         let imageBuffer = await getImageBuffer(data);
-        console.log("here 2")
+        console.log(imageBuffer)
         let template = await templateSchema.create({
             name: name,
             data: data,
             imageBuffer: imageBuffer
         });
-        console.log("here 3")
 
         res.status(200).json({
             'status': 'success',
