@@ -4,7 +4,6 @@ const lensRouter = require('./lensRouter');
 const verifySignature = require('../../utils/auth/verifySignature');
 const generateJwt = require('../../utils/auth/generateJwt');
 const auth = require('../../middleware/auth/auth');
-const getProfileHandle = require('../../lens/api').getProfileHandle;
 
 const ownerSchema = require('../../schema/ownerSchema');
 
@@ -40,10 +39,8 @@ authRouter.post('/login', async (req, res) => {
             });
 
             if (ownerData == null) {
-                let handle = await getProfileHandle(address);
                 ownerData = await ownerSchema.create({
                     address: address,
-                    lens_handle: handle
                 });
                 await ownerData.save();
             }

@@ -2,8 +2,7 @@ const utilRouter = require('express').Router();
 const multer = require('multer');
 
 const checkDispatcher = require('../../lens/api').checkDispatcher;
-const uploadMediaToIpfs = require('../../functions/uploadToIPFS').uploadMediaToIpfs;
-const canvasSchema = require('../../schema/canvasSchema');
+const ownerSchema = require('../../schema/ownerSchema');
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -17,19 +16,33 @@ utilRouter.get('/', async (req, res) => {
     res.send("Util Router");
 });
 
-utilRouter.post('/uploadCanvasToIpfs', upload.single('canvas'), async (req, res) => {
-    let blob = req.file.buffer;
-    let fileType = req.file.mimetype;
-    let canvasId = req.body.canvasId;
-
-    let result = await uploadMediaToIpfs(blob, fileType);
-
-    let canvas = await canvasSchema.findOneAndUpdate({ _id: canvasId }, { $set: { ipfsHash: result } }, { new: true });
-
-    res.send({
-        result: result,
+utilRouter.post('/updateFollowerCallback', async (req, res) => {
+    let data = req.body;
+    let activity = data.event.activity[0];
+    let toAddress = activity.toAddress;
+    let contractAddress = activity.contractAddress;
+    let event;
+    if (toAddress == "0x0000000000000000000000000000000000000000") {
+        event = "unfollow";
+        tokenId = activity.erc721TokenId;
+    } else {
+        event = "follow";
+        tokenId = activity.erc721TokenId;
+    }
+    let ownerData = await ownerSchema.findOne({
+        where: {
+            followNftAddress: contractAddress
+        }
     });
-});
+    if (ownerData) {
+        console.log("Owner Data: ", ownerData); ;
+    } else {
+        console.log("Owner Data Not Found");
+    }
+    
+
+    console.log("Follower Callback: ", event, tokenId);
+})
 
 utilRouter.get('/checkDispatcher', async (req, res) => {
     let profileId = req.body.profileId;

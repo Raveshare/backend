@@ -28,8 +28,9 @@ const userRouter = require("./routes/user/userRouter");
 const utilRouter = require("./routes/util/utilRouter");
 const adminRouter = require("./routes/admin/adminRouter");
 const authRouter = require("./routes/auth/authRouter");
+const templateRouter = require("./routes/content/templateRouter");
 
-app.use(express.json());
+app.use(express.json({limit: '2mb', extended: true}));
 app.use(handleError);
 
 
@@ -37,6 +38,8 @@ app.use("/collection",auth, collectionRouter);
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
+app.use("/util", utilRouter);
+app.use("/template", templateRouter);
 
 app.listen(process.env.PORT || 3001, '0.0.0.0' , () => {
   console.log("Server started on port 3000");

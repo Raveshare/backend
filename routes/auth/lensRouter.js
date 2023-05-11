@@ -2,6 +2,9 @@ const lensRouter = require('express').Router();
 
 const challenge = require('../../lens/api').challenge;
 const authenticate = require('../../lens/api').authenticate;
+const getFollowContractAddress = require('../../lens/api').getFollowContractAddress;
+const getProfileHandleAndId = require('../../lens/api').getProfileHandleAndId
+
 
 const ownerSchema = require('../../schema/ownerSchema');
 
@@ -44,6 +47,13 @@ lensRouter.post('/authenticate', async (req, res) => {
                 "message": "User not found"
             });
         }
+w
+        let { handle , id } = await getProfileHandleAndId(address);
+        let followNftAddress = await getFollowContractAddress(id);
+
+        ownerData.profileId = id;
+        ownerData.followNftAddress = followNftAddress;
+        ownerData.lens_handle = handle;
 
         ownerData.lens_auth_token = {
             accessToken: accessToken,

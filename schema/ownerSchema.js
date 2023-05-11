@@ -31,6 +31,10 @@ const ownerSchema = db.define('owner', {
         type : DataTypes.STRING,
         allowNull : true
     },
+    followNftAddress : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
 });
 
 // relations

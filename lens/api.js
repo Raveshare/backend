@@ -22,6 +22,21 @@ async function checkDispatcher(profileId) {
 
 }
 
+const getFollowContractAddressQuery = gql`
+query Profile($profileId: ProfileId!) {
+    profile(request: { profileId: $profileId }) {
+      followNftAddress
+    }
+  }
+`;
+
+async function getFollowContractAddress(profileId) {
+  const variables = { profileId };
+  let resp = await request(LENS_API_URL, getFollowContractAddressQuery, variables);
+
+  return resp.profile.followNftAddress;
+}
+
 const challengeQuery = gql`
   query Challenge($address: EthereumAddress!) {
     challenge(request: { address: $address }) {
@@ -63,14 +78,18 @@ const getProfileQuery = gql`
 query DefaultProfile($address: EthereumAddress!) {
   defaultProfile(request: { ethereumAddress: $address}) {
     handle
+    id
   }
 }`
 
-async function getProfileHandle(address) {
+async function getProfileHandleAndId(address) {
   const variables = { address };
   let resp = await request(LENS_API_URL, getProfileQuery, variables);
 
-  return resp.defaultProfile.handle;
+  return {
+    handle: resp.defaultProfile.handle,
+    id: resp.defaultProfile.id
+  }
 }
 
 const checkAccessTokenQuery = gql`
@@ -181,5 +200,6 @@ module.exports = {
   createPostViaDispatcher,
   challenge,
   authenticate,
-  getProfileHandle
+  getProfileHandleAndId,
+  getFollowContractAddress
 }
