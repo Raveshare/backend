@@ -47,7 +47,6 @@ lensRouter.post('/authenticate', async (req, res) => {
                 "message": "User not found"
             });
         }
-w
         let { handle , id } = await getProfileHandleAndId(address);
         let followNftAddress = await getFollowContractAddress(id);
 
