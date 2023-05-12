@@ -10,8 +10,8 @@ const templateSchema = db.define('template', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    imageBuffer: {
-        type: DataTypes.BLOB,
+    image: {
+        type: DataTypes.STRING,
         allowNull: false
     }
 });

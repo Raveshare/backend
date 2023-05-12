@@ -1,6 +1,8 @@
 const templateRouter = require('express').Router();
 const templateSchema = require('../../schema/templateSchema');
+
 const getImageBuffer = require('../../functions/getImageBuffer');
+const uploadImageToS3 = require('../../functions/uploadImageToS3');
 
 templateRouter.get('/', async (req, res) => {
     try {
@@ -27,11 +29,13 @@ templateRouter.post('/', async (req, res) => {
 
     try {
         let imageBuffer = await getImageBuffer(data);
-        console.log(imageBuffer)
+        let image = await uploadImageToS3(imageBuffer, name)
+        console.log(image)  
+        console.log(typeof(image))
         let template = await templateSchema.create({
             name: name,
             data: data,
-            imageBuffer: imageBuffer
+            image : image
         });
 
         res.status(200).json({
