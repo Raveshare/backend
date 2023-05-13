@@ -216,7 +216,7 @@ canvasRouter.post('/publish', async (req, res) => {
     }
 
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
-    let profileId = "0x7e27";
+
     const createPostRequest = {
         "profileId": profileId,
         "contentURI": "ipfs://" + ipfsData,
