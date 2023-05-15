@@ -15,6 +15,10 @@ const collections = db.define('collections',{
         type: DataTypes.STRING,
         allowNull: false
     },
+    image : {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
 })
 collections.hasMany(content)
 content.belongsTo(collections)

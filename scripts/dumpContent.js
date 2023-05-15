@@ -33,6 +33,8 @@ const dumpContent = async (fileName, collectionDetails) => {
         }
     }
 
+    return "Done";
+
 };
 
 // example usage
