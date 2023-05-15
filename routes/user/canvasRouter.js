@@ -3,11 +3,10 @@ const canvasRouter = require('express').Router();
 const canvasSchema = require('../../schema/canvasSchema');
 const ownerSchema = require('../../schema/ownerSchema');
 
-const createPostViaDispatcher = require('../../lens/api').createPostViaDispatcher;
-const uploadMetadataToIpfs = require('../../functions/uploadToIPFS').uploaddMetadataToIpfs;
 const uploadMediaToIpfs = require('../../functions/uploadToIPFS').uploadMediaToIpfs;
 const getImageBuffer = require('../../functions/getImageBuffer')
 const uploadImageToS3 = require('../../functions/uploadImageToS3')
+const uploadToLens = require('../../functions/uploadToLens');
 
 canvasRouter.get('/ping', async (req, res) => {
     res.send("Canvas Router");
@@ -164,7 +163,7 @@ canvasRouter.post('/publish', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
 
-    if(!platform){
+    if (!platform) {
         res.status(400).send("Platform not specified");
         return;
     }
@@ -187,12 +186,6 @@ canvasRouter.post('/publish', async (req, res) => {
         }
     });
 
-    let { accessToken, refreshToken } = owner.lens_auth_token;
-
-    if (!accessToken || !refreshToken) {
-        res.status(404).send("Owner not authenticated");
-    }
-
     let json = JSON.stringify(canvas.data);
 
 
@@ -211,36 +204,29 @@ canvasRouter.post('/publish', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
     let cid = await uploadMediaToIpfs(image, "image/png");
-    let imageLink = await uploadImageToS3(image, `${canvasId+name+content}.png`);
+    let imageLink = await uploadImageToS3(image, `${canvasId + name + content}.png`);
 
 
     canvas.ipfsLink = `ipfs://${cid}`;
     canvas.imageLink = imageLink;
     await canvas.save();
 
-    let postMetadata = {
-        name: name,
-        content: content,
-        handle: owner.lens_handle,
-        image: `ipfs://${cid}`
+    let resp;
+    if (platform == "lens") {
+
+        let postMetadata = {
+            name: name,
+            content: content,
+            handle: owner.lens_handle,
+            image: `ipfs://${cid}`
+        }
+
+        resp = await uploadToLens(postMetadata,owner);
     }
 
-    const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
-    const createPostRequest = {
-        "profileId": owner.profileId,
-        "contentURI": "ipfs://" + ipfsData,
-        "collectModule": {
-            "freeCollectModule": { "followerOnly": true },
-        },
-        "referenceModule": {
-            "followerOnlyReferenceModule": false,
-        },
-    };
 
-    const result = await createPostViaDispatcher(createPostRequest,accessToken, refreshToken, ownerAddress);
-
-    res.send(result);
+    res.send(resp);
 
 });
 
