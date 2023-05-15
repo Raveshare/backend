@@ -161,8 +161,6 @@ async function createPostViaDispatcher(postRequest, accessToken, refreshAccessTo
     "request": postRequest,
   };
 
-  // let isAccessTokenValid = await checkAccessToken(accessToken);
-  let isAccessTokenValid = false;
   console.log("isAccessTokenValid", isAccessTokenValid);
 
   if (!isAccessTokenValid) {

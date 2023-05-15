@@ -7,6 +7,7 @@ const createPostViaDispatcher = require('../../lens/api').createPostViaDispatche
 const uploadMetadataToIpfs = require('../../functions/uploadToIPFS').uploaddMetadataToIpfs;
 const uploadMediaToIpfs = require('../../functions/uploadToIPFS').uploadMediaToIpfs;
 const getImageBuffer = require('../../functions/getImageBuffer')
+const uploadImageToS3 = require('../../functions/uploadImageToS3')
 
 canvasRouter.get('/ping', async (req, res) => {
     res.send("Canvas Router");
@@ -163,6 +164,11 @@ canvasRouter.post('/publish', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
 
+    if(!platform){
+        res.status(400).send("Platform not specified");
+        return;
+    }
+
 
     let canvas = await canvasSchema.findOne({
         where: {
@@ -205,9 +211,11 @@ canvasRouter.post('/publish', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
     let cid = await uploadMediaToIpfs(image, "image/png");
+    let imageLink = await uploadImageToS3(image, `${canvasId+name+content}.png`);
 
 
-    canvas.image = `ipfs://${cid}`;
+    canvas.ipfsLink = `ipfs://${cid}`;
+    canvas.imageLink = imageLink;
     await canvas.save();
 
     let postMetadata = {

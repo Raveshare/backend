@@ -30,8 +30,6 @@ templateRouter.post('/', async (req, res) => {
     try {
         let imageBuffer = await getImageBuffer(data);
         let image = await uploadImageToS3(imageBuffer, name)
-        console.log(image)  
-        console.log(typeof(image))
         let template = await templateSchema.create({
             name: name,
             data: data,
