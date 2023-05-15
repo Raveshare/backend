@@ -9,8 +9,8 @@ const auth = require('./middleware/auth/auth');
 
 // include these 2 lines to sync the database
 
-// const sync = require('./utils/db/sync');
-// sync();
+const sync = require('./utils/db/sync');
+sync();
 
 app.use(cors());
 app.use(function (req, res, next) {
@@ -41,6 +41,6 @@ app.use("/auth", authRouter);
 app.use("/util", utilRouter);
 app.use("/template", templateRouter);
 
-app.listen(process.env.PORT || 3000, '0.0.0.0' , () => {
+app.listen(process.env.PORT || 3001, '0.0.0.0' , () => {
   console.log("Server started on port 3000");
 });

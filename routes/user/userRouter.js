@@ -8,6 +8,6 @@ userRouter.get('/', async (req, res) => {
 });
 
 userRouter.use('/nft', auth, nftRouter);
-userRouter.use('/canvas', auth, canvasRouter);
+userRouter.use('/canvas',auth, canvasRouter);
 
 module.exports = userRouter;

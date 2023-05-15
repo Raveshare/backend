@@ -35,6 +35,10 @@ const ownerSchema = db.define('owner', {
         type : DataTypes.STRING,
         allowNull : true
     },
+    profileId : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
 });
 
 // relations

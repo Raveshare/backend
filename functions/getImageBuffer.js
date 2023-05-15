@@ -13,8 +13,8 @@ async function getImageBuffer(imageJSON) {
       key: process.env.POLONTO_API_KEY,
     });
 
-    // const json = JSON.parse(imageJSON);
-    const json = imageJSON;
+    const json = JSON.parse(imageJSON);
+    // const json = imageJSON;
 
     const imageBase64 = await instance.jsonToImageBase64(json);
     let imageBuffer = Buffer.from(imageBase64, 'base64');

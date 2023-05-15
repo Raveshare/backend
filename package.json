@@ -5,6 +5,7 @@
   "author": "Aryan",
   "license": "MIT",
   "dependencies": {
+    "@hokify/agenda": "^6.3.0",
     "@railway/cli": "^3.3.1",
     "alchemy-sdk": "^2.8.1",
     "aws-sdk": "^2.1377.0",

@@ -148,6 +148,7 @@ canvasRouter.post('/publish', async (req, res) => {
 
     let canvasData = req.body.canvasData;
     let ownerAddress = req.user.address;
+    let platform = req.body.platform;
 
     let canvasId, name, content;
 
@@ -188,6 +189,7 @@ canvasRouter.post('/publish', async (req, res) => {
 
     let json = JSON.stringify(canvas.data);
 
+
     if (!json) {
         res.status(404).send("Canvas data not found");
     }
@@ -218,7 +220,7 @@ canvasRouter.post('/publish', async (req, res) => {
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
     const createPostRequest = {
-        "profileId": profileId,
+        "profileId": owner.profileId,
         "contentURI": "ipfs://" + ipfsData,
         "collectModule": {
             "freeCollectModule": { "followerOnly": true },
