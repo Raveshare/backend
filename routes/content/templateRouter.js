@@ -28,7 +28,8 @@ templateRouter.post('/', async (req, res) => {
     }
 
     try {
-        let imageBuffer = await getImageBuffer(data);
+        let json = JSON.stringify(data);
+        let imageBuffer = await getImageBuffer(json);
         let image = await uploadImageToS3(imageBuffer, name)
         let template = await templateSchema.create({
             name: name,

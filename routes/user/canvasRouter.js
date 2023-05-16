@@ -230,5 +230,32 @@ canvasRouter.post('/publish', async (req, res) => {
 
 });
 
+canvasRouter.delete('/delete/:id', async (req, res) => {
+    let canvasId = req.params.id;
+    let ownerAddress = req.user.address;
+
+    let canvas = await canvasSchema.findOne({
+        where: {
+            id: canvasId
+        }
+    });
+
+    if (canvas.ownerAddress != ownerAddress) {
+        res.status(401).send("Unauthorized");
+        return;
+    }
+
+    await canvasSchema.destroy({
+        where: {
+            id: canvasId
+        }
+    });
+
+    res.status(200).send({
+        "status": "success",
+        "message": "Canvas Deleted"
+    })
+});
+
 
 module.exports = canvasRouter;

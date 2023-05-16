@@ -1,5 +1,6 @@
 const authRouter = require('express').Router();
 const lensRouter = require('./lensRouter');
+// const twitterRouter = require('./twitterRouter');
 
 const verifySignature = require('../../utils/auth/verifySignature');
 const generateJwt = require('../../utils/auth/generateJwt');
@@ -68,5 +69,6 @@ authRouter.post('/login', async (req, res) => {
 
 
 authRouter.use('/lens', auth, lensRouter);
+// authRouter.use('/twitter', twitterRouter);
 
 module.exports = authRouter;
