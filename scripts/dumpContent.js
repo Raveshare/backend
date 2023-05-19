@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const dumpContent = async (fileName, collectionDetails) => {
 
-    await db.sync({ force: true });
+    // await db.sync({ force: true });
 
     let collection = await collections.findOne({
         where: {
@@ -25,6 +25,8 @@ const dumpContent = async (fileName, collectionDetails) => {
             description: contentData.description,
             edition: contentData.edition,
             openseaLink: contentData.openSeaLink,
+            ipfsLink: contentData.ipfsLink,
+            imageURL: contentData.imageURL,
         };
         let contentInstance = await content.create(contentDetails);
         await collection.addContents(contentInstance);

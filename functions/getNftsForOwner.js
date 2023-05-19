@@ -49,6 +49,7 @@ const getNftsForOwner = async (ownerAddress) => {
       title: nft["title"],
       description: nft["description"],
       permaLink: nft["rawMetadata"]["image"],
+      imageURL : nft["rawMetadata"]["image"],
       tokenId: nft["tokenId"],
       openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
       isPublic : false

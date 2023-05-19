@@ -20,6 +20,14 @@ const content = db.define('content',{
     },
     edition : {
         type: DataTypes.STRING,
+        allowNull: true
+    },
+    ipfsLink : {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    imageURL : {
+        type: DataTypes.STRING,
         allowNull: false
     },
     openseaLink : {

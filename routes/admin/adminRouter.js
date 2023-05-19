@@ -11,13 +11,13 @@ adminRouter.get('/', async (req, res) => {
 
 adminRouter.get('/dumpContent', async (req, res) => {
     let collectionDetails = {
-        address: "0x975d74900ef48F53Fa7d4F3550FA0C89f3B3c1Dc",
-        name: "wgmis",
-        openseaLink: "https://opensea.io/collection/wgmis",
-        image : "https://i.seadn.io/gcs/files/8c0ddbb72f2c23a894218174c8272b72.gif"
+        address: "0xCa7cA7BcC765F77339bE2d648BA53ce9c8a262bD",
+        name: "tubby cats",
+        openseaLink: "https://opensea.io/collection/tubby-cats",
+        image : "https://i.seadn.io/gae/TyPJi06xkDXOWeK4wYBCIskRcSJpmtVfVcJbuxNXDVsC39IC_Ls5taMlxpZPYMoUtlPH7YkQ4my1nwUGDIB5C01r97TPlYhkolk-TA"
     };
 
-    let result = await dumpContent("wagmi.json", collectionDetails);
+    let result = await dumpContent("tubby-cats.json", collectionDetails);
 
     res.send(result);
 });
