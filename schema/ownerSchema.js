@@ -27,6 +27,10 @@ const ownerSchema = db.define('owner', {
         type: DataTypes.JSONB,
         allowNull: true,
     },
+    twitter_auth_token : {
+        type: DataTypes.JSONB,
+        allowNull: true,
+    },
     lens_handle : {
         type : DataTypes.STRING,
         allowNull : true

@@ -10,7 +10,6 @@ const ownerSchema = require('../../schema/ownerSchema');
 
 lensRouter.get('/challenge', async (req, res) => {
     let address = req.user.address;
-    console.log(address);
     let challengeData = await challenge(address);
     res.status(200).send({
         "challenge": challengeData

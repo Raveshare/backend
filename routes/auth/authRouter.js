@@ -1,12 +1,13 @@
 const authRouter = require('express').Router();
 const lensRouter = require('./lensRouter');
-// const twitterRouter = require('./twitterRouter');
+const twitterRouter = require('./twitterRouter');
 
 const verifySignature = require('../../utils/auth/verifySignature');
 const generateJwt = require('../../utils/auth/generateJwt');
 const auth = require('../../middleware/auth/auth');
 
 const ownerSchema = require('../../schema/ownerSchema');
+const userLogin = require('../../functions/events/userLogin.event');
 
 authRouter.get('/', async (req, res) => {
     res.send("Auth Router");
@@ -48,6 +49,8 @@ authRouter.post('/login', async (req, res) => {
 
             let jwt = await generateJwt(address, signature);
 
+            userLogin(address);
+
             res.status(200).send({
                 "status": "success",
                 "message": "Signature Verified",
@@ -69,6 +72,6 @@ authRouter.post('/login', async (req, res) => {
 
 
 authRouter.use('/lens', auth, lensRouter);
-// authRouter.use('/twitter', twitterRouter);
+authRouter.use('/twitter', twitterRouter);
 
 module.exports = authRouter;

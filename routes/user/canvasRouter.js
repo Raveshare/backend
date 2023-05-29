@@ -8,6 +8,11 @@ const getImageBuffer = require('../../functions/getImageBuffer')
 const uploadImageToS3 = require('../../functions/uploadImageToS3')
 const uploadToLens = require('../../functions/uploadToLens');
 
+const canvasCreated = require('../../functions/events/canvasCreated.event');
+const canvasPostedToTwitter = require('../../functions/events/canvasPostedToTwitter.event');
+const canvasPostedToLens = require('../../functions/events/canvasPostedToLens.event');
+const canvasMadePublic = require('../../functions/events/canvasMadePublic.event');
+
 canvasRouter.get('/ping', async (req, res) => {
     res.send("Canvas Router");
 }
@@ -92,6 +97,8 @@ canvasRouter.post('/create', async (req, res) => {
         res.status(500).send(`Error: ${error}`);
     }
 
+    canvasCreated(canvas.id, address);
+
     res.status(200).send({
         "status": "success",
         "message": "Canvas Created",
@@ -140,6 +147,8 @@ canvasRouter.put('/visibility', async (req, res) => {
             id: canvasId
         }
     });
+
+    canvasMadePublic(canvasId, req.user.address);
 
     res.status(200).send("Canvas Visibility Updated");
 });
@@ -221,7 +230,10 @@ canvasRouter.post('/publish', async (req, res) => {
             image: `ipfs://${cid}`
         }
 
-        resp = await uploadToLens(postMetadata,owner);
+        resp = await uploadToLens(postMetadata, owner);
+        canvasPostedToLens(canvasId, ownerAddress);
+    } else if (platform == "twitter") {
+        canvasPostedToTwitter(canvasId, ownerAddress);
     }
 
 
