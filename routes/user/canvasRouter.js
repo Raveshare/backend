@@ -7,6 +7,7 @@ const uploadMediaToIpfs = require('../../functions/uploadToIPFS').uploadMediaToI
 const getImageBuffer = require('../../functions/getImageBuffer')
 const uploadImageToS3 = require('../../functions/uploadImageToS3')
 const uploadToLens = require('../../functions/uploadToLens');
+const uploadToTwitter = require('../../functions/uploadToTwitter');
 
 const canvasCreated = require('../../functions/events/canvasCreated.event');
 const canvasPostedToTwitter = require('../../functions/events/canvasPostedToTwitter.event');
@@ -212,11 +213,15 @@ canvasRouter.post('/publish', async (req, res) => {
         console.log(error);
         res.status(500).send(`Error: ${error}`);
     }
-    let cid = await uploadMediaToIpfs(image, "image/png");
-    let imageLink = await uploadImageToS3(image, `${canvasId + name + content}.png`);
 
+    let cid = [], imageLink = [];
 
-    canvas.ipfsLink = `ipfs://${cid}`;
+    for (let i = 0; i < image.length; i++) {
+        cid.push(await uploadMediaToIpfs(image[i], "image/png"))
+        imageLink.push(await uploadImageToS3(image[i], `${canvasId + name + content}-${id}.png`));
+    }
+
+    canvas.ipfsLink = cid;
     canvas.imageLink = imageLink;
     await canvas.save();
 
@@ -227,12 +232,13 @@ canvasRouter.post('/publish', async (req, res) => {
             name: name,
             content: content,
             handle: owner.lens_handle,
-            image: `ipfs://${cid}`
+            image: cid
         }
 
         resp = await uploadToLens(postMetadata, owner);
         canvasPostedToLens(canvasId, ownerAddress);
     } else if (platform == "twitter") {
+        resp = await uploadToTwitter(postMetadata, owner);
         canvasPostedToTwitter(canvasId, ownerAddress);
     }
 

@@ -4,7 +4,7 @@ const ownerSchema = require('../../schema/ownerSchema');
 
 const { TwitterApi } = require('twitter-api-v2');
 
-twitterRouter.get('/login', async (req, res) => {
+twitterRouter.get('/authenticate', async (req, res) => {
 
     let address = req.user.address;
 
@@ -75,9 +75,6 @@ twitterRouter.get('/callback', async (req, res) => {
         "status": "success",
         "message": "Twitter Authenticated"
     });
-
-    // do something with the user
-    // e.g. save it to your database
 
 });
 

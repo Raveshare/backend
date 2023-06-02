@@ -32,6 +32,14 @@ const uploadMediaToIpfs = async (blob, mimeType) => {
 const uploaddMetadataToIpfs = async (postData) => {
     const ipfsClient = await getIpfsClient();
 
+    let media = [];
+    for(let i = 0; i < postData.image.length; i++) {
+        media.push({
+            type: "image/png",
+            item: `ipfs://${postData.image[i]}`
+        })
+    }
+
     const metaData = {
         version: "2.0.0",
         content: postData.content,
@@ -42,12 +50,7 @@ const uploaddMetadataToIpfs = async (postData) => {
         mainContentFocus: "IMAGE",
         attributes: [],
         locale: "en-US",
-        media: [
-            {
-                type: "image/png",
-                item: postData.image,
-            },
-        ],
+        media,
         appId: "lensfrens",
     };
 
