@@ -72,6 +72,6 @@ authRouter.post('/login', async (req, res) => {
 
 
 authRouter.use('/lens', auth, lensRouter);
-authRouter.use('/twitter',auth, twitterRouter);
+authRouter.use('/twitter', twitterRouter);
 
 module.exports = authRouter;

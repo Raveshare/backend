@@ -1,10 +1,13 @@
 const twitterRouter = require('express').Router();
 const ownerSchema = require('../../schema/ownerSchema');
+const store = require('store2')
+const auth = require('../../middleware/auth/auth');
+
 
 
 const { TwitterApi } = require('twitter-api-v2');
 
-twitterRouter.get('/authenticate', async (req, res) => {
+twitterRouter.get('/authenticate',auth, async (req, res) => {
 
     let address = req.user.address;
 
@@ -22,18 +25,49 @@ twitterRouter.get('/authenticate', async (req, res) => {
     }
 
     const twitterClient = new TwitterApi({
-        appKey: process.env.TWITTER_CONSUMER_KEY,
-        appSecret: process.env.TWITTER_CONSUMER_SECRET,
+        clientId: process.env.TWITTER_CLIENT_ID,
     });
 
-    let redirectUrl = await twitterClient.generateAuthLink('http://localhost:3000/auth/twitter/callback');
-    redirectUrl = redirectUrl.url;
-    res.redirect(redirectUrl);
+    let CALLBACL_URL = process.env.TWITTER_CALLBACK_URL;
+
+    let { url, codeVerifier, state } = twitterClient.generateOAuth2AuthLink(
+        CALLBACL_URL, {
+        scope:
+            [
+                'users.read',
+                'offline.access',
+                'tweet.write'
+            ]
+    }
+    );
+
+    store(state, {
+        codeVerifier: codeVerifier,
+        address
+    })
+
+
+    console.log(url);
+
+    res.redirect(url);
 });
 
 twitterRouter.get('/callback', async (req, res) => {
 
-    let address = req.user.address;
+    const { state, code } = req.query;
+
+    if (!state || !code) {
+        return res.redirect('/authenticate');
+    }
+
+    let codeVerifier, address;
+    try {
+        let res = store(state);
+        codeVerifier = res.codeVerifier;
+        address = res.address;
+    } catch (error) {
+        return res.redirect('/authenticate');
+    }
 
     let ownerData = await ownerSchema.findOne({
         where: {
@@ -48,26 +82,24 @@ twitterRouter.get('/callback', async (req, res) => {
         });
     }
 
-    const { oauth_token, oauth_verifier } = req.query;
-
-    if (!oauth_token || !oauth_verifier) {
-        return res.redirect('/login');
-    }
-
     const twitterClient = new TwitterApi({
-        appKey: process.env.TWITTER_CONSUMER_KEY,
-        appSecret: process.env.TWITTER_CONSUMER_SECRET,
-        accessToken: oauth_token,
-        accessSecret: oauth_verifier
+        clientId: process.env.TWITTER_CLIENT_ID,
+        clientSecret: process.env.TWITTER_CLIENT_SECRET,
     });
 
-    const user = await twitterClient.login(oauth_verifier);
+    const { client, accessToken, refreshToken, expiresIn } = await twitterClient.loginWithOAuth2({
+        code,
+        codeVerifier,
+        redirectUri: process.env.TWITTER_CALLBACK_URL
+    });
 
-    const { accessToken, accessSecret } = user;
+    const { data } = await client.v2.me();
+
+    console.log(data);
 
     ownerData.twitter_auth_token = {
         accessToken: accessToken,
-        accessSecret: accessSecret
+        refreshToken: refreshToken,
     }
     await ownerData.save();
 
