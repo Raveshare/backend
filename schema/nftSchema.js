@@ -7,7 +7,7 @@ const db = require("../utils/db/db")
  */
 const nftSchema = db.define('nftData', {
     tokenId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false
     },
     title: {

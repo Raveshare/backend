@@ -44,25 +44,34 @@ const getNftsForOwner = async (ownerAddress) => {
       nft["rawMetadata"]["image"] == undefined
     )
       continue;
-    nftMetadata.push({
-      address : nft["contract"]["address"],
-      title: nft["title"],
-      description: nft["description"],
-      permaLink: nft["rawMetadata"]["image"],
-      imageURL : nft["rawMetadata"]["image"],
-      tokenId: nft["tokenId"],
-      openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
-      isPublic : false
-    });
+    let imageLink;
+
+    try {
+      imageLink = nft["rawMetadata"]["image"];
+    } catch (error) {
+      imageLink = nft["rawMetadata"]["media"][0]["item"];
+    }
+
+    try {
+      nftMetadata.push({
+        address: nft["contract"]["address"],
+        title: nft["title"],
+        description: nft["description"],
+        permaLink: imageLink,
+        imageURL: imageLink,
+        tokenId: nft["tokenId"],
+        openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
+        isPublic: false
+      });
+    } catch (error) {
+      console.log(error);
+      console.log(nft);
+    }
   }
   return {
     ownerAddress,
     nftMetadata,
   };
 };
-
-// getNftsForOwner("0x726fbc2349c4033366242a7db2721066999eb1e1").then((result) => {
-//   console.log(result);
-// });
 
 module.exports = getNftsForOwner;

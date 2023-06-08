@@ -1,5 +1,9 @@
 const express = require("express");
-const app = express();
+const app = express(
+  {
+    logger: true,
+  },
+);
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -9,8 +13,8 @@ const auth = require('./middleware/auth/auth');
 
 // include these 2 lines to sync the database
 
-const sync = require('./utils/db/sync');
-sync();
+// const sync = require('./utils/db/sync');
+// sync();
 
 app.use(cors());
 app.use(function (req, res, next) {

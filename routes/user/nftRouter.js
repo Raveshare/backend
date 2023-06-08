@@ -54,7 +54,12 @@ nftRouter.post('/update', async (req, res) => {
                 }
             });
             if (nftData == null) {
-                nftData = await nftSchema.create(nft);
+                try {
+                    nftData = await nftSchema.create(nft);
+                } catch (error) {
+                    console.log(error);
+                    console.log(nft);
+                }
                 let owner = await ownerSchema.findOne({
                     where: {
                         address: address
