@@ -10,7 +10,7 @@ nftRouter.get('/', async (req, res) => {
 );
 
 nftRouter.get('/all', async (req, res) => {
-    
+
     let limit = req.query.limit || 50;
     let offset = req.query.offset || 0;
 
@@ -28,10 +28,10 @@ nftRouter.get('/all', async (req, res) => {
 
 nftRouter.get('/owned', async (req, res) => {
     let address = req.user.address;
-    
+
     let nfts = await nftSchema.findAll({
-        where : {
-            ownerAddress : address
+        where: {
+            ownerAddress: address
         }
     });
 
@@ -43,33 +43,38 @@ nftRouter.post('/update', async (req, res) => {
 
     let nftDump = await getNftsForOwner(address);
     let nfts = nftDump["nftMetadata"];
-    
-    for(let i = 0; i < nfts.length; i++){
-        let nft = nfts[i];
-        let nftData = await nftSchema.findOne({
-            where : {
-                address : nft["address"],
-                tokenId : nft["tokenId"]
-            }
-        });
-        if(nftData == null){
-            nftData = await nftSchema.create(nft);
-            let owner = await ownerSchema.findOne({
-                where : {
-                    address : address
+
+    try {
+        for (let i = 0; i < nfts.length; i++) {
+            let nft = nfts[i];
+            let nftData = await nftSchema.findOne({
+                where: {
+                    address: nft["address"],
+                    tokenId: nft["tokenId"]
                 }
             });
-            if(!owner){
-                return res.status(404).send("Owner not found");
+            if (nftData == null) {
+                nftData = await nftSchema.create(nft);
+                let owner = await ownerSchema.findOne({
+                    where: {
+                        address: address
+                    }
+                });
+                if (!owner) {
+                    return res.status(404).send("Owner not found");
+                }
+                nftData.setOwner(owner);
+                nftData.save();
             }
-            nftData.setOwner(owner);
-            nftData.save();
         }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send("Error: " + error);
     }
 
     res.status(200).send("NFTs updated");
 });
-        
+
 
 
 nftRouter.get('/:id', async (req, res) => {

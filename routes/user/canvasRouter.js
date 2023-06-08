@@ -14,6 +14,8 @@ const canvasPostedToTwitter = require('../../functions/events/canvasPostedToTwit
 const canvasPostedToLens = require('../../functions/events/canvasPostedToLens.event');
 const canvasMadePublic = require('../../functions/events/canvasMadePublic.event');
 
+const sendError = require('../../functions/webhook/sendError.webhook');
+
 canvasRouter.get('/ping', async (req, res) => {
     res.send("Canvas Router");
 }
@@ -81,6 +83,7 @@ canvasRouter.post('/create', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error: ${error}`);
+        return;
     }
     try {
         canvas = await canvasSchema.create(canvasData);
@@ -93,9 +96,44 @@ canvasRouter.post('/create', async (req, res) => {
 
         await owner.addCanvas(canvas);
 
+        let image;
+        try {
+            let json = JSON.stringify(canvas.data);
+            console.log(json);
+            image = await getImageBuffer(json);
+            if (!image) {
+                res.status(404).send("Canvas image not found");
+                return;
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).send(`Error: ${error}`);
+            return;
+        }
+    
+        let cid = [], imageLink = [];
+    
+        for (let i = 0; i < image.length; i++) {
+            cid.push(await uploadMediaToIpfs(image[i], "image/png"))
+            imageLink.push(await uploadImageToS3(image[i], `${canvas.id}-${i}`));
+        }
+    
+        canvas.ipfsLink = cid;
+        canvas.imageLink = imageLink;
+        await canvas.save();
+
+        res.status(200).send({
+            "status": "success",
+            "message": "Canvas Created",
+            "canvasId": canvas.id
+        });
+
+        canvasCreated(canvas.id, address);
+
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error: ${error}`);
+        return;
     }
 
     canvasCreated(canvas.id, address);
@@ -105,6 +143,7 @@ canvasRouter.post('/create', async (req, res) => {
         "message": "Canvas Created",
         "canvasId": canvas.id
     });
+    return;
 });
 
 canvasRouter.put('/update', async (req, res) => {
@@ -127,6 +166,30 @@ canvasRouter.put('/update', async (req, res) => {
             id: canvasData.id
         }
     });
+
+    let image;
+    try {
+        image = await getImageBuffer(json);
+        if (!image) {
+            res.status(404).send("Canvas image not found");
+            return;
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error: ${error}`);
+        return;
+    }
+
+    let cid = [], imageLink = [];
+
+    for (let i = 0; i < image.length; i++) {
+        cid.push(await uploadMediaToIpfs(image[i], "image/png"))
+        imageLink.push(await uploadImageToS3(image[i], `${canvasId + name + content}-${i}.png`));
+    }
+
+    canvas.ipfsLink = cid;
+    canvas.imageLink = imageLink;
+    await canvas.save();
 
     res.status(200).send("Canvas Updated");
 });
@@ -171,6 +234,7 @@ canvasRouter.post('/publish', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error: ${error}`);
+        return;
     }
 
     if (!platform) {
@@ -201,6 +265,7 @@ canvasRouter.post('/publish', async (req, res) => {
 
     if (!json) {
         res.status(404).send("Canvas data not found");
+        return;
     }
 
     let image;
@@ -208,17 +273,19 @@ canvasRouter.post('/publish', async (req, res) => {
         image = await getImageBuffer(json);
         if (!image) {
             res.status(404).send("Canvas image not found");
+            return;
         }
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error: ${error}`);
+        return;
     }
 
     let cid = [], imageLink = [];
 
     for (let i = 0; i < image.length; i++) {
         cid.push(await uploadMediaToIpfs(image[i], "image/png"))
-        imageLink.push(await uploadImageToS3(image[i], `${canvasId + name + content}-${id}.png`));
+        imageLink.push(await uploadImageToS3(image[i], `${canvasId + name + content}-${i}.png`));
     }
 
     canvas.ipfsLink = cid;

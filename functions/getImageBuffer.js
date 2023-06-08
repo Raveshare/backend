@@ -31,6 +31,7 @@ async function getImageBuffer(imageJSON) {
     return imageBuffer;
   } catch (error) {
     console.log(error)
+    return error;
     throw error;
   }
 }

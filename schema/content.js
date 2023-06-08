@@ -7,7 +7,7 @@ const db = require("../utils/db/db")
  */
 const content = db.define('content',{
     tokenId : {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false
     },
     title : {
