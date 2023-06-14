@@ -25,13 +25,17 @@ canvasRouter.get('/ping', async (req, res) => {
 canvasRouter.get('/', async (req, res) => {
     let limit = req.query.limit || 50;
     let offset = req.query.offset || 0;
+    let address = req.user.address;
 
     let canvasDatas = await canvasSchema.findAll({
         limit: limit,
         offset: offset,
         order: [
             ['createdAt']
-        ]
+        ],
+        where: {
+            ownerAddress : address
+        }
     });
 
     res.send(canvasDatas);
@@ -117,6 +121,8 @@ canvasRouter.post('/create', async (req, res) => {
             cid.push(await uploadMediaToIpfs(image[i], "image/png"))
             imageLink.push(await uploadImageToS3(image[i], `${canvas.id}-${i}`));
         }
+
+        console.log(cid,imageLink)
     
         canvas.ipfsLink = cid;
         canvas.imageLink = imageLink;
@@ -136,14 +142,6 @@ canvasRouter.post('/create', async (req, res) => {
         return;
     }
 
-    canvasCreated(canvas.id, address);
-
-    res.status(200).send({
-        "status": "success",
-        "message": "Canvas Created",
-        "canvasId": canvas.id
-    });
-    return;
 });
 
 canvasRouter.put('/update', async (req, res) => {
