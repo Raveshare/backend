@@ -5,12 +5,15 @@ const s3 = new aws.S3({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 })
 
-const uploadImageToS3 = async (file, fileName) => {
+const uploadImageToS3 = async ( file , filepath ) => {
+
+    let format = filepath.split(".").pop();
+
     const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: `templates/${fileName}.png`, // File name you want to save as in S3
+        Key: filepath, // File name you want to save as in S3
         Body: file,
-        ContentType: "image/png",
+        ContentType: `image/${format}`,
         ACL: 'public-read'
     }
 

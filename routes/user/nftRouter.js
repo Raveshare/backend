@@ -4,6 +4,8 @@ const ownerSchema = require('../../schema/ownerSchema');
 
 const getNftsForOwner = require("../../functions/getNftsForOwner")
 
+const sendError = require("../../functions/webhook/sendError.webhook");
+
 nftRouter.get('/', async (req, res) => {
     res.send("NFT Router");
 }
@@ -56,20 +58,21 @@ nftRouter.post('/update', async (req, res) => {
             if (nftData == null) {
                 try {
                     nftData = await nftSchema.create(nft);
+                    let owner = await ownerSchema.findOne({
+                        where: {
+                            address: address
+                        }
+                    });
+                    if (!owner) {
+                        return res.status(404).send("Owner not found");
+                    }
+                    nftData.setOwner(owner);
+                    nftData.save();
                 } catch (error) {
+                    sendError(error + address);
                     console.log(error);
                     console.log(nft);
                 }
-                let owner = await ownerSchema.findOne({
-                    where: {
-                        address: address
-                    }
-                });
-                if (!owner) {
-                    return res.status(404).send("Owner not found");
-                }
-                nftData.setOwner(owner);
-                nftData.save();
             }
         }
     } catch (error) {

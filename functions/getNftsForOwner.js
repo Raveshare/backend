@@ -1,5 +1,6 @@
 // Imports the Alchemy SDK
 const { Alchemy, Network } = require("alchemy-sdk");
+const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
 
 // Configures the Alchemy SDK
 const eth_config = {
@@ -52,13 +53,18 @@ const getNftsForOwner = async (ownerAddress) => {
       imageLink = nft["rawMetadata"]["media"][0]["item"];
     }
 
+    let format = imageLink.split(".").pop();
+    let filename = imageLink.split("/").pop().split(".").shift();
+
+    let s3Link = await uploadImageFromLinkToS3(imageLink, ownerAddress, filename , format);
+
     try {
       nftMetadata.push({
         address: nft["contract"]["address"],
         title: nft["title"],
         description: nft["description"],
         permaLink: imageLink,
-        imageURL: imageLink,
+        imageURL: s3Link,
         tokenId: nft["tokenId"],
         openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
         isPublic: false

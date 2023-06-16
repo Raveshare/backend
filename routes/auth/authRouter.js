@@ -7,7 +7,9 @@ const generateJwt = require('../../utils/auth/generateJwt');
 const auth = require('../../middleware/auth/auth');
 
 const ownerSchema = require('../../schema/ownerSchema');
+
 const userLogin = require('../../functions/events/userLogin.event');
+const sendLogin = require('../../functions/webhook/sendLogin.webhook');
 
 authRouter.get('/', async (req, res) => {
     res.send("Auth Router");
@@ -50,6 +52,7 @@ authRouter.post('/login', async (req, res) => {
             let jwt = await generateJwt(address, signature);
 
             userLogin(address);
+            sendLogin(address);
 
             res.status(200).send({
                 "status": "success",
