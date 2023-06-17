@@ -33,6 +33,9 @@ templateRouter.post('/', async (req, res) => {
         let random = Math.floor(Math.random() * 1000000000);
         let filepath = `templates/${name} - ${random}.png`
         let image = await uploadImageToS3(imageBuffer, filepath)
+
+        console.log(data)
+
         let template = await templateSchema.create({
             name: name,
             data: data,
