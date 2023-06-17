@@ -183,7 +183,7 @@ canvasRouter.put('/update', async (req, res) => {
 
     for (let i = 0; i < image.length; i++) {
         cid.push(await uploadMediaToIpfs(image[i], "image/png"))
-        let filepath = `user/${address}/${canvas.id}-${i}.png`;
+        let filepath = `user/${ownerAddress}/${canvas.id}-${i}.png`;
         imageLink.push(await uploadImageToS3(image[i], filepath));
     }
 
@@ -285,7 +285,7 @@ canvasRouter.post('/publish', async (req, res) => {
 
     for (let i = 0; i < image.length; i++) {
         cid.push(await uploadMediaToIpfs(image[i], "image/png"))
-        let filepath = `user/${address}/${canvas.id}-${i}.png`;
+        let filepath = `user/${ownerAddress}/${canvas.id}-${i}.png`;
         imageLink.push(await uploadImageToS3(image[i], filepath));
     }
 
