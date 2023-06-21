@@ -48,10 +48,13 @@ const getNftsForOwner = async (ownerAddress) => {
     let imageLink;
 
     try {
-      imageLink = nft["rawMetadata"]["image"];
+      imageLink = nft["media"][0]["gateway"]
     } catch (error) {
       imageLink = nft["rawMetadata"]["media"][0]["item"];
     }
+
+    if(imageLink == undefined) continue;
+    if(imageLink.includes("ipfs")) continue;
 
     let format = imageLink.split(".").pop();
     let filename = imageLink.split("/").pop().split(".").shift();
