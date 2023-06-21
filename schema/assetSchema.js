@@ -18,6 +18,10 @@ const Asset = db.define('Asset', {
         type : DataTypes.STRING,
         allowNull : true
     },
+    dimensions : {
+        type : DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull : true
+    },
 });
 
 module.exports = Asset;

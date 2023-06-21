@@ -6,6 +6,9 @@ const bcrypt = require('bcrypt');
 const dumpContent = require('../../scripts/dumpContent');
 const dumpTemplate = require('../../scripts/dumpTemplate');
 
+const dumpAsset = require('../../scripts/dumpAsset');
+const deleteAsset = require('../../scripts/deleteAsset');
+
 adminRouter.get('/', async (req, res) => {
     res.send("Admin Router");
 });
@@ -35,5 +38,19 @@ adminRouter.get('/dumpTemplate' , async (req,res) => {
 
     res.send(result);
 })
+
+adminRouter.get('/dumpAsset' , async (req,res) => {
+    let { name } = req.query;
+
+    let result = await dumpAsset(name);
+
+    res.send(result);
+})
+
+adminRouter.delete('/deleteAsset' , async (req,res) => {
+    let result = await deleteAsset();
+    res.send(result);
+})
+
 
 module.exports = adminRouter;
