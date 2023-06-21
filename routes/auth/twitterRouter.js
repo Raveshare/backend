@@ -46,10 +46,11 @@ twitterRouter.get('/authenticate',auth, async (req, res) => {
         address
     })
 
-
-    console.log(url);
-
-    res.redirect(url);
+    res.status(200).send({
+        "status": "success",
+        "message": "Twitter Authenticated",
+        "url": url
+    });
 });
 
 twitterRouter.get('/callback', async (req, res) => {

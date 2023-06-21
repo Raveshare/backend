@@ -4,6 +4,7 @@ const nftSchema = require("./nftSchema")
 const ownerSchema = require("./ownerSchema")
 const canvasSchema = require("./canvasSchema")
 const templateSchema = require("./templateSchema")  
+const assetSchema = require("./assetSchema")
 
 module.exports = {
     content,
@@ -11,5 +12,6 @@ module.exports = {
     nftSchema,
     ownerSchema,
     canvasSchema,
-    templateSchema
+    templateSchema,
+    assetSchema
 }

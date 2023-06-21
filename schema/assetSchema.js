@@ -1,0 +1,23 @@
+const { DataTypes } = require('sequelize');
+const db = require('../utils/db/db');
+
+const Asset = db.define('Asset', {
+    tags : {
+        type : DataTypes.ARRAY(DataTypes.STRING),
+        allowNull : true
+    },
+    type : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
+    author : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
+    image : {
+        type : DataTypes.STRING,
+        allowNull : true
+    },
+});
+
+module.exports = Asset;

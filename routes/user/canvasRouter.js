@@ -168,7 +168,7 @@ canvasRouter.put('/update', async (req, res) => {
 
     let image;
     try {
-        image = await getImageBuffer(json);
+        image = await getImageBuffer(canvas.data);
         if (!image) {
             res.status(404).send("Canvas image not found");
             return;
