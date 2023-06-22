@@ -59,6 +59,7 @@ const getNftsForOwner = async (ownerAddress) => {
     let format = imageLink.split(".").pop();
     let filename = imageLink.split("/").pop().split(".").shift();
 
+    // change to nftRouter.
     let s3Link = await uploadImageFromLinkToS3(imageLink, ownerAddress, filename , format);
 
     try {

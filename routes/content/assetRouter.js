@@ -8,6 +8,32 @@ assetRouter.get("/by-author", async (req, res) => {
   res.send(assets);
 });
 
+assetRouter.get("/background", async (req, res) => {
+  const { author } = req.query;
+
+  if (author) {
+    const assets = await assetSchema.findAll({
+      where: {
+        author: author,
+        type: "background",
+      },
+    });
+
+    res.send(assets);
+    return;
+  } else {
+    const assets = await assetSchema.findAll({
+      where: {
+        type: "background",
+      },
+    });
+
+    res.send(assets);
+    return;
+  }
+
+});
+
 assetRouter.get("/", async (req, res) => {
   let finalAssets = [];
 
@@ -23,7 +49,7 @@ assetRouter.get("/", async (req, res) => {
 
   assets = await assetSchema.findAll({
     where: {
-      tags: { [Op.contains] : [query] },
+      tags: { [Op.contains]: [query] },
     },
   });
 
@@ -31,6 +57,5 @@ assetRouter.get("/", async (req, res) => {
 
   res.send(finalAssets);
 });
-
 
 module.exports = assetRouter;
