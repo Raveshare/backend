@@ -16,7 +16,13 @@ const sendLogin = async (address) => {
     ],
   }
 
+  try {
+
   await axios.post(DISCORD_WEBHOOK_URL, error);
+
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 module.exports = sendLogin

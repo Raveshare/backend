@@ -31,7 +31,6 @@ assetRouter.get("/background", async (req, res) => {
     res.send(assets);
     return;
   }
-
 });
 
 assetRouter.get("/", async (req, res) => {
@@ -39,23 +38,30 @@ assetRouter.get("/", async (req, res) => {
 
   const query = req.query.query;
 
-  let assets = await assetSchema.findAll({
-    where: {
-      author: query,
-    },
-  });
+  if (query) {
+    let assets = await assetSchema.findAll({
+      where: {
+        author: query,
+      },
+    });
 
-  finalAssets.push(assets);
+    finalAssets.push(assets);
 
-  assets = await assetSchema.findAll({
-    where: {
-      tags: { [Op.contains]: [query] },
-    },
-  });
+    assets = await assetSchema.findAll({
+      where: {
+        tags: { [Op.contains]: [query] },
+      },
+    });
 
-  finalAssets.concat(assets);
+    finalAssets.concat(assets);
 
-  res.send(finalAssets);
+    res.send(finalAssets);
+    return;
+  } else {
+    let assets = await assetSchema.findAll();
+
+    res.send(assets);
+  }
 });
 
 module.exports = assetRouter;
