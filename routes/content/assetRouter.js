@@ -11,8 +11,13 @@ assetRouter.get("/by-author", async (req, res) => {
 assetRouter.get("/background", async (req, res) => {
   const { author } = req.query;
 
+  let limit = req.query.limit || 50;
+  let offset = req.query.offset || 0;
+
   if (author) {
     const assets = await assetSchema.findAll({
+      limit: limit,
+      offset: offset,
       where: {
         author: author,
         type: "background",
@@ -38,8 +43,13 @@ assetRouter.get("/", async (req, res) => {
 
   const query = req.query.query;
 
+  let limit = req.query.limit || 50;
+  let offset = req.query.offset || 0;
+
   if (query) {
     let assets = await assetSchema.findAll({
+      limit: limit,
+      offset: offset,
       where: {
         author: query,
       },
@@ -48,6 +58,8 @@ assetRouter.get("/", async (req, res) => {
     finalAssets.push(assets);
 
     assets = await assetSchema.findAll({
+      limit: limit,
+      offset: offset,
       where: {
         tags: { [Op.contains]: [query] },
       },
