@@ -22,6 +22,10 @@ const nftSchema = db.define('nftData', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    dimensions: {
+        type : DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull : true
+    },
     imageURL : {
         type : DataTypes.STRING,
         allowNull : true

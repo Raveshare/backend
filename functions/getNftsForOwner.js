@@ -56,11 +56,12 @@ const getNftsForOwner = async (ownerAddress) => {
     if(imageLink == undefined) continue;
     if(imageLink.includes("ipfs")) continue;
 
-    let format = imageLink.split(".").pop();
-    let filename = imageLink.split("/").pop().split(".").shift();
 
-    // change to nftRouter.
-    let s3Link = await uploadImageFromLinkToS3(imageLink, ownerAddress, filename , format);
+    let title = nft["title"];
+    let tokenId = nft["tokenId"]
+    tokenId = tokenId.substring(tokenId.length - 5);
+    let filename = `${title}-${tokenId}`;
+    let { dimensions , s3Link } = await uploadImageFromLinkToS3(imageLink, ownerAddress, filename);
 
     try {
       nftMetadata.push({
@@ -71,7 +72,8 @@ const getNftsForOwner = async (ownerAddress) => {
         imageURL: s3Link,
         tokenId: nft["tokenId"],
         openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
-        isPublic: false
+        isPublic: false,
+        dimensions: dimensions
       });
     } catch (error) {
       console.log(error);
