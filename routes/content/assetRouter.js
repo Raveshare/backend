@@ -51,21 +51,25 @@ assetRouter.get("/", async (req, res) => {
       limit: limit,
       offset: offset,
       where: {
-        author: query,
+        [Op.and]: [{ author: query }, { type: "props" }],
       },
     });
 
-    finalAssets.push(assets);
+    finalAssets = finalAssets.concat(assets);
 
     assets = await assetSchema.findAll({
       limit: limit,
       offset: offset,
       where: {
-        tags: { [Op.contains]: [query] },
+        [Op.and]: [{ tags: { [Op.contains]: [query] } }, { type: "props" }],
       },
     });
 
-    finalAssets.concat(assets);
+    // console.log(assets);
+
+    // assets = assets.findAll()
+
+    finalAssets = finalAssets.concat(assets);
 
     res.send(finalAssets);
     return;
