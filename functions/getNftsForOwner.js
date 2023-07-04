@@ -19,8 +19,8 @@ const poly_alchemy = new Alchemy(poly_config);
 
 /**
  * Returns the NFTs owned by the ownerAddress
- * @param {*} ownerAddress A valid ethereum address 
- * @returns 
+ * @param {*} ownerAddress A valid ethereum address
+ * @returns
  */
 
 const getNftsForOwner = async (ownerAddress) => {
@@ -39,31 +39,34 @@ const getNftsForOwner = async (ownerAddress) => {
   let nftMetadata = [];
   for (let i = 0; i < ownedNFT.length; i++) {
     nft = ownedNFT[i];
-    if (
-      nft["title"] == undefined ||
-      nft["description"] == undefined ||
-      nft["rawMetadata"]["image"] == undefined
-    )
-      continue;
-    let imageLink;
-
     try {
-      imageLink = nft["media"][0]["gateway"]
-    } catch (error) {
-      imageLink = nft["rawMetadata"]["media"][0]["item"];
-    }
+      if (
+        nft["title"] == undefined ||
+        nft["description"] == undefined ||
+        nft["rawMetadata"]["image"] == undefined
+      )
+        continue;
+      let imageLink;
 
-    if(imageLink == undefined) continue;
-    if(imageLink.includes("ipfs")) continue;
+      try {
+        imageLink = nft["media"][0]["gateway"];
+      } catch (error) {
+        imageLink = nft["rawMetadata"]["media"][0]["item"];
+      }
 
+      if (imageLink == undefined) continue;
+      if (imageLink.includes("ipfs")) continue;
 
-    let title = nft["title"];
-    let tokenId = nft["tokenId"]
-    tokenId = tokenId.substring(tokenId.length - 5);
-    let filename = `${title}-${tokenId}`;
-    let { dimensions , s3Link } = await uploadImageFromLinkToS3(imageLink, ownerAddress, filename);
+      let title = nft["title"];
+      let tokenId = nft["tokenId"];
+      tokenId = tokenId.substring(tokenId.length - 5);
+      let filename = `${title}-${tokenId}`;
+      let { dimensions, s3Link } = await uploadImageFromLinkToS3(
+        imageLink,
+        ownerAddress,
+        filename
+      );
 
-    try {
       nftMetadata.push({
         address: nft["contract"]["address"],
         title: nft["title"],
@@ -73,7 +76,7 @@ const getNftsForOwner = async (ownerAddress) => {
         tokenId: nft["tokenId"],
         openseaLink: `https://opensea.io/assets/${nft["contract"]["address"]}/${nft["tokenId"]}`,
         isPublic: false,
-        dimensions: dimensions
+        dimensions: dimensions,
       });
     } catch (error) {
       console.log(error);
