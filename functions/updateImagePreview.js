@@ -23,7 +23,7 @@ const updateImagePreview = (canvasData, address, id) => {
     .then((res) => {
       console.log(res.data);
       canvasSchema.update(
-        { imageLink: res.data.url },
+        { imageLink: res.data.url, ipfsLink: res.data.ipfs },
         {
           where: {
             id: id,
