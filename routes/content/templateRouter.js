@@ -2,20 +2,26 @@ const templateRouter = require("express").Router();
 const templateSchema = require("../../schema/templateSchema");
 const canvasSchema = require("../../schema/canvasSchema");
 
-const getImageBuffer = require("../../functions/getImageBuffer");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 templateRouter.get("/", async (req, res) => {
   try {
     const templates = await templateSchema.findAll();
+    res.status(200).json(templates);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+templateRouter.get("/user", async (req, res) => {
+  try {
     let publicTemplates = await canvasSchema.findAll({
       where: {
         isPublic: true,
       },
     });
 
-    templates.push(...publicTemplates);
-    res.status(200).json(templates);
+    res.status(200).json(publicTemplates);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -36,7 +42,9 @@ templateRouter.post("/", async (req, res) => {
 
   try {
     let json = JSON.stringify(data);
-    let imageBuffer = await getImageBuffer(json);
+    // let imageBuffer = await getImageBuffer(json);
+    // TODO : integrate with S3
+    let imageBuffer = null;
     let random = Math.floor(Math.random() * 1000000000);
     let filepath = `templates/${name} - ${random}.png`;
     let image = await uploadImageToS3(imageBuffer, filepath);
