@@ -3,11 +3,8 @@ const canvasRouter = require("express").Router();
 const canvasSchema = require("../../schema/canvasSchema");
 const ownerSchema = require("../../schema/ownerSchema");
 
-const uploadMediaToIpfs =
-  require("../../functions/uploadToIPFS").uploadMediaToIpfs;
-// const getImageBuffer = require('../../functions/getImageBuffer')
 const updateImagePreview = require("../../functions/updateImagePreview");
-const uploadImageToS3 = require("../../functions/uploadImageToS3");
+const getLatestImagePreview = require("../../functions/getLatestImagePreview");
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
 
@@ -219,33 +216,7 @@ canvasRouter.post("/publish", async (req, res) => {
     return;
   }
 
-  let image;
-  try {
-    // image = await getImageBuffer(json);
-    // TODO : integrate with S3
-
-    if (!image) {
-      res.status(404).send("Canvas image not found");
-      return;
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(`Error: ${error}`);
-    return;
-  }
-
-  let cid = [],
-    imageLink = [];
-
-  for (let i = 0; i < image.length; i++) {
-    cid.push(await uploadMediaToIpfs(image[i], "image/png"));
-    let filepath = `user/${ownerAddress}/${canvas.id}-${i}.png`;
-    imageLink.push(await uploadImageToS3(image[i], filepath));
-  }
-
-  canvas.ipfsLink = cid;
-  canvas.imageLink = imageLink;
-  await canvas.save();
+  let url = await getLatestImagePreview(json, ownerAddress, canvasId);
 
   let resp;
   if (platform == "lens") {
@@ -253,7 +224,7 @@ canvasRouter.post("/publish", async (req, res) => {
       name: name,
       content: content,
       handle: owner.lens_handle,
-      image: cid,
+      image: url,
     };
 
     resp = await uploadToLens(postMetadata, owner);
