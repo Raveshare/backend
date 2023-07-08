@@ -145,13 +145,21 @@ canvasRouter.put("/update", async (req, res) => {
 });
 
 canvasRouter.put("/visibility", async (req, res) => {
+  let ownerAddress = req.user.address;
+
   let canvasData = req.body.canvasData;
   let canvasId = canvasData.id;
-  let visibility = canvasData.visibility;
-  let isPublic = false;
+  let isPublic = canvasData.isPublic;
 
-  if (visibility == "public") {
-    isPublic = true;
+  let canvas = await canvasSchema.findOne({
+    where: {
+      id: canvasId,
+    },
+  });
+
+  if (canvas.ownerAddress != ownerAddress) {
+    res.status(401).send("Unauthorized");
+    return;
   }
 
   await canvasSchema.update(
@@ -167,9 +175,11 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   canvasMadePublic(canvasId, req.user.address);
 
+  let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
+
   res.status(200).send({
-    "status": "success",
-    "message": "Canvas visibility updated to " + visibility
+    status: "success",
+    message: msg,
   });
 });
 
