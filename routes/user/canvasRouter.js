@@ -167,7 +167,10 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   canvasMadePublic(canvasId, req.user.address);
 
-  res.status(200).send("Canvas Visibility Updated");
+  res.status(200).send({
+    "status": "success",
+    "message": "Canvas visibility updated to " + visibility
+  });
 });
 
 canvasRouter.post("/publish", async (req, res) => {
