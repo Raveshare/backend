@@ -18,6 +18,10 @@ async function checkDispatcher(profileId) {
   const variables = { profileId };
   let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
 
+  if (resp.profile.dispatcher === null) {
+    return false;
+  }
+
   return resp.profile.dispatcher.canUseRelay;
 }
 

@@ -1,5 +1,6 @@
 const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
+const checkDispatcher = require("../../lens/api").checkDispatcher;
 const axios = require("axios");
 
 utilRouter.get("/", async (req, res) => {
@@ -18,6 +19,16 @@ utilRouter.post("/upload-image", async (req, res) => {
   res.send({
     s3link: result,
   });
+});
+
+utilRouter.get("/check-dispatcher", async (req, res) => {
+  const { profileId } = req.query;
+
+  console.log("profileId", profileId);
+
+  const result = await checkDispatcher(profileId);
+
+  res.send(result);
 });
 
 module.exports = utilRouter;
