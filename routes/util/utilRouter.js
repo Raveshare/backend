@@ -10,15 +10,27 @@ utilRouter.get("/", async (req, res) => {
 utilRouter.post("/upload-image", async (req, res) => {
   let { image } = req.query;
 
-  image = await axios.get(image, { responseType: "arraybuffer" });
+  if (!image) return res.send({ error: "No image provided" });
 
-  image = Buffer.from(image.data, "binary");
+  try {
+    image = await axios.get(image, { responseType: "arraybuffer" });
 
-  let result = await uploadImageToS3(image, `test/${Date.now()}.png`);
+    image = Buffer.from(image.data, "binary");
+  } catch (err) {
+    console.log(err);
+    return res.send({ error: "Error fetching image" });
+  }
 
-  res.send({
-    s3link: result,
-  });
+  try {
+    let result = await uploadImageToS3(image, `test/${Date.now()}.png`);
+    res.send({
+      s3link: result,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    return res.send({ error: "Error uploading image" });
+  }
 });
 
 utilRouter.get("/check-dispatcher", async (req, res) => {
