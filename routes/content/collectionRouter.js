@@ -1,71 +1,98 @@
-const collectionRouter = require('express').Router();
-const content = require('../../schema/content');
-const collection = require('../../schema/collections');
+const collectionRouter = require("express").Router();
+const content = require("../../schema/content");
+const collection = require("../../schema/collections");
 
-collectionRouter.get('/ping', async (req, res) => {
-    res.send("Collection Router");
+collectionRouter.get("/ping", async (req, res) => {
+  res.send("Collection Router");
 });
 
-collectionRouter.get('/:collection/', async (req, res) => {
+collectionRouter.get("/:collection/", async (req, res) => {
+  let collectionAddress = req.params.collection;
 
-    let collectionAddress = req.params.collection;
+  let page = req.query.page || 1;
+  page = parseInt(page);
 
-    let limit = req.query.limit || 50;
-    let offset = req.query.offset || 0;
+  page = page < 1 ? 1 : page;
 
-    let collections = await collection.findOne({
-        where: {
-            address: collectionAddress
-        }
-    });
+  let limit = req.query.limit || 50;
 
-    let contents = await content.findAll({
-        limit: limit,
-        offset: offset,
-        order: [
-            ['createdAt']
-        ],
-        where: {
-            collectionId: collections.id
-        }
-    });
+  let offset = (page - 1) * limit;
 
-    res.send(contents);
+  let collections = await collection.findOne({
+    where: {
+      address: collectionAddress,
+    },
+  });
+
+  let contents = await content.findAll({
+    limit: limit,
+    offset: offset,
+    order: [["createdAt"]],
+    where: {
+      collectionId: collections.id,
+    },
+  });
+
+  let totalAssets = await content.count({
+    where: {
+      collectionId: collections.id,
+    },
+  });
+
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  res.send({
+    assets: contents,
+    totalPage: totalPage,
+    nextPage: page + 1 > totalPage ? null : page + 1,
+  });
 });
 
-collectionRouter.get('/:collection/:id', async (req, res) => {
-    let id = req.params.id;
-    let collectionAddress = req.params.collection;
+collectionRouter.get("/:collection/:id", async (req, res) => {
+  let id = req.params.id;
+  let collectionAddress = req.params.collection;
 
-    let collections = await collection.findOne({
-        where: {
-            address: collectionAddress
-        }
-    });
+  let collections = await collection.findOne({
+    where: {
+      address: collectionAddress,
+    },
+  });
 
-    let contents = await content.findOne({
-        where: {
-            id: id,
-            collectionId : collections.id
-        }
-    });
+  let contents = await content.findOne({
+    where: {
+      id: id,
+      collectionId: collections.id,
+    },
+  });
 
-    res.send(contents);
+  res.send(contents);
 });
 
-collectionRouter.get('/', async (req, res) => {
-    let limit = req.query.limit || 50;
-    let offset = req.query.offset || 0;
+collectionRouter.get("/", async (req, res) => {
+  let page = req.query.page || 1;
+  page = parseInt(page);
 
-    let collections = await collection.findAll({
-        limit: limit,
-        offset: offset,
-        order: [
-            ['createdAt']
-        ]
-    });
+  page = page < 1 ? 1 : page;
 
-    res.send(collections);
+  let limit = req.query.limit || 50;
+
+  let offset = (page - 1) * limit;
+
+  let collections = await collection.findAll({
+    limit: limit,
+    offset: offset,
+    order: [["createdAt"]],
+  });
+
+  let totalAssets = await collection.count();
+
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  res.send({
+    assets: collections,
+    totalPage: totalPage,
+    nextPage: page + 1 > totalPage ? null : page + 1,
+  });
 });
 
 module.exports = collectionRouter;
