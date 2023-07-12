@@ -8,6 +8,8 @@ const getLatestImagePreview = require("../../functions/getLatestImagePreview");
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
 
+const _ = require("lodash");
+
 const canvasCreated = require("../../functions/events/canvasCreated.event");
 const canvasPostedToTwitter = require("../../functions/events/canvasPostedToTwitter.event");
 const canvasPostedToLens = require("../../functions/events/canvasPostedToLens.event");
@@ -49,37 +51,75 @@ canvasRouter.get("/public", async (req, res) => {
     },
   });
 
-  res.send(canvasDatas);
+  res.status(200).send({
+    status: "success",
+    message: "Public Canvases Found",
+    canvasDatas: canvasDatas,
+  });
 });
 
 canvasRouter.get("/:id", async (req, res) => {
-  if (!req.params.id) {
+  let address = req.user.address;
+  let id = req.params.id;
+
+  if (!id) {
     res.status(400).send({
-      status: "failed",
+      status: "error",
       message: "Invalid Request Parameters",
     });
     return;
   }
-  let id = req.params.id;
-  let canvasDatas = await canvasSchema.findOne({
+
+  let canvasData = await canvasSchema.findOne({
+    where: {
+      id: id,
+      isPublic: true,
+    },
+  });
+
+  // console.log(canvasData);
+
+  if (canvasData) {
+    res.status(200).send({
+      status: "success",
+      message: "Canvas Found",
+      canvasData: canvasData,
+    });
+  }
+
+  let canvas = await canvasSchema.findOne({
     where: {
       id: id,
     },
   });
 
-  res.send(canvasDatas);
+  if (canvas.ownerAddress != address) {
+    res.status(403).send({
+      status: "error",
+      message: "Forbidden",
+    });
+    return;
+  }
+
+  res.status(200).send({
+    status: "success",
+    message: "Canvas Found",
+    canvasData: canvasData,
+  });
 });
 
 canvasRouter.post("/create", async (req, res) => {
-  let address, canvasData;
-  address = req.user.address;
-  try {
-    canvasData = req.body.canvasData;
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(`Error: ${error}`);
+  let address = req.user.address;
+  let canvasData = req.body.canvasData;
+
+  if (!canvasData) {
+    res.status(400).send({
+      status: "error",
+      message: "Invalid Request Parameters",
+    });
     return;
   }
+
   try {
     canvas = await canvasSchema.create(canvasData);
 
@@ -103,13 +143,14 @@ canvasRouter.post("/create", async (req, res) => {
     res.status(200).send({
       status: "success",
       message: "Canvas Created",
-      canvasId: canvas.id,
+      id: canvas.id,
     });
 
     canvasCreated(canvas.id, address);
   } catch (error) {
     console.log(error);
     res.status(500).send(`Error: ${error}`);
+    sendError(`${error} - ${address} - /create`);
     return;
   }
 });
@@ -118,6 +159,14 @@ canvasRouter.put("/update", async (req, res) => {
   let canvasData = req.body.canvasData;
   let ownerAddress = req.user.address;
 
+  if (!canvasData.id) {
+    res.status(400).send({
+      status: "error",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+
   try {
     let canvas = await canvasSchema.findOne({
       where: {
@@ -125,29 +174,71 @@ canvasRouter.put("/update", async (req, res) => {
       },
     });
 
-    if (canvas.ownerAddress != ownerAddress) {
-      res.status(401).send("Unauthorized");
+    if (!canvas) {
+      res.status(404).send({
+        status: "error",
+        message: "Canvas Not Found",
+      });
       return;
     }
 
-    await canvasSchema.update(canvasData, {
+    if (canvas.ownerAddress != ownerAddress) {
+      res.status(403).send({
+        status: "error",
+        message: "Forbidden",
+      });
+      return;
+    }
+
+    let isEqual = _.isEqual(canvas.data, canvasData.data);
+
+    if (isEqual) {
+      console.log("Canvas is equal");
+      res.status(200).send({
+        status: "success",
+        message: "Canvas Updated",
+      });
+      return;
+    }
+
+    await canvasSchema.update(canvasData.data, {
       where: {
         id: canvasData.id,
       },
     });
 
-    res.status(200).send("Canvas Updated");
+    updateImagePreview(canvasData.data, ownerAddress, canvas.id);
+
+    res.status(200).send({
+      status: "success",
+      message: "Canvas Updated",
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send(`Error: ${error}`);
+    res.status(500).send({
+      status: "error",
+      message: `Error: ${error}`,
+    });
+    sendError(`${error} - ${ownerAddress} - /update`);
     return;
   }
 });
+
+// TODO: check if canvas is public
 
 canvasRouter.put("/visibility", async (req, res) => {
   let ownerAddress = req.user.address;
 
   let canvasData = req.body.canvasData;
+
+  if (!canvasData.id || !canvasData.isPublic) {
+    res.status(400).send({
+      status: "error",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+
   let canvasId = canvasData.id;
   let isPublic = canvasData.isPublic;
 
@@ -157,8 +248,19 @@ canvasRouter.put("/visibility", async (req, res) => {
     },
   });
 
+  if (!canvas) {
+    res.status(404).send({
+      status: "error",
+      message: "Canvas Not Found",
+    });
+    return;
+  }
+
   if (canvas.ownerAddress != ownerAddress) {
-    res.status(401).send("Unauthorized");
+    res.status(403).send({
+      status: "error",
+      message: "Forbidden",
+    });
     return;
   }
 
