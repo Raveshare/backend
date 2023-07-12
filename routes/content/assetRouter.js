@@ -11,8 +11,14 @@ assetRouter.get("/by-author", async (req, res) => {
 assetRouter.get("/background", async (req, res) => {
   const { author } = req.query;
 
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
+
   let limit = req.query.limit || 50;
-  let offset = req.query.offset || 0;
+
+  let offset = (page - 1) * limit;
 
   if (author) {
     const assets = await assetSchema.findAll({
@@ -24,27 +30,70 @@ assetRouter.get("/background", async (req, res) => {
       },
     });
 
-    res.send(assets);
+    let totalAssets = await assetSchema.count({
+      where: {
+        author: author,
+        type: "background",
+      },
+    });
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    res.send({
+      assets: assets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
     return;
   } else {
     const assets = await assetSchema.findAll({
+      limit: limit,
+      offset: offset,
       where: {
         type: "background",
       },
     });
 
-    res.send(assets);
+    let totalAssets = await assetSchema.count({
+      where: {
+        type: "background",
+      },
+    });
+
+    console.log(totalAssets);
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    console.log(totalPage);
+
+    console.log(page);
+
+    console.log(page + 1);
+
+    console.log(page + 1 > totalPage ? null : page + 1);
+
+    res.send({
+      assets: assets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
     return;
   }
 });
 
 assetRouter.get("/", async (req, res) => {
+  const { query } = req.query;
+  
   let finalAssets = [];
 
-  const query = req.query.query;
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
 
   let limit = req.query.limit || 50;
-  let offset = req.query.offset || 0;
+
+  let offset = (page - 1) * limit;
 
   if (query) {
     let assets = await assetSchema.findAll({
@@ -54,6 +103,14 @@ assetRouter.get("/", async (req, res) => {
         [Op.and]: [{ author: query }, { type: "props" }],
       },
     });
+
+    let totalAssets = await assetSchema.count({
+      where: {
+        [Op.and]: [{ author: query }, { type: "props" }],
+      },
+    });
+
+    let totalPage = Math.ceil(totalAssets / limit);
 
     finalAssets = finalAssets.concat(assets);
 
@@ -65,18 +122,48 @@ assetRouter.get("/", async (req, res) => {
       },
     });
 
-    // console.log(assets);
+    totalAssets = await assetSchema.count({
+      where: {
+        [Op.and]: [{ tags: { [Op.contains]: [query] } }, { type: "props" }],
+      },
+    });
 
-    // assets = assets.findAll()
+    totalPage += Math.ceil(totalAssets / limit);
 
     finalAssets = finalAssets.concat(assets);
 
-    res.send(finalAssets);
+    res.send({
+      assets: finalAssets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
     return;
   } else {
-    let assets = await assetSchema.findAll();
+    // let assets = await assetSchema.findAll();
+    let assets = await assetSchema.findAll({
+      limit: limit,
+      offset: offset,
+      where: {
+        type: "props",
+      },
+    });
 
-    res.send(assets);
+    let totalAssets = await assetSchema.count({
+      where: {
+        type: "props",
+      },
+    });
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    finalAssets = finalAssets.concat(assets);
+
+    res.send({
+      assets: finalAssets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
+    return;
   }
 });
 
