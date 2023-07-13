@@ -14,18 +14,15 @@ utilRouter.post("/remove-bg", async (req, res) => {
   if (!image) return res.send({ error: "No image provided" });
 
   try {
-    // image = await axios.get(image, { responseType: "arraybuffer" });
-
-    console.log(image);
-
     removebg = await removeBackgroundFromImageUrl({
       apiKey: process.env.REMOVE_BG_API_KEY,
       url: image,
     });
 
-    console.log(removebg);
+    let imageBuffer = Buffer.from(removebg.base64img, "base64");
 
-    let result = await uploadImageToS3(removebg.base64img, `${Date.now()}.png`);
+
+    let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
 
     res.send({
       s3link: result,
