@@ -14,6 +14,10 @@ utilRouter.post("/remove-bg", async (req, res) => {
   if (!image) return res.send({ error: "No image provided" });
 
   try {
+
+    console.log("image", image);
+    image = image.replace(" ", "%20");
+
     removebg = await removeBackgroundFromImageUrl({
       apiKey: process.env.REMOVE_BG_API_KEY,
       url: image,
