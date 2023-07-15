@@ -207,7 +207,8 @@ canvasRouter.put("/update", async (req, res) => {
       },
     });
 
-    updateImagePreview(canvasData.data, ownerAddress, canvas.id);
+    let json = JSON.stringify(canvasData.data);
+    updateImagePreview(json, ownerAddress, canvas.id);
 
     res.status(200).send({
       status: "success",
