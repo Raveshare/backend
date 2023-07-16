@@ -201,11 +201,16 @@ canvasRouter.put("/update", async (req, res) => {
       return;
     }
 
-    await canvasSchema.update(canvasData.data, {
-      where: {
-        id: canvasData.id,
+    await canvasSchema.update(
+      {
+        data: canvasData.data,
       },
-    });
+      {
+        where: {
+          id: canvasData.id,
+        },
+      }
+    );
 
     let json = JSON.stringify(canvasData.data);
     updateImagePreview(json, ownerAddress, canvas.id);
