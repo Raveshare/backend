@@ -28,6 +28,7 @@ assetRouter.get("/background", async (req, res) => {
         author: author,
         type: "background",
       },
+      order: [["createdAt", "DESC"]],
     });
 
     let totalAssets = await assetSchema.count({
@@ -52,25 +53,17 @@ assetRouter.get("/background", async (req, res) => {
       where: {
         type: "background",
       },
+      order: [["createdAt", "DESC"]],
     });
 
     let totalAssets = await assetSchema.count({
       where: {
         type: "background",
       },
+      order: [["createdAt", "DESC"]],
     });
 
-    console.log(totalAssets);
-
     let totalPage = Math.ceil(totalAssets / limit);
-
-    console.log(totalPage);
-
-    console.log(page);
-
-    console.log(page + 1);
-
-    console.log(page + 1 > totalPage ? null : page + 1);
 
     res.send({
       assets: assets,
@@ -83,7 +76,7 @@ assetRouter.get("/background", async (req, res) => {
 
 assetRouter.get("/", async (req, res) => {
   const { query } = req.query;
-  
+
   let finalAssets = [];
 
   let page = req.query.page || 1;
