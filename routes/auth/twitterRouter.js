@@ -1,115 +1,83 @@
-const twitterRouter = require('express').Router();
-const ownerSchema = require('../../schema/ownerSchema');
-const store = require('store2')
-const auth = require('../../middleware/auth/auth');
+const twitterRouter = require("express").Router();
+const ownerSchema = require("../../schema/ownerSchema");
+const store = require("store2");
+const auth = require("../../middleware/auth/auth");
 
+// const { TwitterApi } = require("twitter-api-v2");
+const Twitter = require("twitter-lite");
 
+twitterRouter.get("/authenticate", async (req, res) => {
+  let address = req.user.address;
 
-const { TwitterApi } = require('twitter-api-v2');
+  let ownerData = await ownerSchema.findOne({
+    where: {
+      address: address,
+    },
+  });
 
-twitterRouter.get('/authenticate',auth, async (req, res) => {
-
-    let address = req.user.address;
-
-    let ownerData = await ownerSchema.findOne({
-        where: {
-            address: address
-        }
+  if (!ownerData) {
+    res.status(401).send({
+      status: "error",
+      message: "User not found",
     });
+  }
 
-    if (!ownerData) {
-        res.status(401).send({
-            "status": "error",
-            "message": "User not found"
-        });
-    }
+  const client = new Twitter({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  });
 
-    const twitterClient = new TwitterApi({
-        clientId: process.env.TWITTER_CLIENT_ID,
-    });
+  let requestToken = await client.getRequestToken(
+    "http://localhost:5173/api/auth/callback/twitter"
+  );
 
-    let CALLBACL_URL = process.env.TWITTER_CALLBACK_URL;
+  console.log(requestToken);
 
-    let { url, codeVerifier, state } = twitterClient.generateOAuth2AuthLink(
-        CALLBACL_URL, {
-        scope:
-            [
-                'users.read',
-                'offline.access',
-                'tweet.write'
-            ]
-    }
-    );
-
-    store(state, {
-        codeVerifier: codeVerifier,
-        address
-    })
-
-    res.status(200).send({
-        "status": "success",
-        "message": "Twitter Authenticated",
-        "url": url
-    });
+  res.status(200).send({
+    status: "success",
+    message: `https://api.twitter.com/oauth/authenticate?oauth_token=${requestToken.oauth_token}`,
+  });
 });
 
-twitterRouter.get('/callback', async (req, res) => {
+twitterRouter.get("/callback", async (req, res) => {
+  let address = req.user.address;
+  let { oauth_token, oauth_verifier } = req.query;
 
-    const { state, code } = req.query;
-
-    if (!state || !code) {
-        return res.redirect('/authenticate');
-    }
-
-    let codeVerifier, address;
-    try {
-        let res = store(state);
-        codeVerifier = res.codeVerifier;
-        address = res.address;
-    } catch (error) {
-        return res.redirect('/authenticate');
-    }
-
-    let ownerData = await ownerSchema.findOne({
-        where: {
-            address: address
-        }
+  if (!oauth_token || !oauth_verifier) {
+    res.status(401).send({
+      status: "error",
+      message: "Invalid request parameters",
     });
+  }
 
-    if (!ownerData) {
-        res.status(401).send({
-            "status": "error",
-            "message": "User not found"
-        });
-    }
+  const client = new Twitter({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  });
 
-    const twitterClient = new TwitterApi({
-        clientId: process.env.TWITTER_CLIENT_ID,
-        clientSecret: process.env.TWITTER_CLIENT_SECRET,
-    });
+  let accessToken = await client.getAccessToken({
+    oauth_token,
+    oauth_verifier,
+  });
 
-    const { client, accessToken, refreshToken, expiresIn } = await twitterClient.loginWithOAuth2({
-        code,
-        codeVerifier,
-        redirectUri: process.env.TWITTER_CALLBACK_URL
-    });
+  console.log(accessToken);
 
-    const { data } = await client.v2.me();
+  let ownerData = await ownerSchema.findOne({
+    where: {
+      address: address,
+    },
+  });
 
-    console.log(data);
+  ownerData.twitter_auth_token = {
+    oauth_token: accessToken.oauth_token,
+    oauth_token_secret: accessToken.oauth_token_secret,
+  };
+  await ownerData.save();
 
-    ownerData.twitter_auth_token = {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-    }
-    await ownerData.save();
-
-    res.status(200).send({
-        "status": "success",
-        "message": "Twitter Authenticated"
-    });
-
+  res.status(200).send({
+    status: "success",
+    message: "Twitter Authenticated",
+  });
 });
-
 
 module.exports = twitterRouter;
