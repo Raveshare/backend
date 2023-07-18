@@ -11,8 +11,14 @@ nftRouter.get("/", async (req, res) => {
 });
 
 nftRouter.get("/all", async (req, res) => {
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
+
   let limit = req.query.limit || 50;
-  let offset = req.query.offset || 0;
+
+  let offset = (page - 1) * limit;
 
   let nftDatas = await nftSchema.findAll({
     limit: limit,
@@ -20,11 +26,27 @@ nftRouter.get("/all", async (req, res) => {
     order: [["createdAt"]],
   });
 
-  res.send(nftDatas);
+  let totalAssets = await nftSchema.count();
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  res.send({
+    assets: nftDatas,
+    totalPage: totalPage,
+    nextPage: page + 1 > totalPage ? null : page + 1,
+  });
 });
 
 nftRouter.get("/owned", async (req, res) => {
   let address = req.user.address;
+
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
+
+  let limit = req.query.limit || 50;
+
+  let offset = (page - 1) * limit;
 
   let nfts = await nftSchema.findAll({
     where: {
@@ -32,7 +54,19 @@ nftRouter.get("/owned", async (req, res) => {
     },
   });
 
-  res.status(200).send(nfts);
+  let totalAssets = await nftSchema.count({
+    where: {
+      ownerAddress: address,
+    },
+  });
+
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  res.send({
+    assets: nfts,
+    totalPage: totalPage,
+    nextPage: page + 1 > totalPage ? null : page + 1,
+  });
 });
 
 nftRouter.post("/update", async (req, res) => {
@@ -59,12 +93,15 @@ nftRouter.post("/update", async (req, res) => {
             },
           });
           if (!owner) {
-            return res.status(404).send("Owner not found");
+            return res.status(404).send({
+              status: "failed",
+              message: "Owner not found",
+            });
           }
           nftData.setOwner(owner);
           nftData.save();
         } catch (error) {
-          sendError(error + address);
+          sendError(`${error} - ${address} - /nft/update`);
           console.log(error);
           console.log(nft);
         }
@@ -72,10 +109,16 @@ nftRouter.post("/update", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).send("Error: " + error);
+    return res.status(500).send({
+      status: "error",
+      message: "Internal Server Error",
+    });
   }
 
-  res.status(200).send("NFTs updated");
+  res.status(200).send({
+    status: "success",
+    message: "NFTs updated",
+  });
 });
 
 nftRouter.get("/:id", async (req, res) => {
@@ -90,6 +133,14 @@ nftRouter.get("/:id", async (req, res) => {
   }
 
   let id = req.params.id;
+
+  if (isNaN(id)) {
+    res.status(400).send({
+      status: "failed",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
 
   let nftData = await nftSchema.findOne({
     where: {
