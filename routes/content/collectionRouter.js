@@ -50,7 +50,24 @@ collectionRouter.get("/:collection/", async (req, res) => {
 
 collectionRouter.get("/:collection/:id", async (req, res) => {
   let id = req.params.id;
+
+  if (isNaN(id)) {
+    res.status(400).send({
+      status: "failed",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+
   let collectionAddress = req.params.collection;
+
+  if (!collectionAddress) {
+    res.status(400).send({
+      status: "failed",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
 
   let collections = await collection.findOne({
     where: {
