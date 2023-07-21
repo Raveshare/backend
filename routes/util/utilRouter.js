@@ -3,12 +3,14 @@ const uploadImageToS3 = require("../../functions/uploadImageToS3");
 const checkDispatcher = require("../../lens/api").checkDispatcher;
 const axios = require("axios");
 const { removeBackgroundFromImageUrl } = require("remove.bg");
+const getIsWhitelisted = require("../../functions/getIsWhitelisted");
+const auth = require("../../middleware/auth/auth");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
 });
 
-utilRouter.post("/remove-bg", async (req, res) => {
+utilRouter.post("/remove-bg",auth,  async (req, res) => {
   let { image } = req.query;
 
   if (!image) return res.send({ error: "No image provided" });
@@ -17,7 +19,10 @@ utilRouter.post("/remove-bg", async (req, res) => {
 
     console.log("image", image);
     // to replace all spaces with %20
-    image = image.replace(/ /g, "%20");
+    // image = image.replace(/ /g, "%20");
+    image = encodeURI(image);
+
+    console.log("image", image);
 
     removebg = await removeBackgroundFromImageUrl({
       apiKey: process.env.REMOVE_BG_API_KEY,
@@ -39,7 +44,7 @@ utilRouter.post("/remove-bg", async (req, res) => {
   }
 });
 
-utilRouter.get("/check-dispatcher", async (req, res) => {
+utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   const { profileId } = req.query;
 
   console.log("profileId", profileId);
@@ -48,5 +53,16 @@ utilRouter.get("/check-dispatcher", async (req, res) => {
 
   res.send(result);
 });
+
+utilRouter.get("/whitelisted" , async(req,res) => {
+  const { wallet } = req.query;
+
+  let isWhitelisted = await getIsWhitelisted(wallet);
+
+  res.send({
+    "status" : "success",
+    "message" : isWhitelisted
+  });
+})
 
 module.exports = utilRouter;
