@@ -1,7 +1,7 @@
 .env
 
 node_modules
-dumpdata
+dumpdata/assets
 yarn-error.log
 
 plotno_json_file.json
