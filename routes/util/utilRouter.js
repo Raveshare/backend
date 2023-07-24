@@ -37,8 +37,12 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
 
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let ownerAddress = req.user.address;
-
-  let owner = await ownerSchema.findOne({ address: ownerAddress });
+  
+  let owner = await ownerSchema.findOne({
+    where: {
+      address: ownerAddress,
+    },
+  });
 
   let profileId = owner.profileId;
 
