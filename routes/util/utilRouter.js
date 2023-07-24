@@ -57,6 +57,7 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   res.send({
     status: "success",
     message: result,
+    profileId: profileId,
   });
 });
 
