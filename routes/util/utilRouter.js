@@ -37,7 +37,7 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
 
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let ownerAddress = req.user.address;
-  
+
   let owner = await ownerSchema.findOne({
     where: {
       address: ownerAddress,
@@ -54,7 +54,10 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
 
   const result = await checkDispatcher(profileId);
 
-  res.send(result);
+  res.send({
+    status: "success",
+    message: result,
+  });
 });
 
 utilRouter.get("/whitelisted", async (req, res) => {
