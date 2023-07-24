@@ -17,13 +17,6 @@ utilRouter.post("/remove-bg",auth,  async (req, res) => {
 
   try {
 
-    console.log("image", image);
-    // to replace all spaces with %20
-    // image = image.replace(/ /g, "%20");
-    image = encodeURI(image);
-
-    console.log("image", image);
-
     removebg = await removeBackgroundFromImageUrl({
       apiKey: process.env.REMOVE_BG_API_KEY,
       url: image,
