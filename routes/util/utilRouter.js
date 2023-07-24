@@ -10,27 +10,18 @@ utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
 });
 
-utilRouter.post("/remove-bg",auth,  async (req, res) => {
+utilRouter.post("/remove-bg", auth, async (req, res) => {
   let { image } = req.query;
 
   if (!image) return res.send({ error: "No image provided" });
 
   try {
-
-    console.log("image", image);
-    // to replace all spaces with %20
-    // image = image.replace(/ /g, "%20");
-    image = encodeURI(image);
-
-    console.log("image", image);
-
     removebg = await removeBackgroundFromImageUrl({
       apiKey: process.env.REMOVE_BG_API_KEY,
       url: image,
     });
 
     let imageBuffer = Buffer.from(removebg.base64img, "base64");
-
 
     let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
 
@@ -54,15 +45,15 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   res.send(result);
 });
 
-utilRouter.get("/whitelisted" , async(req,res) => {
+utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
 
   let isWhitelisted = await getIsWhitelisted(wallet);
 
   res.send({
-    "status" : "success",
-    "message" : isWhitelisted
+    status: "success",
+    message: isWhitelisted,
   });
-})
+});
 
 module.exports = utilRouter;
