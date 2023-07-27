@@ -49,6 +49,9 @@ nftRouter.get("/owned", async (req, res) => {
   let offset = (page - 1) * limit;
 
   let nfts = await nftSchema.findAll({
+    limit: limit,
+    offset: offset,
+    order: [["createdAt"]],
     where: {
       ownerAddress: address,
     },
