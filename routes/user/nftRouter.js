@@ -6,36 +6,6 @@ const getNftsForOwner = require("../../functions/getNftsForOwner");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
-nftRouter.get("/", async (req, res) => {
-  res.send("NFT Router");
-});
-
-nftRouter.get("/all", async (req, res) => {
-  let page = req.query.page || 1;
-  page = parseInt(page);
-
-  page = page < 1 ? 1 : page;
-
-  let limit = req.query.limit || 50;
-
-  let offset = (page - 1) * limit;
-
-  let nftDatas = await nftSchema.findAll({
-    limit: limit,
-    offset: offset,
-    order: [["createdAt"]],
-  });
-
-  let totalAssets = await nftSchema.count();
-  let totalPage = Math.ceil(totalAssets / limit);
-
-  res.send({
-    assets: nftDatas,
-    totalPage: totalPage,
-    nextPage: page + 1 > totalPage ? null : page + 1,
-  });
-});
-
 nftRouter.get("/owned", async (req, res) => {
   let address = req.user.address;
 
@@ -49,6 +19,8 @@ nftRouter.get("/owned", async (req, res) => {
   let offset = (page - 1) * limit;
 
   let nfts = await nftSchema.findAll({
+    limit: limit,
+    offset: offset,
     where: {
       ownerAddress: address,
     },
@@ -72,6 +44,7 @@ nftRouter.get("/owned", async (req, res) => {
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
 
+  // TODO : Change S3 upload to here
   let nftDump = await getNftsForOwner(address);
   let nfts = nftDump["nftMetadata"];
 
@@ -165,6 +138,79 @@ nftRouter.get("/:id", async (req, res) => {
   }
 
   res.send(nftData);
+});
+
+nftRouter.get("/", async (req, res) => {
+  let address = req.user.address;
+  let query = req.query.query;
+
+  let queriedNFTs = [];
+
+  if (query) {
+    let nfts = await nftSchema.findAll({
+      where: {
+        ownerAddress: address,
+      },
+    });
+
+    for (let i = 0; i < nfts.length; i++) {
+      let nft = nfts[i];
+      let id = nft.tokenId;
+      let title = nft.title;
+      let description = nft.description;
+
+      if (id == parseInt(query)) {
+        queriedNFTs.push(nft);
+        continue;
+      }
+
+      if (title.includes(query)) {
+        queriedNFTs.push(nft);
+        continue;
+      }
+
+      if (description.includes(query)) {
+        queriedNFTs.push(nft);
+        continue;
+      }
+    }
+
+
+    res.send({
+      assets: queriedNFTs,
+    });
+  } else {
+    let page = req.query.page || 1;
+    page = parseInt(page);
+
+    page = page < 1 ? 1 : page;
+
+    let limit = req.query.limit || 50;
+
+    let offset = (page - 1) * limit;
+
+    queriedNFTs = await nftSchema.findAll({
+      limit: limit,
+      offset: offset,
+      where: {
+        ownerAddress: address,
+      },
+    });
+
+    let totalAssets = await nftSchema.count({
+      where: {
+        ownerAddress: address,
+      },
+    });
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    res.send({
+      assets: queriedNFTs,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
+  }
 });
 
 module.exports = nftRouter;
