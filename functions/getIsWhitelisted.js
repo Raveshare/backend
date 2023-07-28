@@ -29,6 +29,7 @@ const getIsWhitelisted = async (walletAddress) => {
       "0x14977b0dbe7e155f9907effecbb70c9b7a05e737",
       "0x14977b0dbe7e155f9907effecbb70c9b7a05e737",
       "0x00e42ed4f0815841aef328f294c8fd6100bf6bea",
+      "0x64b61e3b8F1d5cb92641c92A447b2BB43972450D"
     ];
 
     if (wallets.includes(walletAddress)) {
