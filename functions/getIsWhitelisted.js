@@ -10,6 +10,8 @@ const eth_alchemy = new Alchemy(eth_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
+    walletAddress = walletAddress.toUpperCase();
+
     let wallets = [
       "0x0cf97e9c28c5b45c9dc20dd8c9d683e0265190cb",
       "0xe3811defd98af92712e54b0b3e1735c1051c86d6",
@@ -31,15 +33,17 @@ const getIsWhitelisted = async (walletAddress) => {
       "0x00e42ed4f0815841aef328f294c8fd6100bf6bea",
       "0x64b61e3b8F1d5cb92641c92A447b2BB43972450D",
       "0x1De45d6811d6796178C0adE37516E510C1E07f77",
-"0x36eee7D790a5B9e8811fB0C570c883997069DF49",
-"0xD4Ca157d6ee33a5d0eB811535577cC716b876304",
-"0xD20f5fF0af177De3501AfF487ecBae7A5826BDc1",
-"0x92d35563EA7a4DA571CEA4c15b59f8A9A0975491",
-"0x85908923fB82a081103a8817EF52C6ED59B7ae1B",
-"0xAccA520CA226b3c2647b8adC9190E21169cBd7d3",
-"0x49cd0640Bb99e2e410A64E943a65e0091646b7D2",
-"0x1975638d2dfdeee04d11adf6350187af9996dc7c"
+      "0x36eee7D790a5B9e8811fB0C570c883997069DF49",
+      "0xD4Ca157d6ee33a5d0eB811535577cC716b876304",
+      "0xD20f5fF0af177De3501AfF487ecBae7A5826BDc1",
+      "0x92d35563EA7a4DA571CEA4c15b59f8A9A0975491",
+      "0x85908923fB82a081103a8817EF52C6ED59B7ae1B",
+      "0xAccA520CA226b3c2647b8adC9190E21169cBd7d3",
+      "0x49cd0640Bb99e2e410A64E943a65e0091646b7D2",
+      "0x1975638d2dfdeee04d11adf6350187af9996dc7c",
     ];
+
+    wallets = wallets.map((wallet) => wallet.toUpperCase());
 
     if (wallets.includes(walletAddress)) {
       console.log("true");
