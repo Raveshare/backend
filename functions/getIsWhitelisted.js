@@ -41,6 +41,8 @@ const getIsWhitelisted = async (walletAddress) => {
       "0xAccA520CA226b3c2647b8adC9190E21169cBd7d3",
       "0x49cd0640Bb99e2e410A64E943a65e0091646b7D2",
       "0x1975638d2dfdeee04d11adf6350187af9996dc7c",
+      "0x02e06bec5942d168fba8149a692ac0a12e90b5a2",
+      "0x8ef17f29638E00180D6C154347e9Ba96964F7Aea"
     ];
 
     wallets = wallets.map((wallet) => wallet.toUpperCase());
