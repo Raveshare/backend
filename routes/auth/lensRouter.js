@@ -1,76 +1,130 @@
-const lensRouter = require('express').Router();
+const lensRouter = require("express").Router();
 
-const challenge = require('../../lens/api').challenge;
-const authenticate = require('../../lens/api').authenticate;
-const getFollowContractAddress = require('../../lens/api').getFollowContractAddress;
-const getProfileHandleAndId = require('../../lens/api').getProfileHandleAndId
+const challenge = require("../../lens/api").challenge;
+const authenticate = require("../../lens/api").authenticate;
+const getFollowContractAddress =
+  require("../../lens/api").getFollowContractAddress;
+const getProfileHandleAndId = require("../../lens/api").getProfileHandleAndId;
+const setDispatcher = require("../../lens/api").setDispatcher;
+const checkAccessToken = require("../../lens/api").checkAccessToken;
+const { refreshToken : refreshAccessToken } = require("../../lens/api");
 
 
-const ownerSchema = require('../../schema/ownerSchema');
+const ownerSchema = require("../../schema/ownerSchema");
 
-lensRouter.get('/challenge', async (req, res) => {
-    let address = req.user.address;
-    let challengeData = await challenge(address);
-    res.status(200).send({
-        "challenge": challengeData
-    })
+lensRouter.get("/challenge", async (req, res) => {
+  let address = req.user.address;
+  let challengeData = await challenge(address);
+  res.status(200).send({
+    challenge: challengeData,
+  });
 });
 
-lensRouter.post('/authenticate', async (req, res) => {
-    let address = req.user.address;
-    let signature
+lensRouter.post("/authenticate", async (req, res) => {
+  let address = req.user.address;
+  let signature;
 
-    try {
-        signature = req.body.signature;
-    } catch (error) {
-        res.status(400).send({
-            "status": "failed",
-            "message": "Invalid Request Parameters"
-        });
-        return;
+  try {
+    signature = req.body.signature;
+  } catch (error) {
+    res.status(400).send({
+      status: "failed",
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+
+  try {
+    let authenticateData = await authenticate(address, signature);
+    const { accessToken, refreshToken } = authenticateData;
+
+    let ownerData = await ownerSchema.findOne({
+      where: {
+        address: address,
+      },
+    });
+
+    if (!ownerData) {
+      res.status(404).send({
+        message: "User not found",
+      });
     }
 
-    try {
-        let authenticateData = await authenticate(address, signature);
-        const { accessToken, refreshToken } = authenticateData;
+    let { handle, id } = await getProfileHandleAndId(address);
+    let followNftAddress = await getFollowContractAddress(id);
 
-        let ownerData = await ownerSchema.findOne({
-            where: {
-                address: address
-            }
-        });
+    ownerData.profileId = id;
+    ownerData.followNftAddress = followNftAddress;
+    ownerData.lens_handle = handle;
 
-        if (!ownerData) {
-            res.status(401).send({
-                "status": "error",
-                "message": "User not found"
-            });
-        }
+    ownerData.lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    };
+    await ownerData.save();
 
-        let { handle , id } = await getProfileHandleAndId(address);
-        let followNftAddress = await getFollowContractAddress(id);
+    res.status(200).send({
+      status: "success",
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: `Invalid Server Error: ${error}`,
+    });
+  }
+});
 
-        ownerData.profileId = id;
-        ownerData.followNftAddress = followNftAddress;
-        ownerData.lens_handle = handle;
+lensRouter.get("/set-dispatcher", async (req, res) => {
+  let address = req.user.address;
+  let ownerData = await ownerSchema.findOne({
+    where: {
+      address: address,
+    },
+  });
 
-        ownerData.lens_auth_token = {
-            accessToken: accessToken,
-            refreshToken: refreshToken
-        }
-        await ownerData.save();
+  if (!ownerData) {
+    res.status(404).send({
+      message: "User not found",
+    });
+    return;
+  }
 
-        res.status(200).send({
-            "status": "success",
-        })
+  let { profileId, lens_auth_token } = ownerData;
 
-    } catch (error) {
-        res.status(400).send({
-            "status": "failed",
-            "message": `Invalid Server Error: ${error}`
-        });
-    }
+  let { accessToken, refreshToken } = lens_auth_token;
 
+  console.log(lens_auth_token)
+
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+  console.log("isAccessTokenValid", isAccessTokenValid);
+
+  if (!isAccessTokenValid) {
+    const tokens = await refreshAccessToken(refreshToken);
+    accessToken = tokens.accessToken;
+    refreshToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    };
+
+    let owner = await ownerSchema.findOne({
+      where: {
+        address: address,
+      },
+    });
+    owner.lens_auth_token = lens_auth_token;
+    await owner.save();
+  }
+
+  console.log("accessToken", accessToken);
+
+  let setDispatcherData = await setDispatcher(profileId, accessToken);
+
+  console.log("setDispatcherData", setDispatcherData);
+
+  res.status(200).send({
+    message: setDispatcherData,
+  });
 });
 
 module.exports = lensRouter;

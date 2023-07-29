@@ -138,6 +138,56 @@ async function validateMetadata(metadatav2) {
   return result.validatePublicationMetadata;
 }
 
+
+const createSetDispatcherTypedData = gql`
+  mutation CreateSetDispatcherTypedData($profileId: ProfileId!) {
+    createSetDispatcherTypedData(request: { profileId: $profileId }) {
+      id
+      expiresAt
+      typedData {
+        types {
+          SetDispatcherWithSig {
+            name
+            type
+          }
+        }
+        domain {
+          name
+          chainId
+          version
+          verifyingContract
+        }
+        value {
+          nonce
+          deadline
+          profileId
+          dispatcher
+        }
+      }
+    }
+  }
+`;
+
+const setDispatcher = async (profileId , accessToken) => {
+
+  const variables = {
+    profileId: profileId,
+  };
+
+  const result = await request(
+    LENS_API_URL,
+    createSetDispatcherTypedData,
+    variables,
+    {
+      Authorization: `Bearer ${accessToken}`,
+    }
+  );
+
+  console.log("result", result);
+
+  return result.createSetDispatcherTypedData.typedData;
+};
+
 const createPostViaDispatcherQuery = gql`
   mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
     createPostViaDispatcher(request: $request) {
@@ -198,6 +248,8 @@ async function createPostViaDispatcher(
   return result.createPostViaDispatcher;
 }
 
+
+
 module.exports = {
   checkDispatcher,
   checkAccessToken,
@@ -208,4 +260,5 @@ module.exports = {
   authenticate,
   getProfileHandleAndId,
   getFollowContractAddress,
+  setDispatcher,
 };
