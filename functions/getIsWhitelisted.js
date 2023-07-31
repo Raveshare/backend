@@ -5,15 +5,32 @@ const eth_config = {
   network: Network.ETH_MAINNET, // Replace with your network
 };
 
+const { createClient } = require('redis')
+
+const redis = createClient({
+  url: process.env.REDIS_URI
+})
+
+redis.on('error', (err) => {
+  console.log('Redis error: ', err)
+})
+
+redis.on('connect', () => {
+  console.log('Redis client connected')
+})
+
+redis.connect()
+
 const eth_alchemy = new Alchemy(eth_config);
 // eth_alchemy.nft.verifyNftOwnership
 
 const getIsWhitelisted = async (walletAddress) => {
+ 
   try {
-    walletAddress = walletAddress.toUpperCase();
+
+    let walletAddressU = walletAddress.toUpperCase();
 
     let wallets = [
-      "0x0cf97e9c28c5b45c9dc20dd8c9d683e0265190cb",
       "0xe3811defd98af92712e54b0b3e1735c1051c86d6",
       "0x8e3c7d5585aa451de1591f28560ce9e3510c0312",
       "0xe48c889310dccb6ad29816cbe17314edf9da9baf",
@@ -47,7 +64,19 @@ const getIsWhitelisted = async (walletAddress) => {
 
     wallets = wallets.map((wallet) => wallet.toUpperCase());
 
-    if (wallets.includes(walletAddress)) {
+    if (wallets.includes(walletAddressU)) {
+      console.log("true");
+      return true;
+    }
+
+    let walletWhitelisted = await redis.get("address")
+    walletWhitelisted = JSON.parse(walletWhitelisted)
+
+    walletWhitelisted = walletWhitelisted.map((wallet) => wallet.toUpperCase());
+
+    console.log("walletWhitelisted", walletWhitelisted);
+
+    if(walletWhitelisted.includes(walletAddressU)) {
       console.log("true");
       return true;
     }
