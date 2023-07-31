@@ -51,7 +51,7 @@ const uploaddMetadataToIpfs = async (postData) => {
         attributes: [],
         locale: "en-US",
         media,
-        appId: "lensfrens",
+        appId: "lenspost",
     };
 
     const { valid, reason } = await validateMetadata(metaData);
