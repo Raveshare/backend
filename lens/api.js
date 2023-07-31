@@ -180,6 +180,7 @@ const setDispatcher = async (profileId , accessToken) => {
     variables,
     {
       Authorization: `Bearer ${accessToken}`,
+      Origin: "https://app.lenspost.xyz",
     }
   );
 
@@ -240,6 +241,7 @@ async function createPostViaDispatcher(
     variables,
     {
       Authorization: `Bearer ${accessToken}`,
+      Origin: "https://app.lenspost.xyz",
     }
   );
 
