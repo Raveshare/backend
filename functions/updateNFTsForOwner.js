@@ -107,10 +107,14 @@ async function updateNFTsForOwner(ownerAddress) {
 
       if(!res) continue;
 
+      try {
       nftInstance.dimensions = res.dimensions;
       nftInstance.imageURL = res.s3Link;
 
       await nftInstance.save();
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     return true;
