@@ -2,7 +2,7 @@ const nftRouter = require("express").Router();
 const nftSchema = require("../../schema/nftSchema");
 const ownerSchema = require("../../schema/ownerSchema");
 
-const getNftsForOwner = require("../../functions/getNftsForOwner");
+const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
@@ -45,53 +45,24 @@ nftRouter.get("/owned", async (req, res) => {
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
 
-  // TODO : Change S3 upload to here
-  let nftDump = await getNftsForOwner(address);
-  let nfts = nftDump["nftMetadata"];
+  let ownerData = await ownerSchema.findOne({
+    where: {
+      address: address,
+    },
+  });
 
-  try {
-    for (let i = 0; i < nfts.length; i++) {
-      let nft = nfts[i];
-      let nftData = await nftSchema.findOne({
-        where: {
-          address: nft["address"],
-          tokenId: nft["tokenId"],
-        },
-      });
-      if (nftData == null) {
-        try {
-          nftData = await nftSchema.create(nft);
-          let owner = await ownerSchema.findOne({
-            where: {
-              address: address,
-            },
-          });
-          if (!owner) {
-            return res.status(404).send({
-              status: "failed",
-              message: "Owner not found",
-            });
-          }
-          nftData.setOwner(owner);
-          nftData.save();
-        } catch (error) {
-          sendError(`${error} - ${address} - /nft/update`);
-          console.log(error);
-          console.log(nft);
-        }
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({
-      status: "error",
-      message: "Internal Server Error",
+  if (!ownerData) {
+    res.status(404).send({
+      message: "Owner not found",
     });
+    return;
   }
+
+  updateNFTsForOwner(address)
 
   res.status(200).send({
     status: "success",
-    message: "NFTs updated",
+    message: "NFTs are getting updated",
   });
 });
 
@@ -175,7 +146,6 @@ nftRouter.get("/", async (req, res) => {
         continue;
       }
     }
-
 
     res.send({
       assets: queriedNFTs,
