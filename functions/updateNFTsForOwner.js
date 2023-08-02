@@ -45,11 +45,12 @@ async function updateNFTsForOwner(ownerAddress) {
       } catch (e) {}
 
       cursor = JSON.parse(cursor);
-      if (!cursor.polygon) chainIds = [1];
-      if (!cursor.eth) chainIds = [137];
+
       if (isEmpty(cursor)) {
         break;
       }
+      if (!cursor.polygon) chainIds = [1];
+      if (!cursor.eth) chainIds = [137];
     }
 
     for (let i = 0; i < latestNFTs.length; i++) {
@@ -105,13 +106,13 @@ async function updateNFTsForOwner(ownerAddress) {
 
       console.log(res);
 
-      if(!res) continue;
+      if (!res) continue;
 
       try {
-      nftInstance.dimensions = res.dimensions;
-      nftInstance.imageURL = res.s3Link;
+        nftInstance.dimensions = res.dimensions;
+        nftInstance.imageURL = res.s3Link;
 
-      await nftInstance.save();
+        await nftInstance.save();
       } catch (e) {
         console.log(e);
       }
