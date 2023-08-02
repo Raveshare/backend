@@ -61,9 +61,10 @@ async function updateNFTsForOwner(ownerAddress) {
       if (!nft.originalContent.uri) continue;
 
       if (nft.originalContent.uri.includes("ipfs://")) {
+        let cid = nft.originalContent.uri.replace("ipfs://", "");
         nft.originalContent.uri = nft.originalContent.uri.replace(
           "ipfs://",
-          "https://ipfs.io/ipfs/"
+          "https://ipfs.io/"
         );
       }
 
@@ -104,8 +105,6 @@ async function updateNFTsForOwner(ownerAddress) {
         nft.name
       );
 
-      console.log(res);
-
       if (!res) continue;
 
       try {
@@ -114,7 +113,7 @@ async function updateNFTsForOwner(ownerAddress) {
 
         await nftInstance.save();
       } catch (e) {
-        console.log(e);
+        console.log(nftInstance.permaLink)
       }
     }
 
