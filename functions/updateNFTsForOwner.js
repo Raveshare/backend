@@ -61,11 +61,12 @@ async function updateNFTsForOwner(ownerAddress) {
       if (!nft.originalContent.uri) continue;
 
       if (nft.originalContent.uri.includes("ipfs://")) {
-        let cid = nft.originalContent.uri.replace("ipfs://", "");
         nft.originalContent.uri = nft.originalContent.uri.replace(
           "ipfs://",
-          "https://ipfs.io/"
+          "https://ipfs.io/ipfs/"
         );
+      } else {
+        console.log(nft.originalContent.uri);
       }
 
       let nftData = {
