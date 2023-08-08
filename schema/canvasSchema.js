@@ -22,6 +22,10 @@ const canvasSchema = db.define('canvas', {
     imageLink : {
         type : DataTypes.ARRAY(DataTypes.STRING),
         allowNull : true
+    },
+    referredFrom : {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
     }
 });
 
