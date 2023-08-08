@@ -1,7 +1,7 @@
 const createPostViaDispatcher = require("../lens/api").createPostViaDispatcher;
 const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
 
-const uploadToLens = async (postMetadata, ownerData) => {
+const uploadToLens = async (postMetadata, ownerData, params) => {
   const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
   let { accessToken, refreshToken } = ownerData.lens_auth_token;
@@ -14,16 +14,24 @@ const uploadToLens = async (postMetadata, ownerData) => {
     return;
   }
 
-  const createPostRequest = {
+  // TODO : Test with params for once
+  if (!params) {
+    params = {
+      collectModule: {
+        freeCollectModule: { followerOnly: true },
+      },
+      referenceModule: {
+        followerOnlyReferenceModule: false,
+      },
+    };
+  }
+
+  let createPostRequest = {
     profileId: ownerData.profileId,
     contentURI: "ipfs://" + ipfsData,
-    collectModule: {
-      freeCollectModule: { followerOnly: true },
-    },
-    referenceModule: {
-      followerOnlyReferenceModule: false,
-    },
   };
+
+  createPostRequest = Object.assign(createPostRequest, params);
 
   const result = await createPostViaDispatcher(
     createPostRequest,
