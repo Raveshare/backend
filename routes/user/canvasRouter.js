@@ -344,7 +344,7 @@ canvasRouter.post("/publish", async (req, res) => {
   }
 
   let url = await getLatestImagePreview(json, ownerAddress, canvasId);
-  // url = "blah";
+  // url = ["QmUhEK7npwz5jCj3GgfzQCh2nHDDkJYgdLjFXGPisPVdYX"];
 
   let resp;
   if (platform == "lens") {
@@ -356,6 +356,12 @@ canvasRouter.post("/publish", async (req, res) => {
     };
 
     resp = await uploadToLens(postMetadata, owner, canvasParams);
+    if (resp.status == "error") {
+      res.status(500).send({
+        message: resp.message,
+      });
+      return;
+    }
     canvasPostedToLens(canvasId, ownerAddress);
   } else if (platform == "twitter") {
     resp = await uploadToTwitter(postMetadata, owner);
