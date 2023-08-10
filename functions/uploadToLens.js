@@ -49,17 +49,16 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
         recipient: "0x77fAD8D0FcfD481dAf98D0D156970A281e66761b",
         split: 10,
       });
-      recipients[0].split = recipients[0].split + 10;
     }
 
     let totalSplit = 0;
     for (let i = 0; i < recipients.length; i++) {
       totalSplit += recipients[i].split;
     }
-    if (totalSplit > 100) {
+    if (totalSplit != 100) {
       return {
         status: "error",
-        message: "Split is more than 100%",
+        message: "Split is not 100%",
       };
     }
   }
