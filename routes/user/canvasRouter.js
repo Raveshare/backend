@@ -355,7 +355,9 @@ canvasRouter.post("/publish", async (req, res) => {
       image: url,
     };
 
-    resp = await uploadToLens(postMetadata, owner, canvasParams);
+    let referredFrom = canvas.referredFrom;
+
+    resp = await uploadToLens(postMetadata, owner, canvasParams , referredFrom);
     if (resp.status == "error") {
       res.status(500).send({
         message: resp.message,
