@@ -5,6 +5,8 @@ const ownerSchema = require("./ownerSchema")
 const canvasSchema = require("./canvasSchema")
 const templateSchema = require("./templateSchema")  
 const assetSchema = require("./assetSchema")
+const auth = require('./auth.schema')
+const uploadedSchema = require('./uploaded.schema')
 
 module.exports = {
     content,
@@ -13,5 +15,7 @@ module.exports = {
     ownerSchema,
     canvasSchema,
     templateSchema,
-    assetSchema
+    assetSchema,
+    uploadedSchema,
+    auth
 }

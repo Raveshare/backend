@@ -7,13 +7,19 @@ const uploadImageFromLinkToS3 = async (link, address, fileName) => {
   try {
     let response = await axios.get(link, { responseType: "arraybuffer" });
 
-    let dimensions = sizeOf(response.data);
+    let dimensions = [0, 0];
+    let format = response.headers["content-type"].split("/")[1];
+    try {
+    dimensions = sizeOf(response.data);
 
     let width = dimensions.width;
     let height = dimensions.height;
-    let format = dimensions.type;
+   format = dimensions.type;
 
     dimensions = [width, height];
+    } catch (err) {
+
+    }
 
     console.log(dimensions);
 

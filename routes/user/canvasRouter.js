@@ -295,6 +295,7 @@ canvasRouter.post("/publish", async (req, res) => {
   let canvasData = req.body.canvasData;
   let ownerAddress = req.user.address;
   let platform = req.body.platform;
+  let canvasParams = req.body.canvasParams;
 
   let canvasId, name, content;
 
@@ -319,8 +320,8 @@ canvasRouter.post("/publish", async (req, res) => {
     },
   });
 
-  if (canvas.ownerAddress != ownerAddress) {
-    res.status(401).send("Unauthorized");
+  if (!canvas) {
+    res.status(404).send("Canvas not found");
     return;
   }
 
@@ -330,6 +331,11 @@ canvasRouter.post("/publish", async (req, res) => {
     },
   });
 
+  if (canvas.ownerAddress != ownerAddress) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
   let json = JSON.stringify(canvas.data);
 
   if (!json) {
@@ -338,6 +344,7 @@ canvasRouter.post("/publish", async (req, res) => {
   }
 
   let url = await getLatestImagePreview(json, ownerAddress, canvasId);
+  // url = ["QmUhEK7npwz5jCj3GgfzQCh2nHDDkJYgdLjFXGPisPVdYX"];
 
   let resp;
   if (platform == "lens") {
@@ -348,7 +355,15 @@ canvasRouter.post("/publish", async (req, res) => {
       image: url,
     };
 
-    resp = await uploadToLens(postMetadata, owner);
+    let referredFrom = canvas.referredFrom;
+
+    resp = await uploadToLens(postMetadata, owner, canvasParams , referredFrom);
+    if (resp.status == "error") {
+      res.status(500).send({
+        message: resp.message,
+      });
+      return;
+    }
     canvasPostedToLens(canvasId, ownerAddress);
   } else if (platform == "twitter") {
     resp = await uploadToTwitter(postMetadata, owner);

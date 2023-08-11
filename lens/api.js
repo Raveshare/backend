@@ -250,6 +250,43 @@ async function createPostViaDispatcher(
   return result.createPostViaDispatcher;
 }
 
+const NftsQuery = gql`
+query Nfts($request: NFTsRequest!) {
+  nfts(request: $request) {
+    items {
+      contractAddress
+      symbol
+      tokenId
+      name
+      description
+      originalContent {
+        uri
+        metaType
+      }
+      chainId
+    }
+    pageInfo {
+      prev
+      next
+    }
+  }
+}
+`;
+
+const getNfts = async (nftrequest) => {
+  const variables = {
+    request: nftrequest,
+  };
+
+  const result = await request(
+    LENS_API_URL,
+    NftsQuery,
+    variables,
+  );
+
+  return result.nfts;
+};
+
 
 
 module.exports = {
@@ -263,4 +300,5 @@ module.exports = {
   getProfileHandleAndId,
   getFollowContractAddress,
   setDispatcher,
+  getNfts
 };

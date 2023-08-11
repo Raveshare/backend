@@ -2,6 +2,7 @@ const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 const checkDispatcher = require("../../lens/api").checkDispatcher;
 const ownerSchema = require("../../schema/ownerSchema");
+const uploadedSchema = require("../../schema/uploaded.schema");
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
@@ -32,6 +33,35 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.send({ error: "Error uploading image" });
+  }
+});
+
+utilRouter.post("/upload-image", auth, async (req, res) => {
+  let address = req.user.address;
+  let { image } = req.body;
+
+  if (!image) return res.status(404).send({ error: "No image provided" });
+
+  try {
+    let imageBuffer = Buffer.from(image, "base64");
+
+    let result = await uploadImageToS3(
+      imageBuffer,
+      `user/${address}/user_assets/${Date.now()}.png`
+    );
+
+    await uploadedSchema.create({
+      address: address,
+      image: result,
+    });
+
+    res.send({
+      s3link: result,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    return res.status(503).send({ error: "Error uploading image" });
   }
 });
 
