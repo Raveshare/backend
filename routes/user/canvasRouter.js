@@ -112,7 +112,6 @@ canvasRouter.post("/create", async (req, res) => {
   let canvasData = req.body.canvasData;
   let preview = req.body.preview;
 
-  console.log(canvasData);
 
   if (!canvasData) {
     res.status(400).send({
