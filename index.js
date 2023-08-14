@@ -32,7 +32,7 @@ const authRouter = require("./routes/auth/authRouter");
 const templateRouter = require("./routes/content/templateRouter");
 const assetRouter = require("./routes/content/assetRouter");
 
-app.use(express.json({ limit: "7mb", extended: true }));
+app.use(express.json({ limit: "20mb", extended: true }));
 app.use(handleError);
 
 app.use("/collection", auth, collectionRouter);
