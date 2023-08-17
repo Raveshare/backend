@@ -4,22 +4,24 @@ const { uploadMediaToIpfs } = require("./uploadToIPFS");
 
 const updateImagePreview = async (previewData, address, id) => {
   try {
-  let filename = `user/${address}/canvases/${id}.png`;
-  previewData = Buffer.from(previewData, "base64");
-  console.log(previewData);
-  let url = await uploadImageToS3(previewData, filename);
-  let ipfs = await uploadMediaToIpfs(previewData);
+    let url = [],
+      ipfs = [];
 
-  console.log(url, ipfs);
-
-  canvasSchema.update(
-    { imageLink: [url], ipfsLink: [ipfs] },
-    {
-      where: {
-        id: id,
-      },
+    for (let i = 0; i < previewData.length; i++) {
+      let filename = `user/${address}/canvases/${id}-${i}.png`;
+      previewData[0] = Buffer.from(previewData[0], "base64");
+      url.push(await uploadImageToS3(previewData[0], filename));
+      ipfs.push(await uploadMediaToIpfs(previewData[0]));
     }
-  );
+
+    canvasSchema.update(
+      { imageLink: url, ipfsLink: ipfs },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }
