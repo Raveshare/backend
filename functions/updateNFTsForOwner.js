@@ -25,7 +25,7 @@ async function updateNFTsForOwner(ownerAddress) {
 
     let cursor = {};
 
-    let chainIds = [1, 137];
+    let chainIds = [1,137];
 
     while (true) {
       let request = {
@@ -42,13 +42,16 @@ async function updateNFTsForOwner(ownerAddress) {
         latestNFTs = latestNFTs.concat(res.items);
 
         cursor = res.pageInfo.next;
-      } catch (e) {}
-
+      } catch (e) {
+        console.log(e);
+        break;
+      }
+     
       cursor = JSON.parse(cursor);
-
       if (isEmpty(cursor)) {
         break;
       }
+    
       if (!cursor.polygon) chainIds = [1];
       if (!cursor.eth) chainIds = [137];
     }
