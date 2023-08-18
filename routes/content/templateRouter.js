@@ -32,6 +32,7 @@ templateRouter.post("/", async (req, res) => {
   try {
     data = req.body.data;
     name = req.body.name;
+    image = req.body.image;
     console.log(data, name);
   } catch (error) {
     res.status(400).json({
@@ -44,10 +45,10 @@ templateRouter.post("/", async (req, res) => {
     let json = JSON.stringify(data);
     // let imageBuffer = await getImageBuffer(json);
     // TODO : integrate with S3
-    let imageBuffer = null;
-    let random = Math.floor(Math.random() * 1000000000);
-    let filepath = `templates/${name} - ${random}.png`;
-    let image = await uploadImageToS3(imageBuffer, filepath);
+    // let imageBuffer = null;
+    // let random = Math.floor(Math.random() * 1000000000);
+    // let filepath = `templates/${name} - ${random}.png`;
+    // let image = await uploadImageToS3(imageBuffer, filepath);
 
     console.log(data);
 
