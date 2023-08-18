@@ -9,7 +9,7 @@ const updateImagePreview = async (previewData, address, id) => {
 
     for (let i = 0; i < previewData.length; i++) {
       let filename = `user/${address}/canvases/${id}-${i}.png`;
-      previewData[0] = Buffer.from(previewData[i], "base64");
+      previewData[i] = Buffer.from(previewData[i], "base64");
       url.push(await uploadImageToS3(previewData[i], filename));
       ipfs.push(await uploadMediaToIpfs(previewData[i]));
     }
