@@ -43,7 +43,7 @@ const uploaddMetadataToIpfs = async (postData) => {
 
     const metaData = {
         version: "2.0.0",
-        content: postData.content + "\n\n Made on @Lenspostxyz ! your web3 social studio?",
+        content: postData.content + "\n\n Made on @Lenspostxyz ! your web3 social studio !",
         description: postData.content,
         name: postData.name,
         external_url: `https://lenstube.xyz/${postData.handle}`,
