@@ -57,9 +57,9 @@ uploadedRouter.get("/", async (req, res) => {
     let pages = Math.ceil(count / limit);
 
   res.send({
-    message : uploaded,
-    page: page,
-    nextPage : page < pages ? page + 1 : null,
+    assets  : uploaded,
+    totalPage : page,
+    nextPage : page + 1 > pages ? null : page + 1,
   });
 });
 
