@@ -9,10 +9,12 @@ const updateImagePreview = async (previewData, address, id) => {
 
     for (let i = 0; i < previewData.length; i++) {
       let filename = `user/${address}/canvases/${id}-${i}.png`;
-      previewData[0] = Buffer.from(previewData[0], "base64");
-      url.push(await uploadImageToS3(previewData[0], filename));
-      ipfs.push(await uploadMediaToIpfs(previewData[0]));
+      previewData[0] = Buffer.from(previewData[i], "base64");
+      url.push(await uploadImageToS3(previewData[i], filename));
+      ipfs.push(await uploadMediaToIpfs(previewData[i]));
     }
+
+    console.length
 
     canvasSchema.update(
       { imageLink: url, ipfsLink: ipfs },
