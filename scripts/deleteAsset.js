@@ -1,11 +1,10 @@
 const fs = require('fs');
 const assetSchema = require('../schema/assetSchema');
 
-async function deleteAsset (ownerAddress) {
+async function deleteAsset () {
     assetSchema.destroy({
-        where: {
-            ownerAddress: ownerAddress
-        },
+        where: {},
+        truncate: true
     })
 }
 

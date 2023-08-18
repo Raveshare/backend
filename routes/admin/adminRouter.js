@@ -13,7 +13,7 @@ const {
   deleteTemplate,
   deleteAsset,
   deleteCollection,
-} = require("../../scripts");
+} = require("../../scripts/deleteAsset");
 
 adminRouter.get("/", async (req, res) => {
   res.send("Admin Router");
@@ -22,7 +22,20 @@ adminRouter.get("/", async (req, res) => {
 adminRouter.get("/dumpContent", async (req, res) => {
   // let { address , name, openseaLink, image , filename } = req.query;
 
-  let data = ["lilnouns"];
+  let data = [
+    "cryptodickbutt",
+    "cryptotoadz",
+    "goblintown.wtf",
+    "gods-hates-nftees",
+    "mfers",
+    "moonrunners",
+    "nouns",
+    "participants",
+    "rektguy",
+    "synthetic anons",
+    "tubby cats",
+    "wgmis",
+  ];
 
   // let collectionDetails = {
   //     address: address,
@@ -69,16 +82,6 @@ adminRouter.delete("/deleteAsset", async (req, res) => {
   // let result = await deleteTemplate();
   let result2 = await deleteCanvas();
   let result = await deleteAsset();
-  res.send(result);
-});
-
-adminRouter.delete("/deleteNFT", async (req, res) => {
-  let id = req.query.ownerAddress;
-
-  console.log(id);
-
-  let result = await deleteNFT(id);
-
   res.send(result);
 });
 
