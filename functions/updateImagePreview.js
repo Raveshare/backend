@@ -1,39 +1,32 @@
-const axios = require("axios");
 const canvasSchema = require("../schema/canvasSchema");
+const uploadImageToS3 = require("./uploadImageToS3");
+const { uploadMediaToIpfs } = require("./uploadToIPFS");
 
-const WORKER_URL = process.env.WORKER_URL;
-const WORKER_SECRET = process.env.WORKER_SECRET;
-const updateImagePreview = (canvasData, address, id) => {
-  let data = {
-    data: canvasData,
-    address,
-    id,
-  };
+const updateImagePreview = async (previewData, address, id) => {
+  try {
+    let url = [],
+      ipfs = [];
 
-  let url = `${WORKER_URL}/convert`;
+    for (let i = 0; i < previewData.length; i++) {
+      let filename = `user/${address}/canvases/${id}-${i}.png`;
+      previewData[i] = Buffer.from(previewData[i], "base64");
+      url.push(await uploadImageToS3(previewData[i], filename));
+      ipfs.push(await uploadMediaToIpfs(previewData[i]));
+    }
 
-  let config = {
-    headers: {
-      Authorization: `${WORKER_SECRET}`,
-    },
-  };
+    console.length
 
-  axios
-    .post(url, data, config)
-    .then((res) => {
-      console.log(res.data);
-      canvasSchema.update(
-        { imageLink: res.data.url, ipfsLink: res.data.ipfs },
-        {
-          where: {
-            id: id,
-          },
-        }
-      );
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    canvasSchema.update(
+      { imageLink: url, ipfsLink: ipfs },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports = updateImagePreview;

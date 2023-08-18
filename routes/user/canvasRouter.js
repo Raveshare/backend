@@ -3,10 +3,9 @@ const canvasRouter = require("express").Router();
 const canvasSchema = require("../../schema/canvasSchema");
 const ownerSchema = require("../../schema/ownerSchema");
 
-const updateImagePreview = require("../../functions/updateImagePreview");
-const getLatestImagePreview = require("../../functions/getLatestImagePreview");
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
+const updateImagePreview = require("../../functions/updateImagePreview");
 
 const _ = require("lodash");
 
@@ -111,6 +110,8 @@ canvasRouter.get("/:id", async (req, res) => {
 canvasRouter.post("/create", async (req, res) => {
   let address = req.user.address;
   let canvasData = req.body.canvasData;
+  let preview = req.body.preview;
+
 
   if (!canvasData) {
     res.status(400).send({
@@ -132,8 +133,7 @@ canvasRouter.post("/create", async (req, res) => {
     await owner.addCanvas(canvas);
 
     try {
-      let json = JSON.stringify(canvas.data);
-      updateImagePreview(json, address, canvas.id);
+      updateImagePreview(preview, address, canvas.id);
     } catch (error) {
       console.log(error);
       res.status(500).send(`Error: ${error}`);
@@ -158,6 +158,7 @@ canvasRouter.post("/create", async (req, res) => {
 canvasRouter.put("/update", async (req, res) => {
   let canvasData = req.body.canvasData;
   let ownerAddress = req.user.address;
+  let preview = req.body.preview;
 
   if (!canvasData.id) {
     res.status(400).send({
@@ -212,8 +213,7 @@ canvasRouter.put("/update", async (req, res) => {
       }
     );
 
-    let json = JSON.stringify(canvasData.data);
-    updateImagePreview(json, ownerAddress, canvas.id);
+    updateImagePreview(preview, ownerAddress, canvas.id);
 
     res.status(200).send({
       status: "success",
@@ -336,15 +336,7 @@ canvasRouter.post("/publish", async (req, res) => {
     return;
   }
 
-  let json = JSON.stringify(canvas.data);
-
-  if (!json) {
-    res.status(404).send("Canvas data not found");
-    return;
-  }
-
-  let url = await getLatestImagePreview(json, ownerAddress, canvasId);
-  // url = ["QmUhEK7npwz5jCj3GgfzQCh2nHDDkJYgdLjFXGPisPVdYX"];
+  let url = canvas.ipfsLink;
 
   let resp;
   if (platform == "lens") {
@@ -357,7 +349,7 @@ canvasRouter.post("/publish", async (req, res) => {
 
     let referredFrom = canvas.referredFrom;
 
-    resp = await uploadToLens(postMetadata, owner, canvasParams , referredFrom);
+    resp = await uploadToLens(postMetadata, owner, canvasParams, referredFrom);
     if (resp.status == "error") {
       res.status(500).send({
         message: resp.message,

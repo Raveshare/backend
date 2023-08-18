@@ -6,42 +6,6 @@ const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
-nftRouter.get("/owned", async (req, res) => {
-  let address = req.user.address;
-
-  let page = req.query.page || 1;
-  page = parseInt(page);
-
-  page = page < 1 ? 1 : page;
-
-  let limit = req.query.limit || 50;
-
-  let offset = (page - 1) * limit;
-
-  let nfts = await nftSchema.findAll({
-    limit: limit,
-    offset: offset,
-    order: [["createdAt"]],
-    where: {
-      ownerAddress: address,
-    },
-  });
-
-  let totalAssets = await nftSchema.count({
-    where: {
-      ownerAddress: address,
-    },
-  });
-
-  let totalPage = Math.ceil(totalAssets / limit);
-
-  res.send({
-    assets: nfts,
-    totalPage: totalPage,
-    nextPage: page + 1 > totalPage ? null : page + 1,
-  });
-});
-
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
 

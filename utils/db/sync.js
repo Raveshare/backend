@@ -1,5 +1,6 @@
 const db = require("./db")
-const { content , collections , nftSchema , ownerSchema , canvasSchema, templateSchema , assetSchema} = require("../../schema/schema")
+// const upl  = require("../../schema/nftSchema")
+const canvasSchema = require("../../schema/canvasSchema")
 
 /**
  * Syncs the database
