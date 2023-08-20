@@ -11,7 +11,7 @@ const checkDispatcherQuery = gql`
         canUseRelay
       }
     }
-  }
+  }r
 `;
 
 async function checkDispatcher(profileId) {
@@ -138,7 +138,6 @@ async function validateMetadata(metadatav2) {
   return result.validatePublicationMetadata;
 }
 
-
 const createSetDispatcherTypedData = gql`
   mutation CreateSetDispatcherTypedData($profileId: ProfileId!) {
     createSetDispatcherTypedData(request: { profileId: $profileId }) {
@@ -168,8 +167,7 @@ const createSetDispatcherTypedData = gql`
   }
 `;
 
-const setDispatcher = async (profileId , accessToken) => {
-
+const setDispatcher = async (profileId, accessToken) => {
   const variables = {
     profileId: profileId,
   };
@@ -249,26 +247,26 @@ async function createPostViaDispatcher(
 }
 
 const NftsQuery = gql`
-query Nfts($request: NFTsRequest!) {
-  nfts(request: $request) {
-    items {
-      contractAddress
-      symbol
-      tokenId
-      name
-      description
-      originalContent {
-        uri
-        metaType
+  query Nfts($request: NFTsRequest!) {
+    nfts(request: $request) {
+      items {
+        contractAddress
+        symbol
+        tokenId
+        name
+        description
+        originalContent {
+          uri
+          metaType
+        }
+        chainId
       }
-      chainId
-    }
-    pageInfo {
-      prev
-      next
+      pageInfo {
+        prev
+        next
+      }
     }
   }
-}
 `;
 
 const getNfts = async (nftrequest) => {
@@ -276,16 +274,37 @@ const getNfts = async (nftrequest) => {
     request: nftrequest,
   };
 
-  const result = await request(
-    LENS_API_URL,
-    NftsQuery,
-    variables,
-  );
+  const result = await request(LENS_API_URL, NftsQuery, variables);
 
   return result.nfts;
 };
 
+const getWhoCollectedPublicationQuery = gql`
+query WhoCollectedPublication($request: WhoCollectedPublicationRequest!) {
+  whoCollectedPublication(request: $request ) {
+    items {
+      address
+    }
+    pageInfo {
+      next
+    }
+  }
+}
+`;
 
+const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
+  const variables = {
+    request: whocollectedpublicationrequest,
+  };
+
+  const result = await request(
+    LENS_API_URL,
+    getWhoCollectedPublicationQuery,
+    variables
+  );
+
+  return result.whoCollectedPublication;
+};
 
 module.exports = {
   checkDispatcher,
@@ -298,5 +317,6 @@ module.exports = {
   getProfileHandleAndId,
   getFollowContractAddress,
   setDispatcher,
-  getNfts
+  getNfts,
+  getWhoCollectedPublication,
 };

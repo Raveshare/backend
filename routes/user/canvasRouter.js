@@ -6,6 +6,8 @@ const ownerSchema = require("../../schema/ownerSchema");
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
 const updateImagePreview = require("../../functions/updateImagePreview");
+const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
+const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForPublication");
 
 const _ = require("lodash");
 
@@ -15,10 +17,6 @@ const canvasPostedToLens = require("../../functions/events/canvasPostedToLens.ev
 const canvasMadePublic = require("../../functions/events/canvasMadePublic.event");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
-
-canvasRouter.get("/ping", async (req, res) => {
-  res.send("Canvas Router");
-});
 
 canvasRouter.get("/", async (req, res) => {
   let limit = req.query.limit || 50;
@@ -111,7 +109,6 @@ canvasRouter.post("/create", async (req, res) => {
   let address = req.user.address;
   let canvasData = req.body.canvasData;
   let preview = req.body.preview;
-
 
   if (!canvasData) {
     res.status(400).send({
@@ -229,8 +226,6 @@ canvasRouter.put("/update", async (req, res) => {
     return;
   }
 });
-
-// TODO: check if canvas is public
 
 canvasRouter.put("/visibility", async (req, res) => {
   let ownerAddress = req.user.address;
@@ -389,6 +384,62 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   res.status(200).send({
     status: "success",
     message: "Canvas Deleted",
+  });
+});
+
+canvasRouter.post("/gate/:id", async (req, res) => {
+  let ownerAddress = req.user.address;
+
+  let canvasId = req.params.id;
+
+  let gatewith = req.body.gatewith;
+
+  if (!canvasId || !gatewith) {
+    res.status(400).send({
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+
+  let canvas = await canvasSchema.findOne({
+    where: {
+      id: canvasId,
+    },
+  });
+
+  if (!canvas) {
+    res.status(404).send({
+      message: "Canvas Not Found",
+    });
+    return;
+  }
+
+  if (canvas.ownerAddress != ownerAddress) {
+    res.status(403).send({
+      message: "Forbidden",
+    });
+    return;
+  }
+
+  if (gatewith.startsWith("https://")) {
+    gatewith = gatewith.split("/");
+    gatewith = gatewith[gatewith.length - 1];
+    updateCollectsForPublication(gatewith, canvasId);
+  } else if (gatewith.startsWith("0x")) {
+    updateNFTOwnerForPublication(gatewith, canvasId);
+  } else {
+    res.status(400).send({
+      message: "Invalid Request Parameters",
+    });
+    return;
+  }
+  console.log(gatewith);
+
+  canvas.isGated = true;
+  await canvas.save();
+
+  res.send({
+    message: "Canvas Gated Successfully",
   });
 });
 

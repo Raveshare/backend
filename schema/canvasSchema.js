@@ -26,7 +26,16 @@ const canvasSchema = db.define('canvas', {
     referredFrom : {
         type: DataTypes.ARRAY(DataTypes.STRING),
         defaultValue: [],
-    }
+    },
+    isGated : {
+        type : DataTypes.BOOLEAN,
+        defaultValue : false
+    },
+    allowList : {
+        type : DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue : []
+    },
+
 });
 
 module.exports = canvasSchema;

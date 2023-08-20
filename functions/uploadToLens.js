@@ -5,6 +5,10 @@ const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
 
 const uploadToLens = async (postMetadata, ownerData, params, referred) => {
   try {
+    Object.assign(postMetadata, {
+      handle : ownerData.lens_handle,
+    })
+   
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
