@@ -1,7 +1,6 @@
 const { request, gql } = require("graphql-request");
 const ownerSchema = require("../schema/ownerSchema");
 
-
 const LENS_API_URL = process.env.LENS_API_URL;
 
 console.log("LENS_API_URL", LENS_API_URL);
@@ -14,7 +13,7 @@ const checkDispatcherQuery = gql`
         canUseRelay
       }
     }
-  }r
+  }
 `;
 
 async function checkDispatcher(profileId) {
