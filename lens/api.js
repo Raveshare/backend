@@ -1,7 +1,10 @@
 const { request, gql } = require("graphql-request");
 const ownerSchema = require("../schema/ownerSchema");
 
-const LENS_API_URL = "https://api.lens.dev/";
+
+const LENS_API_URL = process.env.LENS_API_URL;
+
+console.log("LENS_API_URL", LENS_API_URL);
 
 const checkDispatcherQuery = gql`
   query Profile($profileId: ProfileId!) {
