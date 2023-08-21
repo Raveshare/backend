@@ -8,7 +8,7 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
     Object.assign(postMetadata, {
       handle : ownerData.lens_handle,
     })
-   
+    
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
@@ -64,8 +64,6 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
       }
     }
 
-    console.log(params.collectModule.multirecipientFeeCollectModule.recipients)
-    
     let createPostRequest = {
       profileId: ownerData.profileId,
       contentURI: "ipfs://" + ipfsData,
