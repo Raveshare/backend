@@ -31,6 +31,10 @@ const canvasSchema = db.define("canvas", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  gatedWith: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: [],
+  },
   allowList: {
     type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: [],

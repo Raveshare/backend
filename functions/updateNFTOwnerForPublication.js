@@ -20,6 +20,10 @@ const updateNFTOwnerForPublication = async (contractAddress, canvasId) => {
   allowList = allowList.concat(owners);
   canvas.allowList = allowList;
 
+  let gatedWith = canvas.gatedWith;
+  gatedWith = gatedWith.concat(contractAddress);
+  canvas.gatedWith = gatedWith;
+
   await canvas.save();
   
 };

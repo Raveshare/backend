@@ -6,7 +6,11 @@ const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 templateRouter.get("/", async (req, res) => {
   try {
-    const templates = await templateSchema.findAll();
+    const templates = await templateSchema.findAll({
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
+    });
     res.status(200).json(templates);
   } catch (error) {
     res.status(500).json(error);
@@ -21,6 +25,9 @@ templateRouter.get("/user", async (req, res) => {
       where: {
         isPublic: true,
       },
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
     });
 
     publicTemplates = publicTemplates.map((template) => {

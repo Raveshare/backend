@@ -34,6 +34,10 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
   let allowList = canvas.allowList;
   allowList = allowList.concat(addresses);
   canvas.allowList = allowList;
+  
+  let gatedWith = canvas.gatedWith;
+  gatedWith = gatedWith.concat(publicationId);
+  canvas.gatedWith = gatedWith;
 
   await canvas.save();
 

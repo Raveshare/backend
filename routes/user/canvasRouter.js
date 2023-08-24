@@ -433,7 +433,6 @@ canvasRouter.post("/gate/:id", async (req, res) => {
     });
     return;
   }
-  console.log(gatewith);
 
   canvas.isGated = true;
   await canvas.save();
