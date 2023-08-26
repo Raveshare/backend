@@ -45,6 +45,7 @@ canvasSchema.addHook("afterCreate", async (canvas, options) => {
   let referredFrom = canvas.referredFrom;
 
   for (let i = 0; i < referredFrom.length; i++) {
+    if(referredFrom[i].startsWith("0x")) continue
     let referredAddress = await canvasSchema.findOne({
       where: {
         id: referredFrom[i],
