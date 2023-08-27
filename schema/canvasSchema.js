@@ -44,6 +44,8 @@ const canvasSchema = db.define("canvas", {
 canvasSchema.addHook("afterCreate", async (canvas, options) => {
   let referredFrom = canvas.referredFrom;
 
+  if(!referredFrom) return;
+
   for (let i = 0; i < referredFrom.length; i++) {
     if(referredFrom[i].startsWith("0x")) continue
     let referredAddress = await canvasSchema.findOne({
