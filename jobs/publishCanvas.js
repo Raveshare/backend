@@ -1,4 +1,4 @@
-const agenda = require('../../utils/scheduler/scheduler')
+const agenda = require('../utils/scheduler/scheduler')
 
 agenda.define('publishCanvas', async (job, done) => {
     console.log("Publishing Canvas");

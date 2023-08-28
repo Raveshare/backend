@@ -2,6 +2,7 @@
 
 node_modules
 dumpdata/assets
+dumpdata/collections
 yarn-error.log
 
 plotno_json_file.json

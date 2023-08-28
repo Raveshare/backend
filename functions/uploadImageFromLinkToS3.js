@@ -31,7 +31,7 @@ const uploadImageFromLinkToS3 = async (link, address, fileName) => {
       s3Link
     }
   } catch (err) {
-    console.log(link)
+    console.log(err);
     return null;
   }
 };
