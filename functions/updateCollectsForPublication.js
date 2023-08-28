@@ -20,7 +20,6 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
     }
 
     if (!offset) {
-      console.log("No more items");
       break;
     }
   }
@@ -36,8 +35,11 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
   canvas.allowList = allowList;
   
   let gatedWith = canvas.gatedWith;
+  if(!gatedWith.includes(publicationId)) 
   gatedWith = gatedWith.concat(publicationId);
   canvas.gatedWith = gatedWith;
+
+  console.log("updated collects for publication")
 
   await canvas.save();
 

@@ -1,6 +1,7 @@
 const jobs = [
     {
-        name: 'update-collects'
+        name: 'update-collects',
+        interval : 'every 1 mins'
     }
 ]
 

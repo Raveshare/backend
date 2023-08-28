@@ -21,8 +21,13 @@ const updateNFTOwnerForPublication = async (contractAddress, canvasId) => {
   canvas.allowList = allowList;
 
   let gatedWith = canvas.gatedWith;
+  if(!gatedWith.includes(contractAddress)) 
   gatedWith = gatedWith.concat(contractAddress);
   canvas.gatedWith = gatedWith;
+
+
+  console.log("updated nfts for publication")
+
 
   await canvas.save();
   
