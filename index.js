@@ -1,7 +1,14 @@
 const express = require("express");
+const bree = require("./utils/scheduler/scheduler");
 const app = express({
   logger: true,
 });
+
+(async () => {
+  await bree.start();
+})();
+
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
