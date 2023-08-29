@@ -65,6 +65,7 @@ lensRouter.post("/authenticate", async (req, res) => {
 
     res.status(200).send({
       status: "success",
+      message: lens_handle,
     });
   } catch (error) {
     res.status(500).send({

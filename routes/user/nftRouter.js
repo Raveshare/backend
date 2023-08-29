@@ -3,6 +3,7 @@ const nftSchema = require("../../schema/nftSchema");
 const ownerSchema = require("../../schema/ownerSchema");
 
 const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
+const cache = require("../../middleware/cache");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
@@ -30,7 +31,7 @@ nftRouter.post("/update", async (req, res) => {
   });
 });
 
-nftRouter.get("/:id", async (req, res) => {
+nftRouter.get("/:id",cache('5 hours') , async (req, res) => {
   let ownerAddress = req.user.address;
 
   if (!req.params.id) {
@@ -76,7 +77,7 @@ nftRouter.get("/:id", async (req, res) => {
   res.send(nftData);
 });
 
-nftRouter.get("/", async (req, res) => {
+nftRouter.get("/",cache('5 minutes') , async (req, res) => {
   let address = req.user.address;
   let query = req.query.query;
 

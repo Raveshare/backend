@@ -56,7 +56,7 @@ authRouter.post('/login', async (req, res) => {
 
             res.status(200).send({
                 "status": "success",
-                "message": "Signature Verified",
+                "message": ownerData.lens_handle,
                 "jwt": jwt
             });
         } else {

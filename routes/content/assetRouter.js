@@ -2,13 +2,16 @@ const assetRouter = require("express").Router();
 const { assetSchema } = require("../../schema/schema");
 const { Op } = require("sequelize");
 
-assetRouter.get("/by-author", async (req, res) => {
+const cache = require("../../middleware/cache");
+
+
+assetRouter.get("/by-author", cache('5 hours') , async (req, res) => {
   const { author } = req.query;
   const assets = await assetSchema.find({ author });
   res.send(assets);
 });
 
-assetRouter.get("/background", async (req, res) => {
+assetRouter.get("/background", cache('5 hours') , async (req, res) => {
   const { author } = req.query;
 
   let page = req.query.page || 1;
@@ -74,7 +77,7 @@ assetRouter.get("/background", async (req, res) => {
   }
 });
 
-assetRouter.get("/", async (req, res) => {
+assetRouter.get("/", cache('5 hours') , async (req, res) => {
   const { query } = req.query;
 
   let finalAssets = [];

@@ -1,10 +1,10 @@
 const templateRouter = require("express").Router();
 const templateSchema = require("../../schema/templateSchema");
 const canvasSchema = require("../../schema/canvasSchema");
-
+const cache = require("../../middleware/cache");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
-templateRouter.get("/", async (req, res) => {
+templateRouter.get("/", cache('5 hours') , async (req, res) => {
   try {
     const templates = await templateSchema.findAll({
       order: [["createdAt", "DESC"]],
@@ -17,7 +17,7 @@ templateRouter.get("/", async (req, res) => {
   }
 });
 
-templateRouter.get("/user", async (req, res) => {
+templateRouter.get("/user", cache('5 minutes') , async (req, res) => {
   let address = req.user.address;
 
   try {
@@ -52,12 +52,11 @@ templateRouter.get("/user", async (req, res) => {
   }
 });
 
-templateRouter.post("/", async (req, res) => {
+templateRouter.post("/",  async (req, res) => {
   let data, name;
   try {
     data = req.body.data;
     name = req.body.name;
-    console.log(data, name);
   } catch (error) {
     res.status(400).json({
       status: "error",
@@ -74,8 +73,6 @@ templateRouter.post("/", async (req, res) => {
     let filepath = `templates/${name} - ${random}.png`;
     let image = await uploadImageToS3(imageBuffer, filepath);
 
-    console.log(data);
-
     let template = await templateSchema.create({
       name: name,
       data: data,
@@ -86,7 +83,6 @@ templateRouter.post("/", async (req, res) => {
       status: "success",
       message: "Template created successfully",
     });
-    console.log("here 4");
   } catch (error) {
     res.status(500).json(error);
   }

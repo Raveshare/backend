@@ -9,6 +9,7 @@
     "@railway/cli": "^3.3.1",
     "@web-std/file": "^3.0.2",
     "alchemy-sdk": "^2.8.1",
+    "apicache": "^1.6.3",
     "aws-sdk": "^2.1377.0",
     "axe": "^12.2.2",
     "axios": "^1.4.0",

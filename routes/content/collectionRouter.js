@@ -2,11 +2,14 @@ const collectionRouter = require("express").Router();
 const content = require("../../schema/content");
 const collection = require("../../schema/collections");
 
+const cache = require("../../middleware/cache");
+
 collectionRouter.get("/ping", async (req, res) => {
+  console.log("Collection Router");
   res.send("Collection Router");
 });
 
-collectionRouter.get("/:collection/", async (req, res) => {
+collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
   let collectionAddress = req.params.collection;
 
   let page = req.query.page || 1;
@@ -48,7 +51,7 @@ collectionRouter.get("/:collection/", async (req, res) => {
   });
 });
 
-collectionRouter.get("/:collection/:id", async (req, res) => {
+collectionRouter.get("/:collection/:id",cache('5 hours') , async (req, res) => {
   let id = req.params.id;
 
   if (isNaN(id)) {
@@ -85,7 +88,7 @@ collectionRouter.get("/:collection/:id", async (req, res) => {
   res.send(contents);
 });
 
-collectionRouter.get("/", async (req, res) => {
+collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
   let page = req.query.page || 1;
   page = parseInt(page);
 
