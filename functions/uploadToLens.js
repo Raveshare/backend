@@ -43,13 +43,13 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
         recipients =
           params.collectModule.multirecipientFeeCollectModule.recipients;
 
-        if (!isEmpty(referred)) {
-          if (!referred.includes("0x77fAD8D0FcfD481dAf98D0D156970A281e66761b"))
-            return {
-              status: "error",
-              message: "Invalid referred address",
-            };
-        }
+        // if (!isEmpty(referred)) {
+        //   if (!referred.includes("0x77fAD8D0FcfD481dAf98D0D156970A281e66761b"))
+        //     return {
+        //       status: "error",
+        //       message: "Invalid referred address",
+        //     };
+        // }
 
         let totalSplit = 0;
         for (let i = 0; i < recipients.length; i++) {
