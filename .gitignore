@@ -2,7 +2,9 @@
 
 node_modules
 dumpdata/assets
+dumpdata/collections
 yarn-error.log
+routes/admin
 
 plotno_json_file.json
 template.json

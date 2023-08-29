@@ -1,15 +1,8 @@
-const { Agenda } = require('@hokify/agenda');
+const BREE = require("bree");
+const CABIN = require("cabin");
 
-const agenda = new Agenda({
-    db: {
-        address: process.env.MONGO_URL,
-        collection: 'agendaJobs',
-        options: {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        },
-    },
-});
+const bree = new BREE({
+})
 
+module.exports = bree;
 
-module.exports = agenda;

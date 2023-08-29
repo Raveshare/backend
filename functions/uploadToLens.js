@@ -2,18 +2,24 @@ const { isEmpty } = require("lodash");
 
 const createPostViaDispatcher = require("../lens/api").createPostViaDispatcher;
 const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
+const getProfileAddressFromHandle =
+  require("../lens/api").getProfileAddressFromHandle;
 
 const uploadToLens = async (postMetadata, ownerData, params, referred) => {
   try {
+    Object.assign(postMetadata, {
+      handle: ownerData.lens_handle,
+    });
+
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
     if (!accessToken || !refreshToken) {
-      return({
+      return {
         status: "error",
         message: "User not authenticated",
-      });
+      };
     }
 
     if (!params) {
@@ -28,23 +34,21 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
     } else {
       let recipients = [];
       if (params.collectModule.multirecipientFeeCollectModule.recipients) {
+        
+        params.collectModule.multirecipientFeeCollectModule.recipients =
+          await updateLensHandles(
+            params.collectModule.multirecipientFeeCollectModule.recipients
+          );
+
         recipients =
           params.collectModule.multirecipientFeeCollectModule.recipients;
 
         if (!isEmpty(referred)) {
-          recipients.push({
-            recipient: "0x77fAD8D0FcfD481dAf98D0D156970A281e66761b",
-            split: 10,
-          });
-          recipients.push({
-            recipient: referred,
-            split: 10,
-          });
-        } else {
-          recipients.push({
-            recipient: "0x77fAD8D0FcfD481dAf98D0D156970A281e66761b",
-            split: 10,
-          });
+          if (!referred.includes("0x77fAD8D0FcfD481dAf98D0D156970A281e66761b"))
+            return {
+              status: "error",
+              message: "Invalid referred address",
+            };
         }
 
         let totalSplit = 0;
@@ -59,7 +63,7 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
         }
       }
     }
-    
+
     let createPostRequest = {
       profileId: ownerData.profileId,
       contentURI: "ipfs://" + ipfsData,
@@ -74,16 +78,27 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
       ownerData.address
     );
 
-    console.log("result", result);
-
     return result;
   } catch (e) {
     console.log(e);
     return {
-      "status" : "error",
-      "message" : e
+      status: "error",
+      message: e,
+    };
+  }
+};
+
+const updateLensHandles = async (referredFrom) => {
+  for (let i = 0; i < referredFrom.length; i++) {
+    if (referredFrom[i].recipient.startsWith("@")) {
+      referredFrom[i].recipient = referredFrom[i].recipient.substring(1);
+      referredFrom[i].recipient = await getProfileAddressFromHandle(
+        referredFrom[i].recipient
+      );
     }
   }
+
+  return referredFrom;
 };
 
 module.exports = uploadToLens;

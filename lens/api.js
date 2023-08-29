@@ -1,7 +1,7 @@
 const { request, gql } = require("graphql-request");
 const ownerSchema = require("../schema/ownerSchema");
 
-const LENS_API_URL = "https://api.lens.dev/";
+const LENS_API_URL = process.env.LENS_API_URL;
 
 const checkDispatcherQuery = gql`
   query Profile($profileId: ProfileId!) {
@@ -93,6 +93,30 @@ async function getProfileHandleAndId(address) {
   };
 }
 
+const getProfileAddressFromHandleQuery = gql`
+  query Profile($handle: Handle!) {
+    profile(request: { handle: $handle }) {
+      id
+      ownedBy
+    }
+  }
+`;
+
+async function getProfileAddressFromHandle(handle) {
+  if(! handle.endsWith(".lens")) handle = handle + ".lens";
+  const variables = { handle };
+  console.log(variables)
+  let resp = await request(
+    LENS_API_URL,
+    getProfileAddressFromHandleQuery, 
+    variables
+  );
+
+  console.log(resp)
+
+  return resp.profile.ownedBy;
+}
+
 const checkAccessTokenQuery = gql`
   query Query($accessToken: Jwt!) {
     verify(request: { accessToken: $accessToken })
@@ -138,7 +162,6 @@ async function validateMetadata(metadatav2) {
   return result.validatePublicationMetadata;
 }
 
-
 const createSetDispatcherTypedData = gql`
   mutation CreateSetDispatcherTypedData($profileId: ProfileId!) {
     createSetDispatcherTypedData(request: { profileId: $profileId }) {
@@ -168,8 +191,7 @@ const createSetDispatcherTypedData = gql`
   }
 `;
 
-const setDispatcher = async (profileId , accessToken) => {
-
+const setDispatcher = async (profileId, accessToken) => {
   const variables = {
     profileId: profileId,
   };
@@ -183,8 +205,6 @@ const setDispatcher = async (profileId , accessToken) => {
       Origin: "https://app.lenspost.xyz",
     }
   );
-
-  console.log("result", result);
 
   return result.createSetDispatcherTypedData.typedData;
 };
@@ -214,7 +234,6 @@ async function createPostViaDispatcher(
   };
 
   let isAccessTokenValid = await checkAccessToken(accessToken);
-  console.log("isAccessTokenValid", isAccessTokenValid);
 
   if (!isAccessTokenValid) {
     const tokens = await refreshToken(refreshAccessToken);
@@ -245,32 +264,30 @@ async function createPostViaDispatcher(
     }
   );
 
-  console.log("result", result);
-
   return result.createPostViaDispatcher;
 }
 
 const NftsQuery = gql`
-query Nfts($request: NFTsRequest!) {
-  nfts(request: $request) {
-    items {
-      contractAddress
-      symbol
-      tokenId
-      name
-      description
-      originalContent {
-        uri
-        metaType
+  query Nfts($request: NFTsRequest!) {
+    nfts(request: $request) {
+      items {
+        contractAddress
+        symbol
+        tokenId
+        name
+        description
+        originalContent {
+          uri
+          metaType
+        }
+        chainId
       }
-      chainId
-    }
-    pageInfo {
-      prev
-      next
+      pageInfo {
+        prev
+        next
+      }
     }
   }
-}
 `;
 
 const getNfts = async (nftrequest) => {
@@ -278,16 +295,37 @@ const getNfts = async (nftrequest) => {
     request: nftrequest,
   };
 
-  const result = await request(
-    LENS_API_URL,
-    NftsQuery,
-    variables,
-  );
+  const result = await request(LENS_API_URL, NftsQuery, variables);
 
   return result.nfts;
 };
 
+const getWhoCollectedPublicationQuery = gql`
+  query WhoCollectedPublication($request: WhoCollectedPublicationRequest!) {
+    whoCollectedPublication(request: $request) {
+      items {
+        address
+      }
+      pageInfo {
+        next
+      }
+    }
+  }
+`;
 
+const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
+  const variables = {
+    request: whocollectedpublicationrequest,
+  };
+
+  const result = await request(
+    LENS_API_URL,
+    getWhoCollectedPublicationQuery,
+    variables
+  );
+
+  return result.whoCollectedPublication;
+};
 
 module.exports = {
   checkDispatcher,
@@ -300,5 +338,7 @@ module.exports = {
   getProfileHandleAndId,
   getFollowContractAddress,
   setDispatcher,
-  getNfts
+  getNfts,
+  getWhoCollectedPublication,
+  getProfileAddressFromHandle,
 };

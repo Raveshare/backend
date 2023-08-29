@@ -65,7 +65,6 @@ const getIsWhitelisted = async (walletAddress) => {
     wallets = wallets.map((wallet) => wallet.toUpperCase());
 
     if (wallets.includes(walletAddressU)) {
-      console.log("true");
       return true;
     }
 
@@ -74,22 +73,15 @@ const getIsWhitelisted = async (walletAddress) => {
 
     walletWhitelisted = walletWhitelisted.map((wallet) => wallet.toUpperCase());
 
-    console.log("walletWhitelisted", walletWhitelisted);
-
     if(walletWhitelisted.includes(walletAddressU)) {
-      console.log("true");
       return true;
     }
-
-    console.log("walletAddress", walletAddress);
 
     let res = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
       "0x3Fe1a4c1481c8351E91B64D5c398b159dE07cbc5",
     ]);
 
     res = Object.values(res);
-
-    console.log("res", res);
 
     for (let i = 0; i < res.length; i++) {
       if (res[i]) {

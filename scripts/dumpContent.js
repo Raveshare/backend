@@ -22,7 +22,7 @@ const dumpContent = async (fileName) => {
     let contentDetails = {
       tokenId: contentData.tokenId,
       title: contentData.title,
-      description: contentData.description,
+      description: contentData.description.length > 200 ? contentData.description.substring(0, 200) : contentData.description,
       edition: contentData.edition,
       openseaLink: contentData.openSeaLink,
       ipfsLink: contentData.ipfsLink,

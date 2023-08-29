@@ -1,24 +1,49 @@
 const templateRouter = require("express").Router();
 const templateSchema = require("../../schema/templateSchema");
 const canvasSchema = require("../../schema/canvasSchema");
-
+const cache = require("../../middleware/cache");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
-templateRouter.get("/", async (req, res) => {
+templateRouter.get("/", cache('5 hours') , async (req, res) => {
   try {
-    const templates = await templateSchema.findAll();
+    const templates = await templateSchema.findAll({
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
+    });
     res.status(200).json(templates);
   } catch (error) {
     res.status(500).json(error);
   }
 });
 
-templateRouter.get("/user", async (req, res) => {
+templateRouter.get("/user", cache('5 minutes') , async (req, res) => {
+  let address = req.user.address;
+
   try {
     let publicTemplates = await canvasSchema.findAll({
       where: {
         isPublic: true,
       },
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
+    });
+
+    publicTemplates = publicTemplates.map((template) => {
+      if (template.isGated) {
+        if (template.allowList.includes(address)) {
+          template.allowList = [];
+          return template;
+        } else {
+          template.data = {};
+          template.allowList = [];
+          return template;
+        }
+      } else {
+        template.allowList = [];
+        return template;
+      }
     });
 
     res.status(200).json(publicTemplates);
@@ -27,13 +52,11 @@ templateRouter.get("/user", async (req, res) => {
   }
 });
 
-templateRouter.post("/", async (req, res) => {
+templateRouter.post("/",  async (req, res) => {
   let data, name;
   try {
     data = req.body.data;
     name = req.body.name;
-    image = req.body.image;
-    console.log(data, name);
   } catch (error) {
     res.status(400).json({
       status: "error",
@@ -45,12 +68,10 @@ templateRouter.post("/", async (req, res) => {
     let json = JSON.stringify(data);
     // let imageBuffer = await getImageBuffer(json);
     // TODO : integrate with S3
-    // let imageBuffer = null;
-    // let random = Math.floor(Math.random() * 1000000000);
-    // let filepath = `templates/${name} - ${random}.png`;
-    // let image = await uploadImageToS3(imageBuffer, filepath);
-
-    console.log(data);
+    let imageBuffer = null;
+    let random = Math.floor(Math.random() * 1000000000);
+    let filepath = `templates/${name} - ${random}.png`;
+    let image = await uploadImageToS3(imageBuffer, filepath);
 
     let template = await templateSchema.create({
       name: name,
@@ -62,7 +83,6 @@ templateRouter.post("/", async (req, res) => {
       status: "success",
       message: "Template created successfully",
     });
-    console.log("here 4");
   } catch (error) {
     res.status(500).json(error);
   }
