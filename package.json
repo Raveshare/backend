@@ -5,7 +5,9 @@
   "author": "Aryan",
   "license": "MIT",
   "dependencies": {
+    "@ipld/car": "^5.2.1",
     "@railway/cli": "^3.3.1",
+    "@web-std/file": "^3.0.2",
     "alchemy-sdk": "^2.8.1",
     "aws-sdk": "^2.1377.0",
     "axe": "^12.2.2",

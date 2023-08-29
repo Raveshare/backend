@@ -188,20 +188,10 @@ canvasRouter.put("/update", async (req, res) => {
       return;
     }
 
-    let isEqual = _.isEqual(canvas.data, canvasData.data);
-
-    if (isEqual) {
-      console.log("Canvas is equal");
-      res.status(200).send({
-        status: "success",
-        message: "Canvas Updated",
-      });
-      return;
-    }
-
     await canvasSchema.update(
       {
         data: canvasData.data,
+        referredFrom: canvasData.referredFrom,
       },
       {
         where: {
