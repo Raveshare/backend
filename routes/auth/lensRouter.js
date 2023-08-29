@@ -92,10 +92,7 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
 
   let { accessToken, refreshToken } = lens_auth_token;
 
-  console.log(lens_auth_token)
-
   let isAccessTokenValid = await checkAccessToken(accessToken);
-  console.log("isAccessTokenValid", isAccessTokenValid);
 
   if (!isAccessTokenValid) {
     const tokens = await refreshAccessToken(refreshToken);
@@ -116,11 +113,7 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
     await owner.save();
   }
 
-  console.log("accessToken", accessToken);
-
   let setDispatcherData = await setDispatcher(profileId, accessToken);
-
-  console.log("setDispatcherData", setDispatcherData);
 
   res.status(200).send({
     message: setDispatcherData,

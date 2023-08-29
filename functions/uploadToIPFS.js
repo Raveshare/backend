@@ -77,8 +77,6 @@ const uploaddMetadataToIpfs = async (postData) => {
     }
   );
 
-  console.log(path);
-
   return path.toString();
 };
 

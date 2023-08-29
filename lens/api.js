@@ -3,8 +3,6 @@ const ownerSchema = require("../schema/ownerSchema");
 
 const LENS_API_URL = process.env.LENS_API_URL;
 
-console.log("LENS_API_URL", LENS_API_URL);
-
 const checkDispatcherQuery = gql`
   query Profile($profileId: ProfileId!) {
     profile(request: { profileId: $profileId }) {
@@ -95,6 +93,30 @@ async function getProfileHandleAndId(address) {
   };
 }
 
+const getProfileAddressFromHandleQuery = gql`
+  query Profile($handle: Handle!) {
+    profile(request: { handle: $handle }) {
+      id
+      ownedBy
+    }
+  }
+`;
+
+async function getProfileAddressFromHandle(handle) {
+  if(! handle.endsWith(".lens")) handle = handle + ".test";
+  const variables = { handle };
+  console.log(variables)
+  let resp = await request(
+    LENS_API_URL,
+    getProfileAddressFromHandleQuery, 
+    variables
+  );
+
+  console.log(resp)
+
+  return resp.profile.ownedBy;
+}
+
 const checkAccessTokenQuery = gql`
   query Query($accessToken: Jwt!) {
     verify(request: { accessToken: $accessToken })
@@ -183,8 +205,6 @@ const setDispatcher = async (profileId, accessToken) => {
     }
   );
 
-  console.log("result", result);
-
   return result.createSetDispatcherTypedData.typedData;
 };
 
@@ -213,7 +233,6 @@ async function createPostViaDispatcher(
   };
 
   let isAccessTokenValid = await checkAccessToken(accessToken);
-  console.log("isAccessTokenValid", isAccessTokenValid);
 
   if (!isAccessTokenValid) {
     const tokens = await refreshToken(refreshAccessToken);
@@ -242,8 +261,6 @@ async function createPostViaDispatcher(
       Authorization: `Bearer ${accessToken}`,
     }
   );
-
-  console.log("result", result);
 
   return result.createPostViaDispatcher;
 }
@@ -282,16 +299,16 @@ const getNfts = async (nftrequest) => {
 };
 
 const getWhoCollectedPublicationQuery = gql`
-query WhoCollectedPublication($request: WhoCollectedPublicationRequest!) {
-  whoCollectedPublication(request: $request ) {
-    items {
-      address
-    }
-    pageInfo {
-      next
+  query WhoCollectedPublication($request: WhoCollectedPublicationRequest!) {
+    whoCollectedPublication(request: $request) {
+      items {
+        address
+      }
+      pageInfo {
+        next
+      }
     }
   }
-}
 `;
 
 const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
@@ -321,4 +338,5 @@ module.exports = {
   setDispatcher,
   getNfts,
   getWhoCollectedPublication,
+  getProfileAddressFromHandle,
 };

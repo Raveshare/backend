@@ -38,9 +38,7 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
   if(!gatedWith.includes(publicationId)) 
   gatedWith = gatedWith.concat(publicationId);
   canvas.gatedWith = gatedWith;
-
-  console.log("updated collects for publication")
-
+  
   await canvas.save();
 
   return addresses;

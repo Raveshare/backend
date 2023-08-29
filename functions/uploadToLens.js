@@ -2,23 +2,27 @@ const { isEmpty } = require("lodash");
 
 const createPostViaDispatcher = require("../lens/api").createPostViaDispatcher;
 const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
+const getProfileAddressFromHandle =
+  require("../lens/api").getProfileAddressFromHandle;
 
 const uploadToLens = async (postMetadata, ownerData, params, referred) => {
   try {
     Object.assign(postMetadata, {
-      handle : ownerData.lens_handle,
-    })
-    
+      handle: ownerData.lens_handle,
+    });
+
     const ipfsData = await uploadMetadataToIpfs(postMetadata);
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
     if (!accessToken || !refreshToken) {
-      return({
+      return {
         status: "error",
         message: "User not authenticated",
-      });
+      };
     }
+
+    referred = await updateLensHandles(referred);
 
     if (!params) {
       params = {
@@ -78,16 +82,25 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
       ownerData.address
     );
 
-    console.log("result", result);
-
     return result;
   } catch (e) {
     console.log(e);
     return {
-      "status" : "error",
-      "message" : e
+      status: "error",
+      message: e,
+    };
+  }
+};
+
+const updateLensHandles = async (referredFrom) => {
+  for (let i = 0; i < referredFrom.length; i++) {
+    if (referredFrom[i].startsWith("@")) {
+      referredFrom[i] = referredFrom[i].substring(1);
+      referredFrom[i] = await getProfileAddressFromHandle(referredFrom[i]);
     }
   }
+
+  return referredFrom;
 };
 
 module.exports = uploadToLens;

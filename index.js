@@ -60,5 +60,5 @@ if(NODE_ENV === "local") {
 }
 
 app.listen(process.env.PORT || 3001, "0.0.0.0", () => {
-  console.log("Server started on port 3000");
+  console.log(`Server started on port ${process.env.PORT || 3001}`);
 });

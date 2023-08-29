@@ -21,8 +21,6 @@ const uploadImageFromLinkToS3 = async (link, address, fileName) => {
 
     }
 
-    console.log(dimensions);
-
     let filepath = `user/${address}/nft/${fileName}.${format}`;
 
     let s3Link = await uploadImageToS3(response.data, filepath);

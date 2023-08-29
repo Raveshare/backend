@@ -74,8 +74,6 @@ canvasRouter.get("/:id", async (req, res) => {
     },
   });
 
-  // console.log(canvasData);
-
   if (canvasData) {
     res.status(200).send({
       status: "success",
