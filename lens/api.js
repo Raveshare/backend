@@ -103,7 +103,7 @@ const getProfileAddressFromHandleQuery = gql`
 `;
 
 async function getProfileAddressFromHandle(handle) {
-  if(! handle.endsWith(".lens")) handle = handle + ".test";
+  if(! handle.endsWith(".lens")) handle = handle + ".lens";
   const variables = { handle };
   console.log(variables)
   let resp = await request(
