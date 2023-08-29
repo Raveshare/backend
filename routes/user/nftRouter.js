@@ -23,7 +23,7 @@ nftRouter.post("/update", async (req, res) => {
     return;
   }
 
-  updateNFTsForOwner(address)
+  updateNFTsForOwner(address);
 
   res.status(200).send({
     status: "success",
@@ -31,7 +31,7 @@ nftRouter.post("/update", async (req, res) => {
   });
 });
 
-nftRouter.get("/:id",cache('5 hours') , async (req, res) => {
+nftRouter.get("/:id", async (req, res) => {
   let ownerAddress = req.user.address;
 
   if (!req.params.id) {
@@ -77,7 +77,7 @@ nftRouter.get("/:id",cache('5 hours') , async (req, res) => {
   res.send(nftData);
 });
 
-nftRouter.get("/",cache('5 minutes') , async (req, res) => {
+nftRouter.get("/", async (req, res) => {
   let address = req.user.address;
   let query = req.query.query;
 
