@@ -1,7 +1,9 @@
+const NODE_ENV = process.env.NODE_ENV || 'development'
+
 const jobs = [
     {
         name: 'update-collects',
-        interval : 'every 5 min'
+        interval : NODE_ENV === 'development' ? 'every 5 hours' : 'every 5 minutes',
     }
 ]
 
