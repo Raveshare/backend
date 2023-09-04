@@ -9,6 +9,12 @@ const DATABASE_URI = process.env.DATABASE_URI
  */
 const db = new Sequelize(DATABASE_URI, {
     logging: false,
+
+    pool: {
+        max: 10,
+        min: 0,
+        idle: 10000
+    }
 })
 
 module.exports = db

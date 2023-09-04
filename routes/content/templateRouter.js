@@ -6,12 +6,33 @@ const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 templateRouter.get("/", cache('5 hours') , async (req, res) => {
   try {
+
+    let page = req.query.page;
+    page = parseInt(page)
+
+    let limit = req.query.limit || 20;
+
+    if(!page) page = 1
+
+    offset = limit * (page - 1)
+
     const templates = await templateSchema.findAll({
       order: [["createdAt", "DESC"]],
-      raw: true,
-      nest: true,
+      limit,
+      offset
     });
-    res.status(200).json(templates);
+
+    let totalAssets = await templateSchema.count();
+
+    let totalPage = Math.ceil(totalAssets / limit)
+
+    let nextPage = page + 1 > totalPage ? null : page + 1;
+
+    res.status(200).json({
+      assets : templates,
+      totalPage,
+      nextPage
+    });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -19,6 +40,15 @@ templateRouter.get("/", cache('5 hours') , async (req, res) => {
 
 templateRouter.get("/user", cache('5 minutes') , async (req, res) => {
   let address = req.user.address;
+  let page = req.query.page;
+  page = parseInt(page)
+
+  let limit = req.query.limit || 10;
+
+  if(!page) page = 1;
+  
+  offset = limit * (page - 1);
+
 
   try {
     let publicTemplates = await canvasSchema.findAll({
@@ -26,9 +56,15 @@ templateRouter.get("/user", cache('5 minutes') , async (req, res) => {
         isPublic: true,
       },
       order: [["createdAt", "DESC"]],
-      raw: true,
-      nest: true,
+      limit,
+      offset
     });
+
+    let publicTemplatesCount = await canvasSchema.count({
+      where : {
+        isPublic : true
+      }
+    })
 
     publicTemplates = publicTemplates.map((template) => {
       if (template.isGated) {
@@ -46,7 +82,16 @@ templateRouter.get("/user", cache('5 minutes') , async (req, res) => {
       }
     });
 
-    res.status(200).json(publicTemplates);
+    totalPage = Math.ceil(publicTemplatesCount / limit)
+
+    console.log(page, totalPage)
+
+
+    res.status(200).json({
+      assets : publicTemplates,
+      totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
   } catch (error) {
     res.status(500).json(error);
   }
