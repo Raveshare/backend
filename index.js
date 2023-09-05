@@ -10,6 +10,8 @@ const app = express({
   await bree.start();
 })();
 
+const compression = require('compression')
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -25,6 +27,7 @@ const NODE_ENV = process.env.NODE_ENV
 console.log("NODE_ENV", NODE_ENV);
 
 app.use(cors());
+app.use(compression())
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");

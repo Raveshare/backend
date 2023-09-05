@@ -26,91 +26,34 @@ canvasRouter.get("/", async (req, res) => {
 
   page = page < 1 ? 1 : page;
 
-  let limit = req.query.limit || 50;
+  let limit = req.query.limit || 20;
 
   let offset = (page - 1) * limit;
 
   let canvasDatas = await canvasSchema.findAll({
+    order: [["createdAt"]],
+    where: {
+      ownerAddress: address,
+    },
     limit: limit,
     offset: offset,
-    order: [["createdAt"]],
+  });
+
+  let totalAssets = await canvasSchema.count({
     where: {
       ownerAddress: address,
     },
   });
 
+  let totalPages = Math.ceil(totalAssets / limit);
+
   res.send({
-    assets : canvasDatas
+    assets : canvasDatas,
+    totalPages,
+    nextPage : page + 1 > totalPages ? null : page + 1,
   });
 });
 
-canvasRouter.get("/public", async (req, res) => {
-  let limit = req.query.limit || 50;
-  let offset = req.query.offset || 0;
-
-  let canvasDatas = await canvasSchema.findAll({
-    limit: limit,
-    offset: offset,
-    order: [["createdAt"]],
-    where: {
-      isPublic: true,
-    },
-  });
-
-  res.status(200).send({
-    status: "success",
-    message: "Public Canvases Found",
-    canvasDatas: canvasDatas,
-  });
-});
-
-canvasRouter.get("/:id", async (req, res) => {
-  let address = req.user.address;
-  let id = req.params.id;
-
-  if (!id) {
-    res.status(400).send({
-      status: "error",
-      message: "Invalid Request Parameters",
-    });
-    return;
-  }
-
-  let canvasData = await canvasSchema.findOne({
-    where: {
-      id: id,
-      isPublic: true,
-    },
-  });
-
-  if (canvasData) {
-    res.status(200).send({
-      status: "success",
-      message: "Canvas Found",
-      canvasData: canvasData,
-    });
-  }
-
-  let canvas = await canvasSchema.findOne({
-    where: {
-      id: id,
-    },
-  });
-
-  if (canvas.ownerAddress != address) {
-    res.status(403).send({
-      status: "error",
-      message: "Forbidden",
-    });
-    return;
-  }
-
-  res.status(200).send({
-    status: "success",
-    message: "Canvas Found",
-    canvasData: canvasData,
-  });
-});
 
 canvasRouter.post("/create", async (req, res) => {
   let address = req.user.address;
