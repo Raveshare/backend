@@ -19,9 +19,16 @@ const canvasMadePublic = require("../../functions/events/canvasMadePublic.event"
 const sendError = require("../../functions/webhook/sendError.webhook");
 
 canvasRouter.get("/", async (req, res) => {
-  let limit = req.query.limit || 50;
-  let offset = req.query.offset || 0;
   let address = req.user.address;
+
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
+
+  let limit = req.query.limit || 50;
+
+  let offset = (page - 1) * limit;
 
   let canvasDatas = await canvasSchema.findAll({
     limit: limit,
@@ -32,7 +39,9 @@ canvasRouter.get("/", async (req, res) => {
     },
   });
 
-  res.send(canvasDatas);
+  res.send({
+    assets : canvasDatas
+  });
 });
 
 canvasRouter.get("/public", async (req, res) => {
