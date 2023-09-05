@@ -26,18 +26,19 @@ canvasRouter.get("/", async (req, res) => {
 
   page = page < 1 ? 1 : page;
 
-  let limit = req.query.limit || 20;
+  let limit = req.query.limit || 10;
 
   let offset = (page - 1) * limit;
 
   let canvasDatas = await canvasSchema.findAll({
-    order: [["createdAt"]],
+    order: [["updatedAt" , "DESC"]],
     where: {
       ownerAddress: address,
     },
     limit: limit,
     offset: offset,
   });
+
 
   let totalAssets = await canvasSchema.count({
     where: {
