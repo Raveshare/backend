@@ -77,17 +77,17 @@ const getIsWhitelisted = async (walletAddress) => {
       return true;
     }
 
-    let res = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
-      "0x3Fe1a4c1481c8351E91B64D5c398b159dE07cbc5",
-    ]);
+    // let res = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
+    //   "0x3Fe1a4c1481c8351E91B64D5c398b159dE07cbc5",
+    // ]);
 
-    res = Object.values(res);
+    // res = Object.values(res);
 
-    for (let i = 0; i < res.length; i++) {
-      if (res[i]) {
-        return true;
-      }
-    }
+    // for (let i = 0; i < res.length; i++) {
+    //   if (res[i]) {
+    //     return true;
+    //   }
+    // }
 
     return false;
   } catch (err) {
