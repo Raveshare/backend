@@ -1,5 +1,5 @@
 const express = require("express");
-const bree = require("./src/utils/scheduler/scheduler");
+const bree = require("./utils/scheduler/scheduler");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express({
@@ -15,8 +15,8 @@ const compression = require('compression')
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const handleError = require("./src/middleware/error/error");
-const auth = require("./src/middleware/auth/auth");
+const handleError = require("./middleware/error/error");
+const auth = require("./middleware/auth/auth");
 
 // include these 2 lines to sync the database
 // const sync = require("./utils/db/sync")
@@ -39,12 +39,12 @@ app.use(function (req, res, next) {
 
 //
 
-const collectionRouter = require("./src/routes/content/collectionRouter");
-const userRouter = require("./src/routes/user/userRouter");
-const utilRouter = require("./src/routes/util/utilRouter");
-const authRouter = require("./src/routes/auth/authRouter");
-const templateRouter = require("./src/routes/content/templateRouter");
-const assetRouter = require("./src/routes/content/assetRouter");
+const collectionRouter = require("./routes/content/collectionRouter");
+const userRouter = require("./routes/user/userRouter");
+const utilRouter = require("./routes/util/utilRouter");
+const authRouter = require("./routes/auth/authRouter");
+const templateRouter = require("./routes/content/templateRouter");
+const assetRouter = require("./routes/content/assetRouter");
 
 app.use(express.json({ limit: "20mb", extended: true }));
 app.use(handleError);
@@ -58,7 +58,7 @@ app.use("/template", auth, templateRouter);
 app.use("/asset", auth, assetRouter);
 
 if(NODE_ENV === "local") {
-  const adminRouter = require("./src/routes/admin/adminRouter");
+  const adminRouter = require("./routes/admin/adminRouter");
   app.use("/admin", adminRouter);
 }
 
