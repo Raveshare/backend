@@ -101,4 +101,28 @@ const updateLensHandles = async (referredFrom) => {
   return referredFrom;
 };
 
+const getLensParam = (params) => {
+  let { charge , collectLimit , timeLimit , followerOnly } = params;
+
+
+  // charge for collection - $price , $currency , $referral-fees , $split-fee[]
+  // limited edition - $collect-limit
+  // time limit - $collect-time
+  // who can collect - $collect-who
+}
+
+// params = {
+//   charge : {
+//     price : 0.1,
+//     currency : "address",
+//     referralFees : 0.1,
+//     split  : [
+//       [handle, split],
+//     ]
+//   },
+//   collectLimit : 10,
+//   timeLimit : utc_time,
+//   whoCanCollect : true
+// }
+
 module.exports = uploadToLens;

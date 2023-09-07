@@ -4,6 +4,7 @@ const DISCORD_WEBHOOK_URL  = process.env.DISCORD_WEBHOOK_URL;
 const sendError = async (err) => {
   let error = {
     "content": "<@&1111241142772703321>",
+    // "content": "Error in Deployment",
     "allowed_mentions": {
       "roles": ["1111241142772703321"],
     },

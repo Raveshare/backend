@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@ipld/car": "^5.2.1",
+    "@prisma/client": "^5.2.0",
     "@railway/cli": "^3.3.1",
     "@web-std/file": "^3.0.2",
     "alchemy-sdk": "^2.8.1",
@@ -46,7 +47,13 @@
     "web3.storage": "^4.5.5"
   },
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.7.1",
+    "@commitlint/config-conventional": "^17.7.0",
+    "husky": "^8.0.3",
+    "prisma": "^5.2.0"
   }
 }

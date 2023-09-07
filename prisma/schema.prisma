@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Assets {
+  id         Int      @id @default(autoincrement())
+  tags       String[] @db.VarChar(255)
+  type       String?  @db.VarChar(255)
+  author     String?  @db.VarChar(255)
+  image      String?  @db.VarChar(255)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  dimensions Int[]
+}
+
+model auths {
+  address   String   @id @db.VarChar(255)
+  lens      Json?
+  farcaster Json?
+  twitter   Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model canvases {
+  id           Int      @id @default(autoincrement())
+  data         Json
+  params       Json?
+  isPublic     Boolean  @default(false)
+  ipfsLink     String[] @db.VarChar(255)
+  imageLink    String[] @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  ownerAddress String?  @db.VarChar(255)
+  referredFrom String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  isGated      Boolean? @default(false)
+  allowList    String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  gatedWith    String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  owners       owners?  @relation(fields: [ownerAddress], references: [address])
+}
+
+model collections {
+  id          Int        @id @default(autoincrement())
+  address     String     @db.VarChar(255)
+  name        String     @db.VarChar(255)
+  openseaLink String     @db.VarChar(255)
+  image       String     @db.VarChar(255)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
+  contents    contents[]
+}
+
+model contents {
+  id           Int          @id @default(autoincrement())
+  tokenId      String       @db.VarChar(255)
+  title        String       @db.VarChar(255)
+  description  String       @db.VarChar(255)
+  edition      String?      @db.VarChar(255)
+  ipfsLink     String       @db.VarChar(255)
+  imageURL     String       @db.VarChar(255)
+  openseaLink  String       @db.VarChar(255)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @db.Timestamptz(6)
+  collectionId Int?
+  collections  collections? @relation(fields: [collectionId], references: [id])
+}
+
+model nftData {
+  id           Int      @id @default(autoincrement())
+  tokenId      String   @db.VarChar(255)
+  title        String   @db.VarChar(255)
+  description  String
+  openseaLink  String   @db.VarChar(255)
+  imageURL     String?
+  permaLink    String?  @db.VarChar(255)
+  isPublic     Boolean  @default(false)
+  address      String   @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  ownerAddress String?  @db.VarChar(255)
+  dimensions   Int[]
+  owners       owners?  @relation(fields: [ownerAddress], references: [address])
+}
+
+model owners {
+  address            String     @id @db.VarChar(255)
+  canvasOwned        Int?       @default(0)
+  nftOwned           Int?       @default(0)
+  mail               String?    @db.VarChar(255)
+  lens_auth_token    Json?
+  twitter_auth_token Json?
+  lens_handle        String?    @db.VarChar(255)
+  followNftAddress   String?    @db.VarChar(255)
+  profileId          String?    @db.VarChar(255)
+  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
+  canvases           canvases[]
+  nftData            nftData[]
+}
+
+model templates {
+  id        Int      @id @default(autoincrement())
+  data      Json     @db.Json
+  name      String   @db.VarChar(255)
+  image     String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model uploadeds {
+  id        Int      @id @default(autoincrement())
+  image     String   @db.VarChar(255)
+  address   String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}

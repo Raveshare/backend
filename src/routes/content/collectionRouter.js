@@ -27,6 +27,8 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
     },
   });
 
+  console.log(collections);
+
   let contents = await content.findAll({
     limit: limit,
     offset: offset,

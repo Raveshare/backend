@@ -1,6 +1,6 @@
-const canvasSchema = require("../schema/canvasSchema");
-const updateCollectsForPublication = require("../functions/updateCollectsForPublication");
-const updateNFTOwnerForPublication = require("../functions/updateNFTOwnerForPublication");
+const canvasSchema = require("../src/schema/canvasSchema");
+const updateCollectsForPublication = require("../src/functions/updateCollectsForPublication");
+const updateNFTOwnerForPublication = require("../src/functions/updateNFTOwnerForPublication");
 
 const updateCollects = async (job, done) => {
   try {

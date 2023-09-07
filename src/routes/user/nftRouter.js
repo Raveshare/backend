@@ -6,6 +6,7 @@ const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 const cache = require("../../middleware/cache");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
+const { add } = require("lodash");
 
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
@@ -80,6 +81,8 @@ nftRouter.get("/:id", async (req, res) => {
 nftRouter.get("/", async (req, res) => {
   let address = req.user.address;
   let query = req.query.query;
+
+  address = "0xa6bcB89f21E0BF71E08dEd426C142757791e17cf"
 
   let queriedNFTs = [];
 
