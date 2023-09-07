@@ -1,7 +1,5 @@
 const templateRouter = require("express").Router();
-const templateSchema = require("../../schema/templateSchema");
-const template_view = require("../../schema/views/template.view");
-const public_canvas = require("../../schema/views/public_canvas.view");
+const prisma = require("../../prisma")
 const cache = require("../../middleware/cache");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
@@ -15,13 +13,11 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
     offset = limit * (page - 1);
 
-    const templates = await template_view.findAll({
-      offset,
-    });
+    const templates = await prisma.template_view.findMany({
+      skip: offset
+    })
 
-    console.log("found canvases")
-
-    let totalAssets = await template_view.count();
+    let totalAssets = await prisma.template_view.count({});
 
     let totalPage = Math.ceil(totalAssets / limit);
 
@@ -37,7 +33,7 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
   }
 });
 
-templateRouter.get("/user", cache("5 minutes"), async (req, res) => {
+templateRouter.get("/user", async (req, res) => {
   let address = req.user.address;
   let page = req.query.page;
   page = parseInt(page);
@@ -49,12 +45,12 @@ templateRouter.get("/user", cache("5 minutes"), async (req, res) => {
   offset = limit * (page - 1);
 
   try {
-    let publicTemplates = await public_canvas.findAll({
-      limit,
-      offset,
+    let publicTemplates = await prisma.public_canvas_templates.findMany({
+      take: limit,
+      skip: offset,
     });
 
-    let publicTemplatesCount = await public_canvas.count({});
+    let publicTemplatesCount = await prisma.public_canvas_templates.count({});
 
     publicTemplates = publicTemplates.map((template) => {
       if (template.isGated) {
@@ -80,6 +76,7 @@ templateRouter.get("/user", cache("5 minutes"), async (req, res) => {
       nextPage: page + 1 > totalPage ? null : page + 1,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json(error);
   }
 });

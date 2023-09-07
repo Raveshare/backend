@@ -1,11 +1,11 @@
 const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
-const checkDispatcher = require("../../lens/api").checkDispatcher;
-const ownerSchema = require("../../schema/ownerSchema");
-const uploadedSchema = require("../../schema/uploaded.schema");
+const checkDispatcher = require("../../lens/api").checkDispatcher;;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
+
+const prisma = require("../../prisma");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -50,9 +50,11 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
       `user/${address}/user_assets/${Date.now()}.png`
     );
 
-    await uploadedSchema.create({
-      address: address,
-      image: result,
+    await prisma.uploadeds.create({
+      data: {
+        address: address,
+        image: result,
+      },
     });
 
     res.send({
@@ -68,11 +70,14 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let ownerAddress = req.user.address;
 
-  let owner = await ownerSchema.findOne({
+
+  let owner = await prisma.owners.findUnique({
     where: {
       address: ownerAddress,
     },
   });
+
+  console.log(owner);
 
   let profileId = owner.profileId;
 

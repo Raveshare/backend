@@ -1,6 +1,5 @@
 const collectionRouter = require("express").Router();
-const content = require("../../schema/content");
-const collection = require("../../schema/collections");
+const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
@@ -21,24 +20,33 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-  let collections = await collection.findOne({
+  // let collections = await prisma.collections.findUnique({
+  //   where: {
+  //     address: collectionAddress,
+  //   },
+  // });
+
+  let collections = await prisma.collections.findFirst({
     where: {
-      address: collectionAddress,
+      address : {
+        equals : collectionAddress,
+        mode : 'insensitive'
+      }
     },
   });
 
-  console.log(collections);
-
-  let contents = await content.findAll({
-    limit: limit,
-    offset: offset,
-    order: [["createdAt"]],
+  let contents = await prisma.contents.findMany({
+    take: limit,
+    skip: offset,
+    orderBy : {
+      createdAt: "desc",
+    },
     where: {
       collectionId: collections.id,
     },
   });
 
-  let totalAssets = await content.count({
+  let totalAssets = await prisma.contents.count({
     where: {
       collectionId: collections.id,
     },
@@ -74,20 +82,35 @@ collectionRouter.get("/:collection/:id",cache('5 hours') , async (req, res) => {
     return;
   }
 
-  let collections = await collection.findOne({
+  let collections = await prisma.collections.findFirst({
     where: {
-      address: collectionAddress,
+      address : {
+        equals : collectionAddress,
+        mode : 'insensitive'
+      }
     },
   });
 
-  let contents = await content.findOne({
-    where: {
-      id: id,
-      collectionId: collections.id,
+  let contents = await prisma.contents.findFirst({
+    where: { 
+      AND : [
+        {
+          id: {
+            equals: parseInt(id),
+          }
+        },
+        {
+          collectionId: {
+            equals: collections.id,
+          }
+        }
+      ]
     },
   });
 
-  res.send(contents);
+  res.send({
+    assets: contents,
+  });
 });
 
 collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
@@ -96,17 +119,19 @@ collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
 
   page = page < 1 ? 1 : page;
 
-  let limit = req.query.limit || 50;
+  let limit = req.query.limit || 20;
 
   let offset = (page - 1) * limit;
 
-  let collections = await collection.findAll({
-    limit: limit,
-    offset: offset,
-    order: [["createdAt"]],
+  let collections = await prisma.collections.findMany({
+    take: limit,
+    skip: offset,
+    orderBy : {
+      createdAt : "desc"
+    }
   });
 
-  let totalAssets = await collection.count();
+  let totalAssets = await prisma.collections.count({});
 
   let totalPage = Math.ceil(totalAssets / limit);
 

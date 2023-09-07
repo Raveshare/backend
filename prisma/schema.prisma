@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views" , "tracing"]
 }
 
 datasource db {
@@ -13,7 +14,7 @@ model Assets {
   type       String?  @db.VarChar(255)
   author     String?  @db.VarChar(255)
   image      String?  @db.VarChar(255)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  createdAt  DateTime @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
   dimensions Int[]
 }
@@ -23,7 +24,7 @@ model auths {
   lens      Json?
   farcaster Json?
   twitter   Json?
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdAt DateTime @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
@@ -34,7 +35,7 @@ model canvases {
   isPublic     Boolean  @default(false)
   ipfsLink     String[] @db.VarChar(255)
   imageLink    String[] @db.VarChar(255)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  createdAt    DateTime @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
   referredFrom String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
@@ -46,11 +47,11 @@ model canvases {
 
 model collections {
   id          Int        @id @default(autoincrement())
-  address     String     @db.VarChar(255)
+  address     String     @db.VarChar(255) @map("collection_address")
   name        String     @db.VarChar(255)
   openseaLink String     @db.VarChar(255)
   image       String     @db.VarChar(255)
-  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  createdAt   DateTime   @db.Timestamptz(6)
   updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
   contents    contents[]
 }
@@ -64,7 +65,7 @@ model contents {
   ipfsLink     String       @db.VarChar(255)
   imageURL     String       @db.VarChar(255)
   openseaLink  String       @db.VarChar(255)
-  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
+  createdAt    DateTime     @db.Timestamptz(6)
   updatedAt    DateTime     @updatedAt @db.Timestamptz(6)
   collectionId Int?
   collections  collections? @relation(fields: [collectionId], references: [id])
@@ -80,7 +81,7 @@ model nftData {
   permaLink    String?  @db.VarChar(255)
   isPublic     Boolean  @default(false)
   address      String   @db.VarChar(255)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  createdAt    DateTime @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
   dimensions   Int[]
@@ -97,7 +98,7 @@ model owners {
   lens_handle        String?    @db.VarChar(255)
   followNftAddress   String?    @db.VarChar(255)
   profileId          String?    @db.VarChar(255)
-  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
+  createdAt          DateTime   @db.Timestamptz(6)
   updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
   canvases           canvases[]
   nftData            nftData[]
@@ -108,7 +109,7 @@ model templates {
   data      Json     @db.Json
   name      String   @db.VarChar(255)
   image     String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdAt DateTime @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
@@ -116,6 +117,33 @@ model uploadeds {
   id        Int      @id @default(autoincrement())
   image     String   @db.VarChar(255)
   address   String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  createdAt DateTime @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+view public_canvas_templates {
+  id           Int       @unique
+  data         Json?
+  params       Json?
+  isPublic     Boolean?
+  ipfsLink     String[]  @db.VarChar(255)
+  imageLink    String[]  @db.VarChar(255)
+  createdAt    DateTime? @db.Timestamptz(6)
+  updatedAt    DateTime? @db.Timestamptz(6)
+  ownerAddress String?   @db.VarChar(255)
+  referredFrom String[]  @db.VarChar(255)
+  isGated      Boolean?
+  allowList    String[]  @db.VarChar(255)
+  gatedWith    String[]  @db.VarChar(255)
+
+}
+
+view template_view {
+  id        Int       @unique
+  data      Json?     @db.Json
+  name      String?   @db.VarChar(255)
+  image     String?   @db.VarChar(255)
+  createdAt DateTime? @db.Timestamptz(6)
+  updatedAt DateTime? @db.Timestamptz(6)
+
 }
