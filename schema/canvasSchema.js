@@ -47,6 +47,7 @@ canvasSchema.addHook("afterCreate", async (canvas, options) => {
   if(!referredFrom) return;
 
   for (let i = 0; i < referredFrom.length; i++) {
+    if(!referredFrom[i]) continue
     if(referredFrom[i].startsWith("0x")) continue
     if(referredFrom[i].startsWith("@")) continue
     let referredAddress = await canvasSchema.findOne({
