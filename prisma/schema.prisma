@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["views" , "tracing"]
+  previewFeatures = ["tracing", "views"]
 }
 
 datasource db {
@@ -47,7 +47,7 @@ model canvases {
 
 model collections {
   id          Int        @id @default(autoincrement())
-  address     String     @db.VarChar(255) @map("collection_address")
+  address     String     @db.VarChar(255)
   name        String     @db.VarChar(255)
   openseaLink String     @db.VarChar(255)
   image       String     @db.VarChar(255)
@@ -135,7 +135,6 @@ view public_canvas_templates {
   isGated      Boolean?
   allowList    String[]  @db.VarChar(255)
   gatedWith    String[]  @db.VarChar(255)
-
 }
 
 view template_view {
@@ -145,5 +144,4 @@ view template_view {
   image     String?   @db.VarChar(255)
   createdAt DateTime? @db.Timestamptz(6)
   updatedAt DateTime? @db.Timestamptz(6)
-
 }
