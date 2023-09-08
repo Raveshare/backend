@@ -1,11 +1,10 @@
-const { isEmpty } = require("lodash");
 
 const createPostViaDispatcher = require("../lens/api").createPostViaDispatcher;
 const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
 const getProfileAddressFromHandle =
   require("../lens/api").getProfileAddressFromHandle;
 
-const uploadToLens = async (postMetadata, ownerData, params, referred) => {
+const uploadToLens = async (postMetadata, ownerData, params) => {
   try {
     Object.assign(postMetadata, {
       handle: ownerData.lens_handle,
@@ -32,36 +31,7 @@ const uploadToLens = async (postMetadata, ownerData, params, referred) => {
         },
       };
     } else {
-      let recipients = [];
-      if (params.collectModule.multirecipientFeeCollectModule.recipients) {
-        
-        params.collectModule.multirecipientFeeCollectModule.recipients =
-          await updateLensHandles(
-            params.collectModule.multirecipientFeeCollectModule.recipients
-          );
-
-        recipients =
-          params.collectModule.multirecipientFeeCollectModule.recipients;
-
-        // if (!isEmpty(referred)) {
-        //   if (!referred.includes("0x77fAD8D0FcfD481dAf98D0D156970A281e66761b"))
-        //     return {
-        //       status: "error",
-        //       message: "Invalid referred address",
-        //     };
-        // }
-
-        let totalSplit = 0;
-        for (let i = 0; i < recipients.length; i++) {
-          totalSplit += recipients[i].split;
-        }
-        if (totalSplit != 100) {
-          return {
-            status: "error",
-            message: "Split is not 100%",
-          };
-        }
-      }
+      params = await getLensParam(params);
     }
 
     let createPostRequest = {
@@ -101,28 +71,72 @@ const updateLensHandles = async (referredFrom) => {
   return referredFrom;
 };
 
-const getLensParam = (params) => {
-  let { charge , collectLimit , timeLimit , followerOnly } = params;
+const getLensParam = async (params) => {
+  let {
+    charge,
+    collectLimit,
+    endTimestamp,
+    followerOnly,
+    referralFee,
+    recipients,
+  } = params;
 
+  let collectModule = {};
 
-  // charge for collection - $price , $currency , $referral-fees , $split-fee[]
-  // limited edition - $collect-limit
-  // time limit - $collect-time
-  // who can collect - $collect-who
-}
+  if (charge) {
+    let multirecipientFeeCollectModule = {};
 
-// params = {
-//   charge : {
-//     price : 0.1,
-//     currency : "address",
-//     referralFees : 0.1,
-//     split  : [
-//       [handle, split],
-//     ]
-//   },
-//   collectLimit : 10,
-//   timeLimit : utc_time,
-//   whoCanCollect : true
-// }
+    multirecipientFeeCollectModule.amount = {
+      currency: charge.currency,
+      value: charge.value,
+    };
+
+    recipients = await updateLensHandles(recipients);
+
+    multirecipientFeeCollectModule.recipients = recipients;
+
+    if (collectLimit) {
+      multirecipientFeeCollectModule.collectLimit = collectLimit;
+    }
+
+    if (endTimestamp) {
+      multirecipientFeeCollectModule.endTimestamp = endTimestamp;
+    }
+
+    if (referralFee) {
+      multirecipientFeeCollectModule.referralFee = referralFee;
+    }
+
+    if (followerOnly) {
+      multirecipientFeeCollectModule.followerOnly = followerOnly;
+    }
+
+    collectModule.multirecipientFeeCollectModule =
+      multirecipientFeeCollectModule;
+  } else {
+    let simpleCollectModule = {};
+
+    if (collectLimit) {
+      simpleCollectModule.collectLimit = collectLimit;
+    }
+
+    if (endTimestamp) {
+      simpleCollectModule.endTimestamp = endTimestamp;
+    }
+
+    if (followerOnly) {
+      simpleCollectModule.followerOnly = true;
+    } else {
+      simpleCollectModule.followerOnly = false;
+    }
+
+    collectModule.simpleCollectModule = simpleCollectModule;
+  }
+
+  return {
+    collectModule: collectModule,
+  };
+};
+
 
 module.exports = uploadToLens;
