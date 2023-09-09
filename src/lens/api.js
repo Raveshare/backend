@@ -2,6 +2,8 @@ const { request, gql } = require("graphql-request");
 const ownerSchema = require("../schema/ownerSchema");
 
 const LENS_API_URL = process.env.LENS_API_URL;
+const NODE_ENV = process.env.NODE_ENV;
+
 
 const checkDispatcherQuery = gql`
   query Profile($profileId: ProfileId!) {
@@ -103,16 +105,16 @@ const getProfileAddressFromHandleQuery = gql`
 `;
 
 async function getProfileAddressFromHandle(handle) {
-  if(! handle.endsWith(".lens")) handle = handle + ".lens";
+  if (!handle.endsWith(".lens")) handle = handle + ".lens";
   const variables = { handle };
-  console.log(variables)
+  console.log(variables);
   let resp = await request(
     LENS_API_URL,
-    getProfileAddressFromHandleQuery, 
+    getProfileAddressFromHandleQuery,
     variables
   );
 
-  console.log(resp)
+  console.log(resp);
 
   return resp.profile.ownedBy;
 }
@@ -327,6 +329,36 @@ const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
   return result.whoCollectedPublication;
 };
 
+const doesFollowQuery = gql`
+  query DoesFollow($followerAddress: EthereumAddress! , $profileId: ProfileId!) {
+    doesFollow(
+      request: {
+        followInfos: [
+          { followerAddress: $followerAddress, profileId: $profileId }
+        ]
+      }
+    ) {
+      follows
+    }
+  }
+`;
+
+const doesFollow = async (followerAddress) => {
+
+  let profileId
+  if(NODE_ENV === "development") profileId = "0x90c3"
+  else profileId = "0x01b984"
+  
+  const variables = {
+    followerAddress: followerAddress,
+    profileId: profileId,
+  };
+
+  const result = await request(LENS_API_URL, doesFollowQuery, variables);
+
+  return result.doesFollow[0].follows;
+};
+
 module.exports = {
   checkDispatcher,
   checkAccessToken,
@@ -341,4 +373,5 @@ module.exports = {
   getNfts,
   getWhoCollectedPublication,
   getProfileAddressFromHandle,
+  doesFollow,
 };
