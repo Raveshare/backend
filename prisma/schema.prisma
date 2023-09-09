@@ -16,6 +16,8 @@ model Assets {
   image      String?  @db.VarChar(255)
   createdAt  DateTime @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  featured   Boolean? @default(false)
+  wallet     String?  @db.VarChar(255)
   dimensions Int[]
 }
 
