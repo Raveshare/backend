@@ -108,7 +108,9 @@ const getLensParam = async (params) => {
     }
 
     if (followerOnly) {
-      multirecipientFeeCollectModule.followerOnly = followerOnly;
+      multirecipientFeeCollectModule.followerOnly = true;
+    } else {
+      multirecipientFeeCollectModule.followerOnly = false;
     }
 
     collectModule.multirecipientFeeCollectModule =
