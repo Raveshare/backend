@@ -1,14 +1,7 @@
 const assetRouter = require("express").Router();
 const { assetSchema } = require("../../schema/schema");
-const { Op } = require("sequelize");
 
 const cache = require("../../middleware/cache");
-
-assetRouter.get("/by-author", cache("5 hours"), async (req, res) => {
-  const { author } = req.query;
-  const assets = await assetSchema.find({ author });
-  res.send(assets);
-});
 
 assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
   let type = req.query.type || "props";
@@ -47,8 +40,8 @@ assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
   });
 });
 
-assetRouter.get("/background", cache("5 hours"), async (req, res) => {
-  const { author } = req.query;
+assetRouter.get("/", cache("5 hours"), async (req, res) => {
+  const { author, type } = req.query;
 
   let page = req.query.page || 1;
   page = parseInt(page);
@@ -58,6 +51,12 @@ assetRouter.get("/background", cache("5 hours"), async (req, res) => {
   let limit = req.query.limit || 50;
 
   let offset = (page - 1) * limit;
+
+  if(!type) {
+    res.status(400).send({
+      message: "Type is required"
+    })
+  }
 
   if (author) {
     const assets = await assetSchema.findAll({
@@ -65,7 +64,7 @@ assetRouter.get("/background", cache("5 hours"), async (req, res) => {
       offset: offset,
       where: {
         author: author,
-        type: "background",
+        type: type,
       },
       order: [["createdAt", "DESC"]],
     });
@@ -73,7 +72,7 @@ assetRouter.get("/background", cache("5 hours"), async (req, res) => {
     let totalAssets = await assetSchema.count({
       where: {
         author: author,
-        type: "background",
+        type: type,
       },
     });
 
@@ -86,18 +85,19 @@ assetRouter.get("/background", cache("5 hours"), async (req, res) => {
     });
     return;
   } else {
+
     const assets = await assetSchema.findAll({
       limit: limit,
       offset: offset,
       where: {
-        type: "background",
+        type: type,
       },
       order: [["createdAt", "DESC"]],
     });
 
     let totalAssets = await assetSchema.count({
       where: {
-        type: "background",
+        type: type,
       },
       order: [["createdAt", "DESC"]],
     });
@@ -106,92 +106,6 @@ assetRouter.get("/background", cache("5 hours"), async (req, res) => {
 
     res.send({
       assets: assets,
-      totalPage: totalPage,
-      nextPage: page + 1 > totalPage ? null : page + 1,
-    });
-    return;
-  }
-});
-
-assetRouter.get("/", cache("5 hours"), async (req, res) => {
-  const { query } = req.query;
-
-  let finalAssets = [];
-
-  let page = req.query.page || 1;
-  page = parseInt(page);
-
-  page = page < 1 ? 1 : page;
-
-  let limit = req.query.limit || 50;
-
-  let offset = (page - 1) * limit;
-
-  if (query) {
-    let assets = await assetSchema.findAll({
-      limit: limit,
-      offset: offset,
-      where: {
-        [Op.and]: [{ author: query }, { type: "props" }],
-      },
-    });
-
-    let totalAssets = await assetSchema.count({
-      where: {
-        [Op.and]: [{ author: query }, { type: "props" }],
-      },
-    });
-
-    let totalPage = Math.ceil(totalAssets / limit);
-
-    finalAssets = finalAssets.concat(assets);
-
-    assets = await assetSchema.findAll({
-      limit: limit,
-      offset: offset,
-      where: {
-        [Op.and]: [{ tags: { [Op.contains]: [query] } }, { type: "props" }],
-      },
-    });
-
-    totalAssets = await assetSchema.count({
-      where: {
-        [Op.and]: [{ tags: { [Op.contains]: [query] } }, { type: "props" }],
-      },
-    });
-
-    totalPage += Math.ceil(totalAssets / limit);
-
-    finalAssets = finalAssets.concat(assets);
-
-    res.send({
-      assets: finalAssets,
-      totalPage: totalPage,
-      nextPage: page + 1 > totalPage ? null : page + 1,
-    });
-    return;
-  } else {
-    // let assets = await assetSchema.findAll();
-    let assets = await assetSchema.findAll({
-      limit: limit,
-      offset: offset,
-      where: {
-        type: "props",
-      },
-    });
-
-    let totalAssets = await assetSchema.count({
-      where: {
-        type: "props",
-      },
-    });
-
-    let totalPage = Math.ceil(totalAssets / limit);
-
-    finalAssets = finalAssets.concat(assets);
-
-    res.send({
-      assets: finalAssets,
       totalPage: totalPage,
       nextPage: page + 1 > totalPage ? null : page + 1,
     });
