@@ -4,14 +4,50 @@ const { Op } = require("sequelize");
 
 const cache = require("../../middleware/cache");
 
-
-assetRouter.get("/by-author", cache('5 hours') , async (req, res) => {
+assetRouter.get("/by-author", cache("5 hours"), async (req, res) => {
   const { author } = req.query;
   const assets = await assetSchema.find({ author });
   res.send(assets);
 });
 
-assetRouter.get("/background", cache('5 hours') , async (req, res) => {
+assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
+  let type = req.query.type || "props";
+
+  let page = req.query.page || 1;
+  page = parseInt(page);
+
+  page = page < 1 ? 1 : page;
+
+  let limit = req.query.limit || 20;
+
+  let offset = (page - 1) * limit;
+
+  const assets = await assetSchema.findAll({
+    where: {
+      featured: true,
+      type: type,
+    },
+    limit: limit,
+    offset: offset,
+  });
+
+  let totalAssets = await assetSchema.count({
+    where: {
+      featured: true,
+      type: type,
+    },
+  });
+
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  res.send({
+    assets: assets,
+    totalPage: totalPage,
+    nextPage: page + 1 > totalPage ? null : page + 1,
+  });
+});
+
+assetRouter.get("/background", cache("5 hours"), async (req, res) => {
   const { author } = req.query;
 
   let page = req.query.page || 1;
@@ -77,7 +113,7 @@ assetRouter.get("/background", cache('5 hours') , async (req, res) => {
   }
 });
 
-assetRouter.get("/", cache('5 hours') , async (req, res) => {
+assetRouter.get("/", cache("5 hours"), async (req, res) => {
   const { query } = req.query;
 
   let finalAssets = [];
