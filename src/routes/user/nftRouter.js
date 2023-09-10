@@ -82,8 +82,6 @@ nftRouter.get("/", async (req, res) => {
   let address = req.user.address;
   let query = req.query.query;
 
-  address = "0xa6bcB89f21E0BF71E08dEd426C142757791e17cf"
-
   let queriedNFTs = [];
 
   if (query) {
