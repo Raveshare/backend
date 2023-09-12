@@ -28,13 +28,15 @@ const eth_alchemy = new Alchemy(eth_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
-    // let follow = await doesFollow(walletAddress);
+     let follow = await doesFollow(walletAddress);
 
-    // if (follow) {
-    //   return true;
-    // } else {
-    //   return false;
-    // }
+     if (follow) {
+       return true;
+     } else {
+      return false;
+    }
+
+    return false;
 
     let walletAddressU = walletAddress.toUpperCase();
 
