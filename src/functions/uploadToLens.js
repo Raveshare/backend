@@ -10,7 +10,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
       handle: ownerData.lens_handle,
     });
 
-    const ipfsData = await uploadMetadataToIpfs(postMetadata);
+    const permadata = await uploadMetadataToIpfs(postMetadata);
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
@@ -36,7 +36,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
 
     let createPostRequest = {
       profileId: ownerData.profileId,
-      contentURI: "ipfs://" + ipfsData,
+      contentURI: permadata,
     };
 
     createPostRequest = Object.assign(createPostRequest, params);

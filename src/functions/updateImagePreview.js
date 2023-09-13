@@ -14,8 +14,6 @@ const updateImagePreview = async (previewData, address, id) => {
       ipfs.push(await uploadMediaToIpfs(previewData[i]));
     }
 
-    console.length
-
     canvasSchema.update(
       { imageLink: url, ipfsLink: ipfs },
       {
