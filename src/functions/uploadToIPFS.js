@@ -58,7 +58,7 @@ const uploaddMetadataToIpfs = async (postData) => {
     description: postData.content,
     name: `Post by ${postData.handle}`,
     external_url: `https://lenstube.xyz/${postData.handle}`,
-    image : `ipfs://${postData.image[i]}`,
+    image : `ipfs://${postData.image[0]}`,
     imageMimeType: "image/png",
     metadata_id: uuid(),
     mainContentFocus: "IMAGE",
