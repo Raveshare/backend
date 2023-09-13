@@ -1,7 +1,6 @@
 const uploadedRouter = require("express").Router();
 const uploadedSchema = require("../../schema/uploaded.schema");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
-const userRouter = require("./userRouter");
 
 uploadedRouter.post("/", async (req, res) => {
   let address = req.user.address;

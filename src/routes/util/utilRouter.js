@@ -4,7 +4,6 @@ const checkDispatcher = require("../../lens/api").checkDispatcher;;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
-
 const prisma = require("../../prisma");
 
 utilRouter.get("/", async (req, res) => {
