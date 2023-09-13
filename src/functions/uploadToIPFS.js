@@ -1,6 +1,8 @@
 const { validateMetadata } = require("../lens/api");
 const { File } = require("@web-std/file");
 
+const fs = require("fs");
+
 const { Web3Storage } = require("web3.storage");
 
 const client = new Web3Storage({
@@ -29,6 +31,10 @@ const getIpfsClient = async () => {
 };
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
+
+  // fs.writeFileSync(`${Date.now().}`, blob);
+  
+
   const ipfsClient = await getIpfsClient();
   const result = await ipfsClient.add(blob);
 
@@ -52,6 +58,8 @@ const uploaddMetadataToIpfs = async (postData) => {
     description: postData.content,
     name: `Post by ${postData.handle}`,
     external_url: `https://lenstube.xyz/${postData.handle}`,
+    image : `ipfs://${postData.image[i]}`,
+    imageMimeType: "image/png",
     metadata_id: uuid(),
     mainContentFocus: "IMAGE",
     attributes: [],
