@@ -32,12 +32,7 @@ const getIsWhitelisted = async (walletAddress) => {
 
      if (follow) {
        return true;
-     } else {
-      return false;
-    }
-
-    return false;
-
+     } 
     let walletAddressU = walletAddress.toUpperCase();
 
     let wallets = [
