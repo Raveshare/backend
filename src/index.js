@@ -10,7 +10,7 @@ const app = express({
   await bree.start();
 })();
 
-const compression = require('compression')
+const compression = require("compression");
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -22,12 +22,11 @@ const auth = require("./middleware/auth/auth");
 // const sync = require("./utils/db/sync")
 // sync()
 
-
-const NODE_ENV = process.env.NODE_ENV
+const NODE_ENV = process.env.NODE_ENV;
 console.log("NODE_ENV", NODE_ENV);
 
 app.use(cors());
-app.use(compression())
+app.use(compression());
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -35,7 +34,6 @@ app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Credentials", true);
   next();
 });
-
 
 //
 
@@ -49,7 +47,6 @@ const assetRouter = require("./routes/content/assetRouter");
 app.use(express.json({ limit: "20mb", extended: true }));
 app.use(handleError);
 
-
 app.use("/collection", auth, collectionRouter);
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
@@ -57,7 +54,7 @@ app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);
 app.use("/asset", auth, assetRouter);
 
-if(NODE_ENV === "local") {
+if (NODE_ENV === "local") {
   const adminRouter = require("./routes/admin/adminRouter");
   app.use("/admin", adminRouter);
 }

@@ -1,5 +1,13 @@
-const db = require("./db")
-const { content , collections , nftSchema , ownerSchema , canvasSchema, templateSchema , assetSchema} = require("../../schema/schema")
+const db = require("./db");
+const {
+  content,
+  collections,
+  nftSchema,
+  ownerSchema,
+  canvasSchema,
+  templateSchema,
+  assetSchema,
+} = require("../../schema/schema");
 
 /**
  * Syncs the database
@@ -7,13 +15,13 @@ const { content , collections , nftSchema , ownerSchema , canvasSchema, template
  */
 
 async function sync() {
-    try {
-    await db.sync({ alter : true })
-    return 200
-    } catch (error) {
-        console.log(error)
-        return 500
-    }
+  try {
+    await db.sync({ alter: true });
+    return 200;
+  } catch (error) {
+    console.log(error);
+    return 500;
+  }
 }
 
-module.exports = sync
+module.exports = sync;

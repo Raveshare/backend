@@ -3,6 +3,8 @@ const canvasRouter = require("express").Router();
 const canvasSchema = require("../../schema/canvasSchema");
 const ownerSchema = require("../../schema/ownerSchema");
 
+const prisma = require("../../prisma");
+
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
 const updateImagePreview = require("../../functions/updateImagePreview");
@@ -30,17 +32,18 @@ canvasRouter.get("/", async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-  let canvasDatas = await canvasSchema.findAll({
-    order: [["updatedAt" , "DESC"]],
+  let canvasData = await prisma.canvases.findMany({
     where: {
       ownerAddress: address,
     },
-    limit: limit,
-    offset: offset,
+    take: limit,
+    skip: offset,
+    orderBy: {
+      updatedAt: "desc",
+    },
   });
 
-
-  let totalAssets = await canvasSchema.count({
+  let totalAssets = await prisma.canvases.count({
     where: {
       ownerAddress: address,
     },
@@ -49,12 +52,11 @@ canvasRouter.get("/", async (req, res) => {
   let totalPages = Math.ceil(totalAssets / limit);
 
   res.send({
-    assets : canvasDatas,
+    assets: canvasData,
     totalPages,
-    nextPage : page + 1 > totalPages ? null : page + 1,
+    nextPage: page + 1 > totalPages ? null : page + 1,
   });
 });
-
 
 canvasRouter.post("/create", async (req, res) => {
   let address = req.user.address;
@@ -70,15 +72,17 @@ canvasRouter.post("/create", async (req, res) => {
   }
 
   try {
-    canvas = await canvasSchema.create(canvasData);
-
-    let owner = await ownerSchema.findOne({
-      where: {
-        address: address,
-      },
+    canvasData.referredFrom = canvasData.referredFrom.map((ref) => {
+      if(ref) 
+      return String(ref);
     });
 
-    await owner.addCanvas(canvas);
+    canvas = await prisma.canvases.create({
+      data: {
+        ...canvasData,
+        ownerAddress: address,
+      }
+    });
 
     try {
       updateImagePreview(preview, address, canvas.id);
@@ -117,40 +121,24 @@ canvasRouter.put("/update", async (req, res) => {
   }
 
   try {
-    let canvas = await canvasSchema.findOne({
+
+    let canvas = await prisma.canvases.update({
       where: {
         id: canvasData.id,
+        ownerAddress: ownerAddress,
       },
-    });
-
-    if (!canvas) {
-      res.status(404).send({
-        status: "error",
-        message: "Canvas Not Found",
-      });
-      return;
-    }
-
-    if (canvas.ownerAddress != ownerAddress) {
-      res.status(403).send({
-        status: "error",
-        message: "Forbidden",
-      });
-      return;
-    }
-
-    await canvasSchema.update(
-      {
+      data: {
         data: canvasData.data,
         referredFrom: canvasData.referredFrom,
-      },
-      {
-        where: {
-          id: canvasData.id,
-        },
       }
-    );
-
+    }).catch((error) => {
+      res.status(404).send({
+        status: "error",
+        message: `Canvas not found`,
+      });
+      return;
+    });
+ 
     updateImagePreview(preview, ownerAddress, canvas.id);
 
     res.status(200).send({

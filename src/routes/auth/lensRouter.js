@@ -7,10 +7,9 @@ const getFollowContractAddress =
 const getProfileHandleAndId = require("../../lens/api").getProfileHandleAndId;
 const setDispatcher = require("../../lens/api").setDispatcher;
 const checkAccessToken = require("../../lens/api").checkAccessToken;
-const { refreshToken : refreshAccessToken } = require("../../lens/api");
+const { refreshToken: refreshAccessToken } = require("../../lens/api");
 
-
-const ownerSchema = require("../../schema/ownerSchema");
+const prisma = require("../../prisma");
 
 lensRouter.get("/challenge", async (req, res) => {
   let address = req.user.address;
@@ -38,7 +37,7 @@ lensRouter.post("/authenticate", async (req, res) => {
     let authenticateData = await authenticate(address, signature);
     const { accessToken, refreshToken } = authenticateData;
 
-    let ownerData = await ownerSchema.findOne({
+    let ownerData = await prisma.owners.findUnique({
       where: {
         address: address,
       },
@@ -61,7 +60,13 @@ lensRouter.post("/authenticate", async (req, res) => {
       accessToken: accessToken,
       refreshToken: refreshToken,
     };
-    await ownerData.save();
+
+    prisma.owners.update({
+      where: {
+        address: address,
+      },
+      data: ownerData,
+    });
 
     res.status(200).send({
       status: "success",
@@ -76,7 +81,8 @@ lensRouter.post("/authenticate", async (req, res) => {
 
 lensRouter.get("/set-dispatcher", async (req, res) => {
   let address = req.user.address;
-  let ownerData = await ownerSchema.findOne({
+
+  let ownerData = await prisma.owners.findUnique({
     where: {
       address: address,
     },
@@ -105,13 +111,14 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
       refreshToken: refreshToken,
     };
 
-    let owner = await ownerSchema.findOne({
+    ownerData.lens_auth_token = lens_auth_token;
+
+    prisma.owners.update({
       where: {
         address: address,
       },
+      data: ownerData,
     });
-    owner.lens_auth_token = lens_auth_token;
-    await owner.save();
   }
 
   let setDispatcherData = await setDispatcher(profileId, accessToken);

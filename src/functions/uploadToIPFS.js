@@ -9,6 +9,16 @@ const bundlr = new NodeBundlr(
   polygonPrivateKey
 );
 
+// try {
+//   const fundAmountAtomic = bundlr.utils.toAtomic(25);
+// 	const response = bundlr.fund(fundAmountAtomic).then((response) => {
+// 	console.log(`Funding successful txID=${response.id} amount funded=${response.quantity}`);
+//   });
+// } catch (e) {
+// 	console.log("Error funding node ", e);
+// }
+
+
 const { v4: uuid } = require("uuid");
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
