@@ -6,6 +6,8 @@ const verifySignature = require('../../utils/auth/verifySignature');
 const generateJwt = require('../../utils/auth/generateJwt');
 const auth = require('../../middleware/auth/auth');
 
+const jsonwebtoken = require("jsonwebtoken");
+
 const ownerSchema = require('../../schema/ownerSchema');
 
 const userLogin = require('../../functions/events/userLogin.event');
@@ -49,6 +51,12 @@ authRouter.post('/login', async (req, res) => {
                 await ownerData.save();
             }
 
+            let { accessToken , refreshToken } = ownerData.lens_auth_token
+
+            const decodedToken = jsonwebtoken.decode(refreshToken, { complete: true });
+
+            let hasExpired = decodedToken.payload.exp < Date.now() / 1000 
+           
             let jwt = await generateJwt(address, signature);
 
             userLogin(address);
@@ -56,7 +64,7 @@ authRouter.post('/login', async (req, res) => {
 
             res.status(200).send({
                 "status": "success",
-                "message": ownerData.lens_handle,
+                "message": hasExpired ? "" : ownerData.lens_handle,
                 "jwt": jwt
             });
         } else {
