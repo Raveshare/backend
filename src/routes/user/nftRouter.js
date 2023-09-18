@@ -1,23 +1,20 @@
 const nftRouter = require("express").Router();
-const nftSchema = require("../../schema/nftSchema");
-const ownerSchema = require("../../schema/ownerSchema");
+const prisma = require("../../prisma");
 
 const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 const cache = require("../../middleware/cache");
-
 const sendError = require("../../functions/webhook/sendError.webhook");
-const { add } = require("lodash");
 
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
 
-  let ownerData = await ownerSchema.findOne({
+  let owner = await prisma.owner.findUnique({
     where: {
       address: address,
     },
   });
 
-  if (!ownerData) {
+  if (!owner) {
     res.status(404).send({
       message: "Owner not found",
     });
@@ -53,13 +50,14 @@ nftRouter.get("/:id", async (req, res) => {
     return;
   }
 
-  let nftData = await nftSchema.findOne({
+  let nft = await prisma.nftData.findUnique({
     where: {
       id: id,
+      ownerAddress: ownerAddress,
     },
   });
 
-  if (!nftData) {
+  if (!nft) {
     res.status(404).send({
       status: "failed",
       message: "NFT not found",
@@ -67,7 +65,7 @@ nftRouter.get("/:id", async (req, res) => {
     return;
   }
 
-  if (nftData.ownerAddress != ownerAddress) {
+  if (nft.ownerAddress != ownerAddress) {
     res.status(401).send({
       status: "error",
       message: "forbidden",
@@ -75,19 +73,17 @@ nftRouter.get("/:id", async (req, res) => {
     return;
   }
 
-  res.send(nftData);
+  res.send(nft);
 });
 
 nftRouter.get("/", async (req, res) => {
   let address = req.user.address;
   let query = req.query.query;
 
-  address = "0xa6bcB89f21E0BF71E08dEd426C142757791e17cf"
-
   let queriedNFTs = [];
 
   if (query) {
-    let nfts = await nftSchema.findAll({
+    let nfts = await prisma.nftData.findMany({
       where: {
         ownerAddress: address,
       },
@@ -128,16 +124,18 @@ nftRouter.get("/", async (req, res) => {
 
     let offset = (page - 1) * limit;
 
-    queriedNFTs = await nftSchema.findAll({
-      limit: limit,
-      offset: offset,
-      order: [["createdAt"]],
+    let queriedNFTs = await prisma.nftData.findMany({
       where: {
         ownerAddress: address,
       },
+      orderBy: {
+        createdAt: "asc",
+      },
+      take: limit,
+      skip: offset,
     });
 
-    let totalAssets = await nftSchema.count({
+    let totalAssets = await prisma.nftData.count({
       where: {
         ownerAddress: address,
       },

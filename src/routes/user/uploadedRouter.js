@@ -1,5 +1,5 @@
 const uploadedRouter = require("express").Router();
-const uploadedSchema = require("../../schema/uploaded.schema");
+const prisma = require("../../prisma");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 uploadedRouter.post("/", async (req, res) => {
@@ -16,9 +16,11 @@ uploadedRouter.post("/", async (req, res) => {
       `user/${address}/user_assets/${Date.now()}.png`
     );
 
-    await uploadedSchema.create({
-      address: address,
-      image: result,
+    await prisma.uploadeds.create({
+      data: {
+        address: address,
+        image: result,
+      },
     });
 
     res.send({
@@ -39,26 +41,26 @@ uploadedRouter.get("/", async (req, res) => {
   let limit = 50;
   let offset = (page - 1) * limit;
 
-  let uploaded = await uploadedSchema.findAll({
+  let uploaded = await prisma.uploadeds.findMany({
     where: {
       address: address,
     },
-    limit: limit,
+    skip: limit,
     offset: offset,
   });
 
-  let count = await uploadedSchema.count({
+  let count = await prisma.uploadeds.count({
     where: {
-        address: address,
-    }
-    });
+      address: address,
+    },
+  });
 
-    let pages = Math.ceil(count / limit);
+  let pages = Math.ceil(count / limit);
 
   res.send({
-    assets  : uploaded,
-    totalPage : page,
-    nextPage : page + 1 > pages ? null : page + 1,
+    assets: uploaded,
+    totalPage: page,
+    nextPage: page + 1 > pages ? null : page + 1,
   });
 });
 
@@ -74,25 +76,23 @@ uploadedRouter.delete("/:id", async (req, res) => {
     return;
   }
 
-  let uploadedData = await uploadedSchema.findOne({
-    where: {
-      id: id,
-      address: address,
-    },
-  });
-
-  if (!uploadedData) {
-    res.status(400).send({
-      status: "error",
-      message: "Invalid Request Parameters",
+  await prisma.uploadeds
+    .delete({
+      where: {
+        id: id,
+        address: address,
+      },
+    })
+    .catch((err) => {
+      res.status(400).send({
+        status: "error",
+        message: "Invalid Request Parameters",
+      });
+      return;
     });
-    return;
-  }
-
-  await uploadedData.destroy();
 
   res.status(200).send({
-    message : "Deleted Successfully",
+    message: "Deleted Successfully",
   });
 });
 
