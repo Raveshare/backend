@@ -59,7 +59,7 @@ authRouter.post('/login', async (req, res) => {
                 complete: true,
               });
       
-              hasExpired = decodedToken.payload.exp < Date.now() / 1000;
+              hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
             }
 
             let jwt = await generateJwt(address, signature);
