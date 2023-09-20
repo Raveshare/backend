@@ -51,12 +51,17 @@ authRouter.post('/login', async (req, res) => {
                 await ownerData.save();
             }
 
-            let { accessToken , refreshToken } = ownerData.lens_auth_token
+            let hasExpired = false;
+            if (ownerData.lens_auth_token) {
+              let { accessToken, refreshToken } = ownerData.lens_auth_token;
+      
+              const decodedToken = jsonwebtoken.decode(refreshToken, {
+                complete: true,
+              });
+      
+              hasExpired = decodedToken.payload.exp < Date.now() / 1000;
+            }
 
-            const decodedToken = jsonwebtoken.decode(refreshToken, { complete: true });
-
-            let hasExpired = decodedToken.payload.exp < Date.now() / 1000 
-           
             let jwt = await generateJwt(address, signature);
 
             userLogin(address);
