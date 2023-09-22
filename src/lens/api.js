@@ -4,7 +4,6 @@ const ownerSchema = require("../schema/ownerSchema");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
-
 const checkDispatcherQuery = gql`
   query Profile($profileId: ProfileId!) {
     profile(request: { profileId: $profileId }) {
@@ -128,6 +127,8 @@ const checkAccessTokenQuery = gql`
 async function checkAccessToken(accessToken) {
   const variables = { accessToken };
   let resp = await request(LENS_API_URL, checkAccessTokenQuery, variables);
+
+  console.log(resp);
 
   return resp.verify;
 }
@@ -330,7 +331,7 @@ const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
 };
 
 const doesFollowQuery = gql`
-  query DoesFollow($followerAddress: EthereumAddress! , $profileId: ProfileId!) {
+  query DoesFollow($followerAddress: EthereumAddress!, $profileId: ProfileId!) {
     doesFollow(
       request: {
         followInfos: [
@@ -344,11 +345,10 @@ const doesFollowQuery = gql`
 `;
 
 const doesFollow = async (followerAddress) => {
+  let profileId;
+  if (NODE_ENV === "development") profileId = "0x90c3";
+  else profileId = "0x01b984";
 
-  let profileId
-  if(NODE_ENV === "development") profileId = "0x90c3"
-  else profileId = "0x01b984"
-  
   const variables = {
     followerAddress: followerAddress,
     profileId: profileId,
@@ -357,6 +357,54 @@ const doesFollow = async (followerAddress) => {
   const result = await request(LENS_API_URL, doesFollowQuery, variables);
 
   return result.doesFollow[0].follows;
+};
+
+const hasCollectedQuery = gql`
+  query Publication($publicationId: InternalPublicationId!) {
+    publication(request: { publicationId: $publicationId }) {
+      __typename
+      ... on Post {
+        hasCollectedByMe
+      }
+    }
+  }
+`;
+
+const hasCollected = async (publicationId, address, accessToken , refreshAccessToken) => {
+  const variables = {
+    publicationId: publicationId,
+  };
+
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+
+  console.log(isAccessTokenValid);
+
+  if (!isAccessTokenValid) {
+    let tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshAccessToken,
+    };
+
+    let owner = await ownerSchema.findOne({
+      where: {
+        address: address,
+      },
+    });
+    owner.lens_auth_token = lens_auth_token;
+    await owner.save();
+  }
+
+  const result = await request(LENS_API_URL, hasCollectedQuery, variables, {
+    Authorization: `Bearer ${accessToken}`,
+  });
+
+  console.log(result);
+
+  return result.publication.hasCollectedByMe;
 };
 
 module.exports = {
@@ -374,4 +422,5 @@ module.exports = {
   getWhoCollectedPublication,
   getProfileAddressFromHandle,
   doesFollow,
+  hasCollected,
 };

@@ -6,9 +6,9 @@ const app = express({
   logger: true,
 });
 
-(async () => {
-  await bree.start();
-})();
+// (async () => {
+//   await bree.start();
+// })();
 
 const compression = require("compression");
 
