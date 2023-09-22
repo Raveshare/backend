@@ -1,6 +1,7 @@
 const templateRouter = require("express").Router();
-const prisma = require("../../prisma")
+const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
+const hasCollected = require("../../lens/api").hasCollected;
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -14,8 +15,8 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
     offset = limit * (page - 1);
 
     const templates = await prisma.template_view.findMany({
-      skip: offset
-    })
+      skip: offset,
+    });
 
     let totalAssets = await prisma.template_view.count({});
 
@@ -52,21 +53,59 @@ templateRouter.get("/user", async (req, res) => {
 
     let publicTemplatesCount = await prisma.public_canvas_templates.count({});
 
-    publicTemplates = publicTemplates.map((template) => {
-      if (template.isGated) {
-        if (template.allowList.includes(address)) {
+    let owners = await prisma.owners.findUnique({
+      where: {
+        address: address,
+      },
+      select: {
+        lens_auth_token: true,
+      },
+    });
+
+    let { accessToken, refreshToken } = owners.lens_auth_token;
+
+    // publicTemplates = publicTemplates.map((template) => {
+    //   if (template.isGated) {
+    //     if (template.allowList.includes(address)) {
+    //       template.allowList = [];
+    //       return template;
+    //     } else {
+    //       template.data = {};
+    //       template.allowList = [];
+    //       return template;
+    //     }
+    //   } else {
+    //     template.allowList = [];
+    //     return template;
+    //   }
+    // });
+
+    for (let i = 0; i < publicTemplates.length; i++) {
+      let template = publicTemplates[i];
+      let isGated = template.isGated;
+      if (!isGated) continue;
+      let gatedWith = template.gatedWith;
+
+      for (let i = 0; i < gatedWith.length; i++) {
+        let pubId = gatedWith[i];
+        if (pubId.length > 20) continue;
+        let collected = await hasCollected(
+          pubId,
+          address,
+          accessToken,
+          refreshToken
+        );
+        if (collected) {
+          // template.data = {};
           template.allowList = [];
-          return template;
+          publicTemplates[i] = template;
         } else {
           template.data = {};
           template.allowList = [];
-          return template;
+          publicTemplates[i] = template;
         }
-      } else {
-        template.allowList = [];
-        return template;
       }
-    });
+    }
 
     totalPage = Math.ceil(publicTemplatesCount / limit);
 
