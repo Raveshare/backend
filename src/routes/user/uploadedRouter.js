@@ -45,8 +45,8 @@ uploadedRouter.get("/", async (req, res) => {
     where: {
       address: address,
     },
-    skip: limit,
-    offset: offset,
+    skip: offset,
+    take: limit,
   });
 
   let count = await prisma.uploadeds.count({

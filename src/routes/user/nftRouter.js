@@ -8,7 +8,7 @@ const sendError = require("../../functions/webhook/sendError.webhook");
 nftRouter.post("/update", async (req, res) => {
   let address = req.user.address;
 
-  let owner = await prisma.owner.findUnique({
+  let owner = await prisma.owners.findUnique({
     where: {
       address: address,
     },

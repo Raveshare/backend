@@ -37,6 +37,7 @@ model canvases {
   isPublic     Boolean  @default(false)
   ipfsLink     String[] @db.VarChar(255)
   imageLink    String[] @db.VarChar(255)
+  assetsRecipientElementData Json?
   createdAt    DateTime @db.Timestamptz(6) @default(now())
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
