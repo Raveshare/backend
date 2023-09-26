@@ -1,35 +1,22 @@
 const { validateMetadata } = require("../lens/api");
 
-const polygonPrivateKey = process.env.POLYGON_PRIVATE_KEY;
-
-const NodeBundlr = require("@bundlr-network/client");
-const bundlr = new NodeBundlr(
-  "http://node2.bundlr.network",
-  "matic",
-  polygonPrivateKey
-);
-
-// try {
-//   const fundAmountAtomic = bundlr.utils.toAtomic(25);
-// 	const response = bundlr.fund(fundAmountAtomic).then((response) => {
-// 	console.log(`Funding successful txID=${response.id} amount funded=${response.quantity}`);
-//   });
-// } catch (e) {
-// 	console.log("Error funding node ", e);
-// }
-
-
 const { v4: uuid } = require("uuid");
+const fs = require("fs");
+
+const { ThirdwebStorage } = require("@thirdweb-dev/storage");
+
+const storage = new ThirdwebStorage({
+  secretKey: process.env.TW_SECRET_KEY,
+});
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   mimeType = mimeType || "image/png";
 
-  const tags = [{ name: "Content-Type", value: mimeType }];
-  let { id } = await bundlr.upload(blob, {
-    tags,
+  let res = await storage.upload(blob, {
+    uploadWithoutDirectory : true,
   });
 
-  return `https://arweave.net/${id}`;
+  return res;
 };
 
 const uploaddMetadataToIpfs = async (postData) => {
@@ -67,12 +54,11 @@ const uploaddMetadataToIpfs = async (postData) => {
 
   const data = JSON.stringify(metaData);
 
-  // Upload to Arweave via Bundlr
-  const { id } = await bundlr.upload(data, {
-    tags: [{ name: "Content-Type", value: "application/json" }],
+  const upload = await storage.upload(data, {
+    uploadWithoutDirectory : true,
   });
 
-  return `https://arweave.net/${id}`;
+  return upload;
 };
 
 module.exports = {

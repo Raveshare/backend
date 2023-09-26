@@ -35,8 +35,8 @@ model canvases {
   data         Json
   params       Json?
   isPublic     Boolean  @default(false)
-  ipfsLink     String[] @db.VarChar(255)
-  imageLink    String[] @db.VarChar(255)
+  ipfsLink     String[] @db.VarChar(255) @default([])
+  imageLink    String[] @db.VarChar(255) @default([])
   assetsRecipientElementData Json?
   createdAt    DateTime @db.Timestamptz(6) @default(now())
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
@@ -93,6 +93,7 @@ model nftData {
 
 model owners {
   address            String     @id @db.VarChar(255)
+  solana_address            String?    @db.VarChar(255)
   canvasOwned        Int?       @default(0)
   nftOwned           Int?       @default(0)
   mail               String?    @db.VarChar(255)
@@ -129,12 +130,12 @@ view public_canvas_templates {
   data         Json?
   params       Json?
   isPublic     Boolean?
-  ipfsLink     String[]  @db.VarChar(255)
-  imageLink    String[]  @db.VarChar(255)
+  ipfsLink     String[]  @db.VarChar(255) @default([])
+  imageLink    String[]  @db.VarChar(255) @default([])
   createdAt    DateTime? @db.Timestamptz(6)
   updatedAt    DateTime? @db.Timestamptz(6)
   ownerAddress String?   @db.VarChar(255)
-  referredFrom String[]  @db.VarChar(255)
+  referredFrom String[]  @db.VarChar(255) @default([])
   isGated      Boolean?
   allowList    String[]  @db.VarChar(255)
   gatedWith    String[]  @db.VarChar(255)
