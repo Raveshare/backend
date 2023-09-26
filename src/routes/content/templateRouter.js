@@ -89,12 +89,15 @@ templateRouter.get("/user", async (req, res) => {
       for (let i = 0; i < gatedWith.length; i++) {
         let pubId = gatedWith[i];
         if (pubId.length > 20) continue;
-        let collected = await hasCollected(
-          pubId,
-          address,
-          accessToken,
-          refreshToken
-        );
+        let collected = false;
+        if (accessToken) {
+          collected = await hasCollected(
+            pubId,
+            address,
+            accessToken,
+            refreshToken
+          );
+        }
         if (collected) {
           // template.data = {};
           template.allowList = [];
