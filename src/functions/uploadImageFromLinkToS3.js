@@ -10,24 +10,22 @@ const uploadImageFromLinkToS3 = async (link, address, fileName) => {
     let dimensions = [0, 0];
     let format = response.headers["content-type"].split("/")[1];
     try {
-    dimensions = sizeOf(response.data);
+      dimensions = sizeOf(response.data);
 
-    let width = dimensions.width;
-    let height = dimensions.height;
-   format = dimensions.type;
+      let width = dimensions.width;
+      let height = dimensions.height;
+      format = dimensions.type;
 
-    dimensions = [width, height];
-    } catch (err) {
-
-    }
+      dimensions = [width, height];
+    } catch (err) {}
 
     let filepath = `user/${address}/nft/${fileName}.${format}`;
 
     let s3Link = await uploadImageToS3(response.data, filepath);
     return {
       dimensions,
-      s3Link
-    }
+      s3Link,
+    };
   } catch (err) {
     console.log(err);
     return null;

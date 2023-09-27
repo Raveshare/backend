@@ -106,7 +106,7 @@ async function updateNFTsForOwner(ownerAddress) {
       let res = await uploadImageFromLinkToS3(
         nftInstance.permaLink,
         ownerAddress,
-        nft.name
+        nft.name + " " + nft.tokenId
       );
 
       if (!res) continue;
