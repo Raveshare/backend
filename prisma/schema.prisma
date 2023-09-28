@@ -14,7 +14,7 @@ model Assets {
   type       String?  @db.VarChar(255)
   author     String?  @db.VarChar(255)
   image      String?  @db.VarChar(255)
-  createdAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
   featured   Boolean? @default(false)
   wallet     String?  @db.VarChar(255)
@@ -26,26 +26,26 @@ model auths {
   lens      Json?
   farcaster Json?
   twitter   Json?
-  createdAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model canvases {
-  id           Int      @id @default(autoincrement())
-  data         Json
-  params       Json?
-  isPublic     Boolean  @default(false)
-  ipfsLink     String[] @db.VarChar(255) @default([])
-  imageLink    String[] @db.VarChar(255) @default([])
+  id                         Int      @id @default(autoincrement())
+  data                       Json
+  params                     Json?
+  isPublic                   Boolean  @default(false)
+  ipfsLink                   String[] @default([]) @db.VarChar(255)
+  imageLink                  String[] @default([]) @db.VarChar(255)
   assetsRecipientElementData Json?
-  createdAt    DateTime @db.Timestamptz(6) @default(now())
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
-  ownerAddress String?  @db.VarChar(255)
-  referredFrom String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  isGated      Boolean? @default(false)
-  allowList    String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  gatedWith    String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  owners       owners?  @relation(fields: [ownerAddress], references: [address])
+  createdAt                  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
+  ownerAddress               String?  @db.VarChar(255)
+  referredFrom               String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  isGated                    Boolean? @default(false)
+  allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  owners                     owners?  @relation(fields: [ownerAddress], references: [address])
 }
 
 model collections {
@@ -54,7 +54,7 @@ model collections {
   name        String     @db.VarChar(255)
   openseaLink String     @db.VarChar(255)
   image       String     @db.VarChar(255)
-  createdAt   DateTime   @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
   contents    contents[]
 }
@@ -68,7 +68,7 @@ model contents {
   ipfsLink     String       @db.VarChar(255)
   imageURL     String       @db.VarChar(255)
   openseaLink  String       @db.VarChar(255)
-  createdAt    DateTime     @db.Timestamptz(6)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime     @updatedAt @db.Timestamptz(6)
   collectionId Int?
   collections  collections? @relation(fields: [collectionId], references: [id])
@@ -84,7 +84,7 @@ model nftData {
   permaLink    String?  @db.VarChar(255)
   isPublic     Boolean  @default(false)
   address      String   @db.VarChar(255)
-  createdAt    DateTime @db.Timestamptz(6)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
   dimensions   Int[]
@@ -93,7 +93,7 @@ model nftData {
 
 model owners {
   address            String     @id @db.VarChar(255)
-  solana_address            String?    @db.VarChar(255)
+  solana_address     String?    @db.VarChar(255)
   canvasOwned        Int?       @default(0)
   nftOwned           Int?       @default(0)
   mail               String?    @db.VarChar(255)
@@ -113,7 +113,7 @@ model templates {
   data      Json     @db.Json
   name      String   @db.VarChar(255)
   image     String   @db.VarChar(255)
-  createdAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
@@ -121,7 +121,7 @@ model uploadeds {
   id        Int      @id @default(autoincrement())
   image     String   @db.VarChar(255)
   address   String   @db.VarChar(255)
-  createdAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
@@ -130,12 +130,12 @@ view public_canvas_templates {
   data         Json?
   params       Json?
   isPublic     Boolean?
-  ipfsLink     String[]  @db.VarChar(255) @default([])
-  imageLink    String[]  @db.VarChar(255) @default([])
-  createdAt    DateTime? @db.Timestamptz(6)
+  ipfsLink     String[]  @default([]) @db.VarChar(255)
+  imageLink    String[]  @default([]) @db.VarChar(255)
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime? @db.Timestamptz(6)
   ownerAddress String?   @db.VarChar(255)
-  referredFrom String[]  @db.VarChar(255) @default([])
+  referredFrom String[]  @default([]) @db.VarChar(255)
   isGated      Boolean?
   allowList    String[]  @db.VarChar(255)
   gatedWith    String[]  @db.VarChar(255)
@@ -146,6 +146,6 @@ view template_view {
   data      Json?     @db.Json
   name      String?   @db.VarChar(255)
   image     String?   @db.VarChar(255)
-  createdAt DateTime? @db.Timestamptz(6)
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @db.Timestamptz(6)
 }
