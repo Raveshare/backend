@@ -5,6 +5,7 @@ src/dumpdata/assets
 src/dumpdata/collections
 yarn-error.log
 src/routes/admin
+prisma/migrations
 
 plotno_json_file.json
 template.json

@@ -13,6 +13,7 @@
     "@opentelemetry/sdk-trace-base": "^1.15.2",
     "@opentelemetry/sdk-trace-node": "^1.15.2",
     "@opentelemetry/semantic-conventions": "^1.15.2",
+    "@pinata/sdk": "^2.1.0",
     "@prisma/client": "^5.2.0",
     "@prisma/instrumentation": "^5.2.0",
     "@railway/cli": "^3.3.1",
