@@ -1,22 +1,26 @@
 const { validateMetadata } = require("../lens/api");
 
 const { v4: uuid } = require("uuid");
-const fs = require("fs");
 
-const { ThirdwebStorage } = require("@thirdweb-dev/storage");
+const pinataSDK = require('@pinata/sdk');
+const { Readable } = require("stream");
 
-const storage = new ThirdwebStorage({
-  secretKey: process.env.TW_SECRET_KEY,
-});
+const pinata = new pinataSDK(process.env.PINATA_API_KEY , process.env.PINATA_API_SECRET);
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   mimeType = mimeType || "image/png";
 
-  let res = await storage.upload(blob, {
-    uploadWithoutDirectory : true,
-  });
+  let reader = new Readable();
+  reader.push(blob);
+  reader.push(null);
 
-  return res;
+  let res = await pinata.pinFileToIPFS(reader , {
+    pinataMetadata : {
+      name : 'image',
+    }
+  })
+
+  return res.IpfsHash;
 };
 
 const uploaddMetadataToIpfs = async (postData) => {
@@ -52,13 +56,9 @@ const uploaddMetadataToIpfs = async (postData) => {
     throw new Error(reason);
   }
 
-  const data = JSON.stringify(metaData);
+  let res = await pinata.pinJSONToIPFS(metaData);
 
-  const upload = await storage.upload(data, {
-    uploadWithoutDirectory : true,
-  });
-
-  return upload;
+  return res.IpfsHash;
 };
 
 module.exports = {
