@@ -132,6 +132,7 @@ canvasRouter.put("/update", async (req, res) => {
         referredFrom: canvasData.referredFrom,
       }
     }).catch((error) => {
+      console.log(error);
       res.status(404).send({
         status: "error",
         message: `Canvas not found`,
@@ -161,7 +162,7 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   let canvasData = req.body.canvasData;
 
-  if (!canvasData.id || !canvasData.isPublic) {
+  if (!canvasData.id) {
     res.status(400).send({
       status: "error",
       message: "Invalid Request Parameters",

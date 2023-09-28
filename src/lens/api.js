@@ -404,7 +404,7 @@ const hasCollected = async (publicationId, address, accessToken , refreshAccessT
 
   console.log(result);
 
-  return result.publication.hasCollectedByMe;
+  return result.publication?.hasCollectedByMe;
 };
 
 module.exports = {

@@ -61,7 +61,7 @@ lensRouter.post("/authenticate", async (req, res) => {
       refreshToken: refreshToken,
     };
 
-    prisma.owners.update({
+    await prisma.owners.update({
       where: {
         address: address,
       },
