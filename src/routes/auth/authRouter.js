@@ -2,7 +2,7 @@ const authRouter = require("express").Router();
 const lensRouter = require("./lensRouter");
 const twitterRouter = require("./twitterRouter");
 
-const verifySignature = require("../../utils/auth/verifySignature");
+const { verifyEthSignature } = require("../../utils/auth/verifySignature");
 const generateJwt = require("../../utils/auth/generateJwt");
 const auth = require("../../middleware/auth/auth");
 
@@ -33,7 +33,8 @@ authRouter.post("/login", async (req, res) => {
   }
 
   try {
-    let isVerified = await verifySignature(address, signature, message);
+    let isVerified = await verifyEthSignature(address, signature, message);
+    console.log(isVerified);
     if (isVerified) {
       let ownerData = await prisma.owners.findUnique({
         where: {
@@ -55,11 +56,15 @@ authRouter.post("/login", async (req, res) => {
       if (ownerData.lens_auth_token) {
         let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
-        const decodedToken = jsonwebtoken.decode(refreshToken, {
-          complete: true,
-        });
+        if (!accessToken || !refreshToken) {
+          hasExpired = true;
+        } else {
+          const decodedToken = jsonwebtoken.decode(refreshToken, {
+            complete: true,
+          });
 
-        hasExpired = decodedToken.payload.exp < Date.now() / 1000;
+          hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
+        }
       }
 
       let jwt = generateJwt(address, signature);
