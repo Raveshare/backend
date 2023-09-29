@@ -209,7 +209,7 @@ const setDispatcher = async (profileId, accessToken) => {
     }
   );
 
-  return result.createSetDispatcherTypedData.typedData;
+  return result.createSetDispatcherTypedData?.typedData;
 };
 
 const createPostViaDispatcherQuery = gql`
@@ -356,7 +356,7 @@ const doesFollow = async (followerAddress) => {
 
   const result = await request(LENS_API_URL, doesFollowQuery, variables);
 
-  return result.doesFollow[0].follows;
+  return result.doesFollow[0]?.follows;
 };
 
 const hasCollectedQuery = gql`
@@ -376,8 +376,6 @@ const hasCollected = async (publicationId, address, accessToken , refreshAccessT
   };
 
   let isAccessTokenValid = await checkAccessToken(accessToken);
-
-  console.log(isAccessTokenValid);
 
   if (!isAccessTokenValid) {
     let tokens = await refreshToken(refreshAccessToken);
@@ -401,8 +399,6 @@ const hasCollected = async (publicationId, address, accessToken , refreshAccessT
   const result = await request(LENS_API_URL, hasCollectedQuery, variables, {
     Authorization: `Bearer ${accessToken}`,
   });
-
-  console.log(result);
 
   return result.publication?.hasCollectedByMe;
 };

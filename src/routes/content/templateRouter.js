@@ -49,6 +49,9 @@ templateRouter.get("/user", async (req, res) => {
     let publicTemplates = await prisma.public_canvas_templates.findMany({
       take: limit,
       skip: offset,
+      orderBy: {
+        updatedAt: "desc",
+      },
     });
 
     let publicTemplatesCount = await prisma.public_canvas_templates.count({});
@@ -63,22 +66,6 @@ templateRouter.get("/user", async (req, res) => {
     });
 
     let { accessToken, refreshToken } = owners.lens_auth_token;
-
-    // publicTemplates = publicTemplates.map((template) => {
-    //   if (template.isGated) {
-    //     if (template.allowList.includes(address)) {
-    //       template.allowList = [];
-    //       return template;
-    //     } else {
-    //       template.data = {};
-    //       template.allowList = [];
-    //       return template;
-    //     }
-    //   } else {
-    //     template.allowList = [];
-    //     return template;
-    //   }
-    // });
 
     for (let i = 0; i < publicTemplates.length; i++) {
       let template = publicTemplates[i];
@@ -99,7 +86,6 @@ templateRouter.get("/user", async (req, res) => {
           );
         }
         if (collected) {
-          // template.data = {};
           template.allowList = [];
           publicTemplates[i] = template;
         } else {
@@ -122,41 +108,5 @@ templateRouter.get("/user", async (req, res) => {
     res.status(500).json(error);
   }
 });
-
-// templateRouter.post("/", async (req, res) => {
-//   let data, name;
-//   try {
-//     data = req.body.data;
-//     name = req.body.name;
-//   } catch (error) {
-//     res.status(400).json({
-//       status: "error",
-//       message: "Invalid request body",
-//     });
-//   }
-
-//   try {
-//     let json = JSON.stringify(data);
-//     // let imageBuffer = await getImageBuffer(json);
-//     // TODO : integrate with S3
-//     let imageBuffer = null;
-//     let random = Math.floor(Math.random() * 1000000000);
-//     let filepath = `templates/${name} - ${random}.png`;
-//     let image = await uploadImageToS3(imageBuffer, filepath);
-
-//     let template = await templateSchema.create({
-//       name: name,
-//       data: data,
-//       image: image,
-//     });
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "Template created successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// });
 
 module.exports = templateRouter;
