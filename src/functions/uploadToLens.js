@@ -36,7 +36,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
 
     let createPostRequest = {
       profileId: ownerData.profileId,
-      contentURI: permadata,
+      contentURI: `ipfs://${permadata}`,
     };
 
     createPostRequest = Object.assign(createPostRequest, params);
