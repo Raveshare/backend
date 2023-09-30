@@ -2,10 +2,13 @@ const { validateMetadata } = require("../lens/api");
 
 const { v4: uuid } = require("uuid");
 
-const pinataSDK = require('@pinata/sdk');
+const pinataSDK = require("@pinata/sdk");
 const { Readable } = require("stream");
 
-const pinata = new pinataSDK(process.env.PINATA_API_KEY , process.env.PINATA_API_SECRET);
+const pinata = new pinataSDK(
+  process.env.PINATA_API_KEY,
+  process.env.PINATA_API_SECRET
+);
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   mimeType = mimeType || "image/png";
@@ -14,11 +17,11 @@ const uploadMediaToIpfs = async (blob, mimeType) => {
   reader.push(blob);
   reader.push(null);
 
-  let res = await pinata.pinFileToIPFS(reader , {
-    pinataMetadata : {
-      name : 'image',
-    }
-  })
+  let res = await pinata.pinFileToIPFS(reader, {
+    pinataMetadata: {
+      name: "image",
+    },
+  });
 
   return res.IpfsHash;
 };
@@ -29,6 +32,9 @@ const uploaddMetadataToIpfs = async (postData) => {
     media.push({
       type: "image/png",
       item: `${postData.image[i]}`,
+      item: postData.image[i]?.startsWith("https://arweave.net")
+        ? postData.image[i]
+        : `ipfs://${postData.image[i]}`,
     });
   }
 
