@@ -36,13 +36,15 @@ twitterRouter.get("/authenticate", async (req, res) => {
 
   console.log("state", state);
 
-  let url = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${TWITTER_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=tweet.write%20offline.access&state=${state}&code_challenge=${code_challenge}&code_challenge_method=plain`;
+  let url = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${TWITTER_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=tweet.write%20tweet.read%20users.read%20offline.access&state=${state}&code_challenge=${code_challenge}&code_challenge_method=plain`;
 
   res.status(200).send({
     status: "success",
     message: url,
   });
 });
+
+// http://localhost:5173/api/auth/callback/twitter?state=p_tghGjHuXahT2SCpqAYm9JZNqaPnlTwostutcD6i6A&code=Q211MDZ0cmxRaUs1MTU5MDVFQ09DSGJYNFQyVVVXaktodVM4RjZWY1UtaUxlOjE2ODk4OTA1NzU5NjU6MToxOmFjOjE
 
 twitterRouter.get("/callback", async (req, res) => {
   let address = req.user.address;
@@ -59,12 +61,12 @@ twitterRouter.get("/callback", async (req, res) => {
 
   // q5oUSJUCjeYlKexr45%2FBVqvfpUMJUlrkHZlBnotg1KM%3D
 
-  let stateData = store.get(`state_${state}`);
+  // let stateData = store.get(`state_${state}`);
 
-  // let stateData = {
-  //   address: "0x0CF97e9C28C5b45C9Dc20Dd8c9d683E0265190CB",
-  //   code_challenge: "iqVTa0ZME4WOudsnZayNk9VT9NAxmokd5FtEg3Kxhuc=",
-  // };
+  let stateData =  {
+    address: '0x0CF97e9C28C5b45C9Dc20Dd8c9d683E0265190CB',
+    code_challenge: 'qA3yN5WQ4ppL4qPNgYobh1hSR9iAYDNq+/mDfTJ+VWk='
+  }
 
   console.log("stateData", stateData);
 
@@ -102,7 +104,7 @@ twitterRouter.get("/callback", async (req, res) => {
 
   try {
     let data = {
-      grant_type: "client_credentials",
+      grant_type: "authorization_code",
       redirect_uri: REDIRECT_URI,
       code: code,
       code_verifier: code_challenge,

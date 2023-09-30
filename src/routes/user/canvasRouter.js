@@ -243,14 +243,14 @@ canvasRouter.post("/publish", async (req, res) => {
     return;
   }
 
-  let canvas = await canvasSchema.findOne({
-    where: {
-      id: canvasId,
-    },
-  });
+  // let canvas = await canvasSchema.findOne({
+  //   where: {
+  //     id: canvasId,
+  //   },
+  // });
 
-  if (!canvas) {
-    res.status(404).send("Canvas not found");
+  if (canvas.ownerAddress != ownerAddress) {
+    res.status(401).send("Unauthorized");
     return;
   }
 
@@ -260,12 +260,14 @@ canvasRouter.post("/publish", async (req, res) => {
     },
   });
 
-  if (canvas.ownerAddress != ownerAddress) {
-    res.status(401).send("Unauthorized");
-    return;
-  }
+  // let json = JSON.stringify(canvas.data);
 
-  let url = canvas.ipfsLink;
+  // if (!json) {
+  //   res.status(404).send("Canvas data not found");
+  //   return;
+  // }
+
+  // let url = await getLatestImagePreview(json, ownerAddress, canvasId);
 
   let resp;
   if (platform == "lens") {
@@ -287,6 +289,13 @@ canvasRouter.post("/publish", async (req, res) => {
     }
     canvasPostedToLens(canvasId, ownerAddress);
   } else if (platform == "twitter") {
+    let postMetadata = {
+      name: name,
+      content: content,
+      handle: owner.lens_handle,
+      // image: url,
+    };
+
     resp = await uploadToTwitter(postMetadata, owner);
     canvasPostedToTwitter(canvasId, ownerAddress);
   }
