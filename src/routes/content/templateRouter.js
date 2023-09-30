@@ -73,8 +73,8 @@ templateRouter.get("/user", async (req, res) => {
       if (!isGated) continue;
       let gatedWith = template.gatedWith;
 
-      for (let i = 0; i < gatedWith.length; i++) {
-        let pubId = gatedWith[i];
+      for (let j = 0; j < gatedWith.length; j++) {
+        let pubId = gatedWith[j];
         if (pubId.length > 20) continue;
         let collected = false;
         if (accessToken) {
