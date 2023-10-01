@@ -1,32 +1,39 @@
 const { validateMetadata } = require("../lens/api");
 
+const projectId = process.env.IPFS_PROJECT_ID;
+const projectSecret = process.env.IPFS_PROJECT_SECRET;
+const auth =
+    "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 const { v4: uuid } = require("uuid");
 
-const pinataSDK = require("@pinata/sdk");
-const { Readable } = require("stream");
+const getIpfsClient = async () => {
+  const { create } = await import("ipfs-http-client");
 
-const pinata = new pinataSDK(
-  process.env.PINATA_API_KEY,
-  process.env.PINATA_API_SECRET
-);
+  const ipfsClient = create({
+      host: "ipfs.infura.io",
+      port: 5001,
+      protocol: "https",
+      headers: {
+          authorization: auth,
+      },
+  });
+
+  return ipfsClient;
+}
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   mimeType = mimeType || "image/png";
 
-  let reader = new Readable();
-  reader.push(blob);
-  reader.push(null);
-
-  let res = await pinata.pinFileToIPFS(reader, {
-    pinataMetadata: {
-      name: "image",
-    },
-  });
-
-  return res.IpfsHash;
+  const ipfsClient = await getIpfsClient();
+  const result = await ipfsClient.add(blob);
+  
+  return result.cid.toString();
 };
 
 const uploaddMetadataToIpfs = async (postData) => {
+
+  const ipfsClient = await getIpfsClient();
+
   let media = [];
   for (let i = 0; i < postData.image.length; i++) {
     media.push({
@@ -61,10 +68,9 @@ const uploaddMetadataToIpfs = async (postData) => {
   if (!valid) {
     throw new Error(reason);
   }
+  const { path } = await ipfsClient.add(JSON.stringify(metaData));
 
-  let res = await pinata.pinJSONToIPFS(metaData);
-
-  return res.IpfsHash;
+  return path.toString();
 };
 
 module.exports = {

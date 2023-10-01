@@ -120,7 +120,7 @@ canvasRouter.put("/update", async (req, res) => {
   }
 
   try {
-    canvasData.referredFrom = canvasData.referredFrom.map((ref) => {
+    canvasData.referredFrom = canvasData.referredFrom?.map((ref) => {
       if (ref) return ref;
     });
 

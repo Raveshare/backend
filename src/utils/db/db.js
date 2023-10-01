@@ -2,12 +2,12 @@ require("dotenv").config()
 const { Sequelize } = require("sequelize")
 
 // intialize the db object
-const DATABASE_URI = process.env.DATABASE_URI
+const DATABASE_URL = process.env.DATABASE_URL
 /**
  * Database object
- * @param DATABASE_URI URI of the POSTGRES Database
+ * @param DATABASE_URL URI of the POSTGRES Database
  */
-const db = new Sequelize(DATABASE_URI, {
+const db = new Sequelize(DATABASE_URL, {
     logging: false,
 
     pool: {
