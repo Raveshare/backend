@@ -100,12 +100,12 @@ nftRouter.get("/", async (req, res) => {
         continue;
       }
 
-      if (title.includes(query)) {
+      if (title.toLowerCase().includes(query.toLowerCase())) {
         queriedNFTs.push(nft);
         continue;
       }
 
-      if (description.includes(query)) {
+      if (description.toLowerCase().includes(query.toLowerCase())) {
         queriedNFTs.push(nft);
         continue;
       }
