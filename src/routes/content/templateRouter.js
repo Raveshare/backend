@@ -36,6 +36,7 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
 templateRouter.get("/user", async (req, res) => {
   let address = req.user.address;
+  // let address = "0x726Fbc2349c4033366242A7Db2721066999eB1e1";
   let page = req.query.page;
   page = parseInt(page);
 
@@ -65,7 +66,14 @@ templateRouter.get("/user", async (req, res) => {
       },
     });
 
-    let { accessToken, refreshToken } = owners.lens_auth_token;
+    let accessToken, refreshToken;
+    if (owners.lens_auth_token == null) {
+      accessToken = null;
+      refreshToken = null;
+    } else {
+      accessToken = owners.lens_auth_token.accessToken;
+      refreshToken = owners.lens_auth_token.refreshToken;
+    }
 
     for (let i = 0; i < publicTemplates.length; i++) {
       let template = publicTemplates[i];
