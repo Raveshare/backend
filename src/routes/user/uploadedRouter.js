@@ -79,11 +79,12 @@ uploadedRouter.delete("/:id", async (req, res) => {
   await prisma.uploadeds
     .delete({
       where: {
-        id: id,
+        id: parseInt(id),
         address: address,
       },
     })
     .catch((err) => {
+      console.log(err);
       res.status(400).send({
         status: "error",
         message: "Invalid Request Parameters",

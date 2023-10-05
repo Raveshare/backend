@@ -72,7 +72,7 @@ canvasRouter.post("/create", async (req, res) => {
   }
 
   try {
-    canvasData.referredFrom = canvasData.referredFrom.map((ref) => {
+    canvasData.referredFrom = canvasData.referredFrom?.map((ref) => {
       if (ref) return String(ref);
     });
 
@@ -124,8 +124,9 @@ canvasRouter.put("/update", async (req, res) => {
       if (ref) return ref;
     });
 
-    let canvas = await prisma.canvases
-      .update({
+    let canvas;
+    try {
+      canvas = await prisma.canvases.update({
         where: {
           id: canvasData.id,
           ownerAddress: ownerAddress,
@@ -134,15 +135,14 @@ canvasRouter.put("/update", async (req, res) => {
           data: canvasData.data,
           referredFrom: canvasData.referredFrom,
         },
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(404).send({
-          status: "error",
-          message: `Canvas not found`,
-        });
-        return;
       });
+    } catch (error) {
+      // console.log(error);
+      res.status(500).send({
+        message: "Record not found",
+      });
+      return;
+    }
 
     updateImagePreview(preview, ownerAddress, canvas.id);
 
@@ -151,7 +151,7 @@ canvasRouter.put("/update", async (req, res) => {
       message: "Canvas Updated",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).send({
       status: "error",
       message: `Error: ${error}`,
