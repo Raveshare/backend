@@ -5,6 +5,7 @@
   "author": "Aryan",
   "license": "MIT",
   "dependencies": {
+    "@0xsplits/splits-sdk": "^2.15.0",
     "@bundlr-network/client": "^0.11.17",
     "@ipld/car": "^5.2.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.41.2",
@@ -55,6 +56,7 @@
     "sqlite3": "^5.1.6",
     "store2": "^2.14.2",
     "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
     "twitter-api-sdk": "^1.2.1",
     "twitter-api-v2": "^1.14.2",
     "twitter-lite": "^1.1.0",
