@@ -45,7 +45,7 @@ model canvases {
   isGated                    Boolean? @default(false)
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  owners                     owners?  @relation(fields: [ownerAddress], references: [address])
+  owners                     owners?  @relation(fields: [ownerAddress], references: [evm_address])
 }
 
 model collections {
@@ -88,12 +88,14 @@ model nftData {
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
   dimensions   Int[]
-  owners       owners?  @relation(fields: [ownerAddress], references: [address])
+  owners       owners?  @relation(fields: [ownerAddress], references: [evm_address])
 }
 
 model owners {
-  address            String     @id @db.VarChar(255)
-  solana_address     String?    @db.VarChar(255)
+  id                 Int        @id @default(autoincrement())
+  address            String     @unique @db.VarChar(255) 
+  evm_address        String?    @unique @db.VarChar(255)
+  solana_address     String?    @unique @db.VarChar(255)
   canvasOwned        Int?       @default(0)
   nftOwned           Int?       @default(0)
   mail               String?    @db.VarChar(255)
@@ -149,3 +151,6 @@ view template_view {
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @db.Timestamptz(6)
 }
+
+// constraint canvases_ownerAddress_fkey on table canvases depends on index owners_pkey
+// constraint nftData_ownerAddress_fkey on table "nftData" depends on index owners_pkey
