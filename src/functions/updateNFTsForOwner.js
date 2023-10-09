@@ -1,4 +1,5 @@
 const getNfts = require("../lens/api").getNfts;
+const getAssetsByOwner = require("../functions/solana/getAssetsByOwner")
 const { isEmpty } = require("lodash");
 const nftSchema = require("../schema/nftSchema");
 const ownerSchema = require("../schema/ownerSchema");
@@ -21,6 +22,8 @@ async function updateNFTsForOwner(ownerAddress) {
       },
     });
 
+    getAssetsByOwner(owner.solana_address)
+    
     let latestNFTs = [];
 
     let cursor = {};

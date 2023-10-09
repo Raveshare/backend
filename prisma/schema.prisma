@@ -94,7 +94,7 @@ model nftData {
 
 model owners {
   id                 Int        @id @default(autoincrement())
-  address            String     @unique @db.VarChar(255) 
+  address            String     @unique @db.VarChar(255)
   evm_address        String?    @unique @db.VarChar(255)
   solana_address     String?    @unique @db.VarChar(255)
   canvasOwned        Int?       @default(0)
@@ -153,5 +153,8 @@ view template_view {
   updatedAt DateTime? @db.Timestamptz(6)
 }
 
-// constraint canvases_ownerAddress_fkey on table canvases depends on index owners_pkey
-// constraint nftData_ownerAddress_fkey on table "nftData" depends on index owners_pkey
+model user_collected_posts {
+  id        Int      @id @default(autoincrement())
+  address   String   @db.VarChar(255)
+  postId    String   @db.VarChar(255)
+}
