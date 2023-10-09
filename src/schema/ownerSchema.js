@@ -1,48 +1,52 @@
-const { DataTypes } = require('sequelize');
-const db = require('../utils/db/db');
+const { DataTypes } = require("sequelize");
+const db = require("../utils/db/db");
 
 // relations
-const nftSchema = require('./nftSchema');
-const canvasSchema = require('./canvasSchema');
+const nftSchema = require("./nftSchema");
+const canvasSchema = require("./canvasSchema");
 
-const ownerSchema = db.define('owner', {
-    address: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        primaryKey: true,
-    },
-    canvasOwned : {
-        type : DataTypes.INTEGER,
-        defaultValue : 0
-    },
-    nftOwned : {
-        type : DataTypes.INTEGER,
-        defaultValue : 0
-    },
-    mail : {
-        type : DataTypes.STRING,
-        allowNull : true
-    },
-    lens_auth_token : {
-        type: DataTypes.JSONB,
-        allowNull: true,
-    },
-    twitter_auth_token : {
-        type: DataTypes.JSONB,
-        allowNull: true,
-    },
-    lens_handle : {
-        type : DataTypes.STRING,
-        allowNull : true
-    },
-    followNftAddress : {
-        type : DataTypes.STRING,
-        allowNull : true
-    },
-    profileId : {
-        type : DataTypes.STRING,
-        allowNull : true
-    },
+const ownerSchema = db.define("owner", {
+  address: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    primaryKey: true,
+  },
+  solana_address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  canvasOwned: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  nftOwned: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  mail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  lens_auth_token: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+  },
+  twitter_auth_token: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+  },
+  lens_handle: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  followNftAddress: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  profileId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 // relations

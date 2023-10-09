@@ -87,6 +87,7 @@ model nftData {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
+  creators     Json[]   @default(dbgenerated("(ARRAY[]::json[])::json[]"))
   dimensions   Int[]
   owners       owners?  @relation(fields: [ownerAddress], references: [evm_address])
 }
