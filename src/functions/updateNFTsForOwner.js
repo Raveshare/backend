@@ -22,7 +22,7 @@ async function updateNFTsForOwner(ownerAddress) {
       },
     });
 
-    getAssetsByOwner(owner.solana_address)
+    if(owner.solana_address) getAssetsByOwner(owner.solana_address)
     
     let latestNFTs = [];
 
