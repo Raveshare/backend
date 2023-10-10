@@ -1,26 +1,16 @@
 const express = require("express");
-const bree = require("./utils/scheduler/scheduler");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express({
   logger: true,
 });
 
-// (async () => {
-//   await bree.start();
-// })();
 
 const compression = require("compression");
 
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const cors = require("cors");
 const handleError = require("./middleware/error/error");
 const auth = require("./middleware/auth/auth");
-
-// include these 2 lines to sync the database
-// const sync = require("./utils/db/sync")
-// sync()
 
 const NODE_ENV = process.env.NODE_ENV;
 console.log("NODE_ENV", NODE_ENV);
