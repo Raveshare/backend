@@ -134,6 +134,7 @@ canvasRouter.put("/update", async (req, res) => {
         data: {
           data: canvasData.data,
           referredFrom: canvasData.referredFrom,
+          assetsRecipientElementData: canvasData.assetsRecipientElementData,
         },
       });
     } catch (error) {
