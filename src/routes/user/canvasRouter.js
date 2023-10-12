@@ -243,22 +243,34 @@ canvasRouter.post("/publish", async (req, res) => {
     return;
   }
 
-  let canvas = await canvasSchema.findOne({
-    where: {
-      id: canvasId,
-    },
-  });
+  // let canvas = await canvasSchema.findOne({
+  //   where: {
+  //     id: canvasId,
+  //   },
+  // });
+
+  let canvas = await prisma.canvases.findUnique({
+    where : {
+      id : canvasId
+    }
+  })
 
   if (!canvas) {
     res.status(404).send("Canvas not found");
     return;
   }
 
-  let owner = await ownerSchema.findOne({
-    where: {
-      address: ownerAddress,
-    },
-  });
+  // let owner = await ownerSchema.findOne({
+  //   where: {
+  //     address: ownerAddress,
+  //   },
+  // });
+
+  let owner = await prisma.owners.findUnique({
+    where : {
+      address : ownerAddress
+    }
+  })
 
   if (canvas.ownerAddress != ownerAddress) {
     res.status(401).send("Unauthorized");
