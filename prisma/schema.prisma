@@ -41,11 +41,14 @@ model canvases {
   createdAt                  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress               String?  @db.VarChar(255)
+  ownerId                    Int?
   referredFrom               String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   isGated                    Boolean? @default(false)
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  owners                     owners?  @relation(fields: [ownerAddress], references: [evm_address])
+  // owners                     owners?  @relation(fields: [ownerAddress], references: [evm_address])
+  owner                      owners?  @relation(fields: [ownerId], references: [id])
+  
 }
 
 model collections {
@@ -87,13 +90,15 @@ model nftData {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
+  ownerId     Int? 
   creators     Json[]   @default(dbgenerated("(ARRAY[]::json[])::json[]"))
   dimensions   Int[]
-  owners       owners?  @relation(fields: [ownerAddress], references: [evm_address])
+  // owners       owners?  @relation(fields: [ownerAddress], references: [evm_address])
+  owner        owners?  @relation(fields: [ownerId], references: [id])
 }
 
 model owners {
-  id                 Int        @id @default(autoincrement())
+  id                 Int        @id @default(autoincrement()) 
   address            String     @unique @db.VarChar(255)
   evm_address        String?    @unique @db.VarChar(255)
   solana_address     String?    @unique @db.VarChar(255)
@@ -154,7 +159,7 @@ view template_view {
 }
 
 model user_collected_posts {
-  id        Int      @id @default(autoincrement())
-  address   String   @db.VarChar(255)
-  postId    String   @db.VarChar(255)
+  id      Int    @id @default(autoincrement())
+  address String @db.VarChar(255)
+  postId  String @db.VarChar(255)
 }
