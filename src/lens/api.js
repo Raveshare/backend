@@ -128,8 +128,6 @@ async function checkAccessToken(accessToken) {
   const variables = { accessToken };
   let resp = await request(LENS_API_URL, checkAccessTokenQuery, variables);
 
-  console.log(resp);
-
   return resp.verify;
 }
 
