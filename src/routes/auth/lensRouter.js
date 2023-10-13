@@ -12,15 +12,16 @@ const { refreshToken: refreshAccessToken } = require("../../lens/api");
 const prisma = require("../../prisma");
 
 lensRouter.get("/challenge", async (req, res) => {
-  let address = req.user.address;
-  let challengeData = await challenge(address);
+  // let user_id = req.user.user_id;
+  let evm_address = req.user.evm_address;
+  let challengeData = await challenge(evm_address);
   res.status(200).send({
     challenge: challengeData,
   });
 });
 
-lensRouter.post("/authenticate", async (req, res) => {
-  let address = req.user.address;
+lensRouter.post("/", async (req, res) => {
+  let evm_address = req.user.evm_address;
   let signature;
 
   try {
@@ -34,12 +35,12 @@ lensRouter.post("/authenticate", async (req, res) => {
   }
 
   try {
-    let authenticateData = await authenticate(address, signature);
+    let authenticateData = await authenticate(evm_address, signature);
     const { accessToken, refreshToken } = authenticateData;
 
     let ownerData = await prisma.owners.findUnique({
       where: {
-        address: address,
+        evm_address
       },
     });
 
@@ -49,7 +50,7 @@ lensRouter.post("/authenticate", async (req, res) => {
       });
     }
 
-    let { handle, id } = await getProfileHandleAndId(address);
+    let { handle, id } = await getProfileHandleAndId(evm_address);
     let followNftAddress = await getFollowContractAddress(id);
 
     ownerData.profileId = id;
@@ -63,7 +64,7 @@ lensRouter.post("/authenticate", async (req, res) => {
 
     await prisma.owners.update({
       where: {
-        address: address,
+        evm_address
       },
       data: ownerData,
     });
@@ -80,11 +81,11 @@ lensRouter.post("/authenticate", async (req, res) => {
 });
 
 lensRouter.get("/set-dispatcher", async (req, res) => {
-  let address = req.user.address;
+  let evm_address = req.user.evm_address;
 
   let ownerData = await prisma.owners.findUnique({
     where: {
-      address: address,
+      evm_address 
     },
   });
 
@@ -113,9 +114,9 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
 
     ownerData.lens_auth_token = lens_auth_token;
 
-    prisma.owners.update({
+    await prisma.owners.update({
       where: {
-        address: address,
+        evm_address
       },
       data: ownerData,
     });
