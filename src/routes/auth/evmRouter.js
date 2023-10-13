@@ -1,21 +1,26 @@
-const solanaRouter = require("express").Router();
+const evmRouter = require("express").Router();
+const lensRouter = require("./lensRouter");
 
-const nacl = require("tweetnacl");
-const bs58 = require("bs58");
-const prisma = require("../../prisma");
+const { verifyEthSignature } = require("../../utils/auth/verifySignature");
 const generateJwt = require("../../utils/auth/generateJwt");
+const auth = require("../../middleware/auth/auth");
 
 const jsonwebtoken = require("jsonwebtoken");
 
-solanaRouter.post("/", async (req, res) => {
+const prisma = require("../../prisma");
+
+const userLogin = require("../../functions/events/userLogin.event");
+const sendLogin = require("../../functions/webhook/sendLogin.webhook");
+
+evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
   let user_id = req.user?.user_id;
-  let signature, message, solana_address;
+  let signature, message, evm_address;
 
   try {
     signature = req.body.signature;
     message = req.body.message;
-    solana_address = req.body.address;
+    evm_address = req.body.evm_address;
   } catch (error) {
     res.status(400).send({
       status: "failed",
@@ -27,7 +32,7 @@ solanaRouter.post("/", async (req, res) => {
   try {
     let ownerData;
 
-    // If the user is already authenticated then get tha USER else find the user using the solana address
+    // If the user is already authenticated then get tha USER else find the user using the evm address
     if (user_id) {
       ownerData = await prisma.owners.findUnique({
         where: {
@@ -37,21 +42,17 @@ solanaRouter.post("/", async (req, res) => {
     } else {
       ownerData = await prisma.owners.findUnique({
         where: {
-          solana_address,
+          evm_address,
         },
       });
     }
 
-    let isVerified = nacl.sign.detached.verify(
-      new TextEncoder().encode(message),
-      bs58.decode(signature),
-      bs58.decode(solana_address)
-    );
+    let isVerified = verifyEthSignature(evm_address , signature , message)
 
     if (!isVerified) {
       res.status(401).send({
         message:
-          "Invalid Signature for Solana, please sign using correct message",
+          "Invalid Signature for EVM, please sign using correct message",
       });
       return;
     } else {
@@ -59,13 +60,13 @@ solanaRouter.post("/", async (req, res) => {
       if (!ownerData) {
         ownerData = await prisma.owners.create({
           data: {
-            solana_address,
+            evm_address,
           },
         });
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
-      let jwt = generateJwt(ownerData.evm_address ? ownerData.evm_address : "" , solana_address , ownerData.id)
+      let jwt = generateJwt(evm_address, ownerData.solana_address ? ownerData.solana_address : "" , ownerData.id)
 
       // to check for lens_handle if lens_auth_token are present.
       let hasExpired = false;
@@ -91,9 +92,12 @@ solanaRouter.post("/", async (req, res) => {
     }
   } catch (error) {
     res.status(500).send({
-      message: `Invalid Server Error: ${error}`,
+      status: "failed",
+      message: `Internal Server Error ${error.message}`,
     });
   }
 });
 
-module.exports = solanaRouter;
+evmRouter.use("/lens", auth, lensRouter);
+
+module.exports = evmRouter;

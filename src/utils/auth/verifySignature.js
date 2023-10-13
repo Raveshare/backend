@@ -8,9 +8,9 @@ const { add } = require('lodash');
  * @param {string} signature
  * @param {string} message
  */
-const verifyEthSignature = async (address, signature , message) => {
+const verifyEthSignature =  (address, signature , message) => {
     try {
-    let recoveredAddress = await ethers.utils.verifyMessage(message, signature);
+    let recoveredAddress =  ethers.utils.verifyMessage(message, signature);
     
     return recoveredAddress == address;
 
