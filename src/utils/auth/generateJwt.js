@@ -7,6 +7,8 @@ const jsonwebtoken = require("jsonwebtoken");
  * @param {String} user_id Unique ID of the authenticated user
  * @returns 
  */
+
+// if JWT is generated successfully, then cache the JWT for a day.
 function generateJwt(evm_address, solana_address, user_id) {
   return jsonwebtoken.sign(
     {

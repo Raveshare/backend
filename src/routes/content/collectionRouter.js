@@ -24,7 +24,7 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
       }
     },
   });
-
+  // We can cache the contents too as they are not changing frequently
   let contents = await prisma.contents.findMany({
     take: limit,
     skip: offset,
@@ -112,7 +112,7 @@ collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
   let limit = req.query.limit || 20;
 
   let offset = (page - 1) * limit;
-
+  // We can cache this query, as the collections are not changing frequently
   let collections = await prisma.collections.findMany({
     take: limit,
     skip: offset,

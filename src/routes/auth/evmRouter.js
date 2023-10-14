@@ -33,6 +33,7 @@ evmRouter.post("/", async (req, res) => {
     let ownerData;
 
     // If the user is already authenticated then get tha USER else find the user using the evm address
+    // Cache the user's data for a day.
     if (user_id) {
       ownerData = await prisma.owners.findUnique({
         where: {
@@ -57,6 +58,7 @@ evmRouter.post("/", async (req, res) => {
       return;
     } else {
       // if the user is neither authenticated nor has a previous record, then create the record after user's signautre has been verified.
+      // We can also cache the user's data for a day.
       if (!ownerData) {
         ownerData = await prisma.owners.create({
           data: {

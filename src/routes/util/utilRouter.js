@@ -99,7 +99,7 @@ utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
 
   let isWhitelisted = await getIsWhitelisted(wallet);
-
+  //if wallet is whitelisted then Cache the data.
   res.send({
     status: "success",
     message: isWhitelisted,

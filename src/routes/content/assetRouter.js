@@ -62,7 +62,7 @@ assetRouter.get("/", cache("5 hours"), async (req, res) => {
   }
 
   if (author) {
-  
+    // We can cache this query, as the author's assets will not change frequently
     let assets = await prisma.assets.findMany({
       where: {
         author: author,

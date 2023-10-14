@@ -31,7 +31,8 @@ canvasRouter.get("/", async (req, res) => {
   let limit = req.query.limit || 10;
 
   let offset = (page - 1) * limit;
-
+  // We can Cache the canvas data
+  // We can also cache all the canvas data in this file
   let canvasData = await prisma.canvases.findMany({
     where: {
       ownerAddress: address,
