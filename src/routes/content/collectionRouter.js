@@ -3,11 +3,6 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-collectionRouter.get("/ping", async (req, res) => {
-  console.log("Collection Router");
-  res.send("Collection Router");
-});
-
 collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
   let collectionAddress = req.params.collection;
 
@@ -20,12 +15,7 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-  // let collections = await prisma.collections.findUnique({
-  //   where: {
-  //     address: collectionAddress,
-  //   },
-  // });
-
+   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
   let collections = await prisma.collections.findFirst({
     where: {
       address : {

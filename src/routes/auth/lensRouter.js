@@ -49,6 +49,7 @@ lensRouter.post("/authenticate", async (req, res) => {
       });
     }
 
+    // This query can be cached for 24hrs, as the profileID ,Handle and NFT address will remain the same for a user
     let { handle, id } = await getProfileHandleAndId(address);
     let followNftAddress = await getFollowContractAddress(id);
 

@@ -2,6 +2,10 @@ const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api").hasCollected;
+const {
+  addElementToList,
+  checkElementInList,
+} = require("../../functions/handleCache");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -14,6 +18,9 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
     offset = limit * (page - 1);
 
+    // this query can be cached again
+    // as the templates are not changing frequently - 
+    // so we can remove the cache middleware and cache till the templates are not updated
     const templates = await prisma.template_view.findMany({
       skip: offset,
     });
@@ -36,7 +43,6 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
 templateRouter.get("/user", async (req, res) => {
   let address = req.user.address;
-  // let address = "0x726Fbc2349c4033366242A7Db2721066999eB1e1";
   let page = req.query.page;
   page = parseInt(page);
 
@@ -47,6 +53,8 @@ templateRouter.get("/user", async (req, res) => {
   offset = limit * (page - 1);
 
   try {
+    // this query can be cached again
+    //  the cache for this query will get invalidated when a new template is created
     let publicTemplates = await prisma.public_canvas_templates.findMany({
       take: limit,
       skip: offset,
@@ -63,6 +71,7 @@ templateRouter.get("/user", async (req, res) => {
       },
       select: {
         lens_auth_token: true,
+        id: true,
       },
     });
 
@@ -86,12 +95,16 @@ templateRouter.get("/user", async (req, res) => {
         if (pubId.length > 20) continue;
         let collected = false;
         if (accessToken) {
-          collected = await hasCollected(
-            pubId,
-            address,
-            accessToken,
-            refreshToken
-          );
+          collected = await checkElementInList(`user_${owners.id}`, pubId);
+          if (!collected) {
+            collected = await hasCollected(
+              pubId,
+              address,
+              accessToken,
+              refreshToken
+            );
+            if (collected) addElementToList(`user_${owners.id}`, pubId);
+          }
         }
         if (collected) {
           template.allowList = [];

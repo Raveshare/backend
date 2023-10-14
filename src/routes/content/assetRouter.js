@@ -16,15 +16,7 @@ assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-  // const assets = await assetSchema.findAll({
-  //   where: {
-  //     featured: true,
-  //     type: type,
-  //   },
-  //   limit: limit,
-  //   offset: offset,
-  // });
-
+  // this query can be cached again, as the assets are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
   let assets = await prisma.assets.findMany({
     where: {
       featured: true,
@@ -34,7 +26,7 @@ assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
     skip: offset,
   });
 
-
+ // this query can be cached again, as the assets are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
   let totalAssets = await prisma.assets.count({
     where: {
       featured: true,
