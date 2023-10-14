@@ -15,7 +15,7 @@ solanaRouter.post("/", async (req, res) => {
   try {
     signature = req.body.signature;
     message = req.body.message;
-    solana_address = req.body.address;
+    solana_address = req.body.solana_address;
   } catch (error) {
     res.status(400).send({
       status: "failed",
