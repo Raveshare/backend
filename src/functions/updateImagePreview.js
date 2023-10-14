@@ -2,6 +2,7 @@ const canvasSchema = require("../schema/canvasSchema");
 const uploadImageToS3 = require("./uploadImageToS3");
 const { uploadMediaToIpfs } = require("./uploadToIPFS");
 const purgeImageCache = require("./purgeImageCache");
+const prisma = require("../../src/prisma");
 
 const updateImagePreview = async (previewData, user_id, id) => {
   try {
@@ -18,14 +19,15 @@ const updateImagePreview = async (previewData, user_id, id) => {
       purgeImageCache(`http://lenspost.b-cdn.net/${filename}`);
     }
 
-    canvasSchema.update(
-      { imageLink: url, ipfsLink: ipfs },
-      {
-        where: {
-          id: id,
-        },
-      }
-    );
+    await prisma.canvases.update({
+      where: {
+        id,
+      },
+      data: {
+        imageLink: url,
+        ipfsLink: ipfs,
+      },
+    });
   } catch (err) {
     console.log(err);
   }
