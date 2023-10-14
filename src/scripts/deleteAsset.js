@@ -15,9 +15,11 @@ async function deleteAsset() {
   });
 }
 
-async function deleteNFT() {
+async function deleteNFT(address) {
   nftSchema.destroy({
-    where: {},
+    where: {
+      address
+    },
     truncate: true,
   });
 }

@@ -22,6 +22,7 @@ nftRouter.post("/update", async (req, res) => {
   }
 
   owner = {
+    user_id : owner.id,
     evm_address : owner.evm_address,
     solana_address : owner.solana_address,
   }

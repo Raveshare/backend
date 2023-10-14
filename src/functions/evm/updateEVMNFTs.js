@@ -13,7 +13,7 @@ async function checkIfNFTExists(nft) {
   );
 }
 
-async function updateEVMNFTs(evm_address) {
+async function updateEVMNFTs(user_id,evm_address) {
   let latestNFTs = [];
 
   let cursor = {};
@@ -78,12 +78,13 @@ async function updateEVMNFTs(evm_address) {
       address: nft.contractAddress,
       ownerAddress: evm_address,
       chainId: nft.chainId,
+      ownerId: user_id
     };
 
     finalNFTs.push(nftData);
   }
 
-  return latestNFTs;
+  return finalNFTs;
 }
 
 module.exports = updateEVMNFTs;
