@@ -1,12 +1,14 @@
 const getNfts = require("../lens/api").getNfts;
-const getAssetsByOwner = require("../functions/solana/getAssetsByOwner")
+const getAssetsByOwner = require("../functions/solana/getAssetsByOwner");
 const { isEmpty } = require("lodash");
 const nftSchema = require("../schema/nftSchema");
 const ownerSchema = require("../schema/ownerSchema");
 const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
 
+const prisma = require("../../src/prisma");
+
 async function checkIfNFTExists(nft) {
-  return await nftSchema.findOne({
+  return await prisma.nftData.findUnique({
     where: {
       tokenId: nft.tokenId,
       address: nft.contractAddress,
@@ -14,25 +16,27 @@ async function checkIfNFTExists(nft) {
   });
 }
 
-async function updateNFTsForOwner(ownerAddress) {
+async function updateNFTsForOwner(user_id) {
   try {
-    let owner = await ownerSchema.findOne({
+    let owner = await prisma.owners.findUnique({
       where: {
-        address: ownerAddress,
+        id: user_id,
       },
     });
 
-    if(owner.solana_address) getAssetsByOwner(owner.solana_address)
-    
+    let evm_address = owner.evm_address;
+
+    if (owner.solana_address) getAssetsByOwner(owner.solana_address);
+
     let latestNFTs = [];
 
     let cursor = {};
 
-    let chainIds = [1,137];
+    let chainIds = [1, 137];
 
     while (true) {
       let request = {
-        ownerAddress: ownerAddress,
+        ownerAddress: evm_address,
         chainIds: chainIds,
         limit: 50,
         cursor: cursor,
@@ -49,12 +53,12 @@ async function updateNFTsForOwner(ownerAddress) {
         console.log(e);
         break;
       }
-     
+
       cursor = JSON.parse(cursor);
       if (isEmpty(cursor)) {
         break;
       }
-    
+
       if (!cursor.polygon) chainIds = [1];
       if (!cursor.eth) chainIds = [137];
     }
@@ -82,12 +86,22 @@ async function updateNFTsForOwner(ownerAddress) {
         openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
         permaLink: nft.originalContent.uri,
         address: nft.contractAddress,
+        ownerAddress: evm_address,
       };
 
       try {
-        let nftInstance = await nftSchema.create(nftData);
+        await prisma.nftData.create({
+          data: {
+            ownerAddress: evm_address,
+            tokenId: nft.tokenId,
+            title: nft.name,
+            description: nft.description,
+            openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
+            permaLink: nft.originalContent.uri,
+            address: nft.contractAddress,
+          }
+        });
 
-        await owner.addNftData(nftInstance);
       } catch (e) {
         console.log(nft.name);
       }
@@ -120,7 +134,7 @@ async function updateNFTsForOwner(ownerAddress) {
 
         await nftInstance.save();
       } catch (e) {
-        console.log(nftInstance.permaLink)
+        console.log(nftInstance.permaLink);
       }
     }
 
