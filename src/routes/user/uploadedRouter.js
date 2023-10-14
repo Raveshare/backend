@@ -3,7 +3,7 @@ const prisma = require("../../prisma");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 uploadedRouter.post("/", async (req, res) => {
-  let address = req.user.address;
+  let address = req.user.user_id;
   let { image } = req.body;
 
   if (!image) return res.status(404).send({ error: "No image provided" });

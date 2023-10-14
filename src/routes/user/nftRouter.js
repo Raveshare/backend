@@ -6,11 +6,11 @@ const cache = require("../../middleware/cache");
 const sendError = require("../../functions/webhook/sendError.webhook");
 
 nftRouter.post("/update", async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
     where: {
-      address: address,
+      id : user_id
     },
   });
 
@@ -21,7 +21,12 @@ nftRouter.post("/update", async (req, res) => {
     return;
   }
 
-  updateNFTsForOwner(address);
+  owner = {
+    evm_address : owner.evm_address,
+    solana_address : owner.solana_address,
+  }
+
+  updateNFTsForOwner(owner);
 
   res.status(200).send({
     status: "success",

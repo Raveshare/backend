@@ -88,6 +88,7 @@ model nftData {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
+  chainId      Int?
   dimensions   Int[]
   creators     Json[]   @default([])
   ownerId      Int?

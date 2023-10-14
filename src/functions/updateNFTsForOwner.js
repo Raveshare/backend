@@ -1,110 +1,36 @@
-const getNfts = require("../lens/api").getNfts;
-const getAssetsByOwner = require("../functions/solana/getAssetsByOwner");
-const { isEmpty } = require("lodash");
+const updateEVMNFTs = require("./evm/updateEVMNFTs");
+const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
 const nftSchema = require("../schema/nftSchema");
-const ownerSchema = require("../schema/ownerSchema");
 const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
 
 const prisma = require("../../src/prisma");
 
-async function checkIfNFTExists(nft) {
-  return await prisma.nftData.findUnique({
-    where: {
-      tokenId: nft.tokenId,
-      address: nft.contractAddress,
-    },
-  });
-}
-
-async function updateNFTsForOwner(user_id) {
+async function updateNFTsForOwner(owner) {
   try {
-    let owner = await prisma.owners.findUnique({
-      where: {
-        id: user_id,
-      },
-    });
-
     let evm_address = owner.evm_address;
+    let solana_address = owner.solana_address;
 
-    if (owner.solana_address) getAssetsByOwner(owner.solana_address);
+    console.log(evm_address, solana_address);
+    
+    if (solana_address) updateSolanaNFTs(solana_address);
+    if (evm_address) updateEVMNFTs(evm_address);
 
-    let latestNFTs = [];
+    return
 
-    let cursor = {};
-
-    let chainIds = [1, 137];
-
-    while (true) {
-      let request = {
-        ownerAddress: evm_address,
-        chainIds: chainIds,
-        limit: 50,
-        cursor: cursor,
-      };
-
-      let res;
-      try {
-        res = await getNfts(request);
-
-        latestNFTs = latestNFTs.concat(res.items);
-
-        cursor = res.pageInfo.next;
-      } catch (e) {
-        console.log(e);
-        break;
-      }
-
-      cursor = JSON.parse(cursor);
-      if (isEmpty(cursor)) {
-        break;
-      }
-
-      if (!cursor.polygon) chainIds = [1];
-      if (!cursor.eth) chainIds = [137];
-    }
-
-    for (let i = 0; i < latestNFTs.length; i++) {
-      let nft = latestNFTs[i];
-
-      if (await checkIfNFTExists(nft)) continue;
-
-      if (!nft.originalContent.uri) continue;
-
-      if (nft.originalContent.uri.includes("ipfs://")) {
-        nft.originalContent.uri = nft.originalContent.uri.replace(
-          "ipfs://",
-          "https://ipfs.io/ipfs/"
-        );
-      } else {
-        console.log(nft.originalContent.uri);
-      }
-
-      let nftData = {
-        tokenId: nft.tokenId,
-        title: nft.name,
-        description: nft.description,
-        openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
-        permaLink: nft.originalContent.uri,
-        address: nft.contractAddress,
-        ownerAddress: evm_address,
-      };
-
-      try {
-        await prisma.nftData.create({
-          data: {
-            ownerAddress: evm_address,
-            tokenId: nft.tokenId,
-            title: nft.name,
-            description: nft.description,
-            openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
-            permaLink: nft.originalContent.uri,
-            address: nft.contractAddress,
-          }
-        });
-
-      } catch (e) {
-        console.log(nft.name);
-      }
+    try {
+      await prisma.nftData.create({
+        data: {
+          ownerAddress: evm_address,
+          tokenId: nft.tokenId,
+          title: nft.name,
+          description: nft.description,
+          openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
+          permaLink: nft.originalContent.uri,
+          address: nft.contractAddress,
+        },
+      });
+    } catch (e) {
+      console.log(nft.name);
     }
 
     for (let i = 0; i < latestNFTs.length; i++) {
