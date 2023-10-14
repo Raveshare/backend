@@ -16,15 +16,6 @@ assetRouter.get("/featured", cache("5 hours"), async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-  // const assets = await assetSchema.findAll({
-  //   where: {
-  //     featured: true,
-  //     type: type,
-  //   },
-  //   limit: limit,
-  //   offset: offset,
-  // });
-
   let assets = await prisma.assets.findMany({
     where: {
       featured: true,

@@ -3,11 +3,6 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-collectionRouter.get("/ping", async (req, res) => {
-  console.log("Collection Router");
-  res.send("Collection Router");
-});
-
 collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
   let collectionAddress = req.params.collection;
 
@@ -19,12 +14,6 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
   let limit = req.query.limit || 50;
 
   let offset = (page - 1) * limit;
-
-  // let collections = await prisma.collections.findUnique({
-  //   where: {
-  //     address: collectionAddress,
-  //   },
-  // });
 
   let collections = await prisma.collections.findFirst({
     where: {

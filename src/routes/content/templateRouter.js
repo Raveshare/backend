@@ -35,8 +35,7 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 });
 
 templateRouter.get("/user", async (req, res) => {
-  let address = req.user.address;
-  // let address = "0x726Fbc2349c4033366242A7Db2721066999eB1e1";
+  let evm_address = req.user.evm_address;
   let page = req.query.page;
   page = parseInt(page);
 
@@ -59,7 +58,7 @@ templateRouter.get("/user", async (req, res) => {
 
     let owners = await prisma.owners.findUnique({
       where: {
-        address: address,
+        evm_address,
       },
       select: {
         lens_auth_token: true,
@@ -67,7 +66,7 @@ templateRouter.get("/user", async (req, res) => {
     });
 
     let accessToken, refreshToken;
-    if (owners.lens_auth_token == null) {
+    if (owners.lens_auth_token == null || evm_address == null) {
       accessToken = null;
       refreshToken = null;
     } else {
