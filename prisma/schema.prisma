@@ -99,7 +99,7 @@ model nftData {
 
 model owners {
   id                 Int        @id @default(autoincrement()) 
-  address            String     @unique @db.VarChar(255)
+  address            String?     @unique @db.VarChar(255)
   evm_address        String?    @unique @db.VarChar(255)
   solana_address     String?    @unique @db.VarChar(255)
   canvasOwned        Int?       @default(0)
