@@ -36,7 +36,7 @@ nftRouter.post("/update", async (req, res) => {
 });
 
 nftRouter.get("/:id", async (req, res) => {
-  let ownerAddress = req.user.address;
+  let user_id = req.user.user_id;
 
   if (!req.params.id) {
     res.status(400).send({
@@ -59,7 +59,8 @@ nftRouter.get("/:id", async (req, res) => {
   let nft = await prisma.nftData.findUnique({
     where: {
       id: id,
-      ownerAddress: ownerAddress,
+      // ownerAddress: ownerAddress,
+      ownerId: user_id
     },
   });
 
@@ -145,7 +146,8 @@ nftRouter.get("/", async (req, res) => {
 
     let totalAssets = await prisma.nftData.count({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
       },
     });
 
