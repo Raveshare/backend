@@ -30,8 +30,10 @@ const mintCompressedNft = async (metadata, address, params) => {
   });
 
   const { result, error } = await response.json();
+
+  console.log(error)
   
-  return result.assetId;
+  return result?.assetId || error;
 };
 
 module.exports = mintCompressedNft;
