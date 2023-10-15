@@ -4,6 +4,7 @@ const prisma = require("../../prisma");
 
 const uploadToLens = require("../../functions/uploadToLens");
 const uploadToTwitter = require("../../functions/uploadToTwitter");
+const uploadToSolana = require("../../functions/uploadToSolana");
 const updateImagePreview = require("../../functions/updateImagePreview");
 const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
 const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForPublication");
@@ -31,7 +32,7 @@ canvasRouter.get("/", async (req, res) => {
 
   let canvasData = await prisma.canvases.findMany({
     where: {
-      ownerId: user_id
+      ownerId: user_id,
     },
     take: limit,
     skip: offset,
@@ -42,7 +43,7 @@ canvasRouter.get("/", async (req, res) => {
 
   let totalAssets = await prisma.canvases.count({
     where: {
-      ownerId: user_id
+      ownerId: user_id,
     },
   });
 
@@ -126,7 +127,7 @@ canvasRouter.put("/update", async (req, res) => {
       canvas = await prisma.canvases.update({
         where: {
           id: canvasData.id,
-          ownerId: user_id
+          ownerId: user_id,
         },
         data: {
           data: canvasData.data,
@@ -181,10 +182,10 @@ canvasRouter.put("/visibility", async (req, res) => {
   // });
 
   let canvas = await prisma.canvases.findUnique({
-    where : {
-      id : canvasId
-    }
-  })
+    where: {
+      id: canvasId,
+    },
+  });
 
   if (!canvas) {
     res.status(404).send({
@@ -203,13 +204,13 @@ canvasRouter.put("/visibility", async (req, res) => {
   }
 
   await prisma.canvases.update({
-    where : {
-      id : canvasId
+    where: {
+      id: canvasId,
     },
-    data : {
-      isPublic : isPublic
-    }
-  })
+    data: {
+      isPublic: isPublic,
+    },
+  });
 
   canvasMadePublic(canvasId, req.user.address);
 
@@ -245,10 +246,10 @@ canvasRouter.post("/publish", async (req, res) => {
   }
 
   let canvas = await prisma.canvases.findUnique({
-    where : {
-      id : canvasId
-    }
-  })
+    where: {
+      id: canvasId,
+    },
+  });
 
   if (!canvas) {
     res.status(404).send("Canvas not found");
@@ -256,15 +257,17 @@ canvasRouter.post("/publish", async (req, res) => {
   }
 
   let owner = await prisma.owners.findUnique({
-    where : {
-      id : user_id
-    }
-  })
+    where: {
+      id: user_id,
+    },
+  });
 
-  if (canvas.ownerId != user_id) {
-    res.status(401).send("Unauthorized");
-    return;
-  }
+  // console.log(canvas.ownerId);
+  // console.log(user_id);
+  // if (canvas.ownerId != user_id) {
+  //   res.status(401).send("Unauthorized");
+  //   return;
+  // }
 
   let url = canvas.ipfsLink;
 
@@ -290,10 +293,20 @@ canvasRouter.post("/publish", async (req, res) => {
   } else if (platform == "twitter") {
     resp = await uploadToTwitter(postMetadata, owner);
     canvasPostedToTwitter(canvasId, ownerAddress);
+  } else if (platform == "solana") {
+    let postMetadata = {
+      name: name,
+      content: content,
+      image: url,
+    };
+
+    resp = await uploadToSolana(postMetadata, owner, canvasParams);
   }
 
   res.send(resp);
 });
+
+
 
 canvasRouter.delete("/delete/:id", async (req, res) => {
   let canvasId = req.params.id;
@@ -302,10 +315,10 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   canvasId = parseInt(canvasId);
 
   let canvas = await prisma.canvases.findUnique({
-    where : {
-      id : canvasId
-    }
-  })
+    where: {
+      id: canvasId,
+    },
+  });
 
   if (canvas.ownerId != user_id) {
     res.status(401).send("Unauthorized");
@@ -313,10 +326,10 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   }
 
   await prisma.canvases.delete({
-    where : {
-      id : canvasId
-    }
-  })
+    where: {
+      id: canvasId,
+    },
+  });
 
   res.status(200).send({
     status: "success",
@@ -341,10 +354,10 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   }
 
   let canvas = await prisma.canvases.findUnique({
-    where : {
-      id : canvasId
-    }
-  })
+    where: {
+      id: canvasId,
+    },
+  });
 
   if (!canvas) {
     res.status(404).send({
@@ -374,13 +387,13 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   }
 
   await prisma.canvases.update({
-    where : {
-      id : canvasId
+    where: {
+      id: canvasId,
     },
-    data : {
-      isGated : true
-    }
-  })
+    data: {
+      isGated: true,
+    },
+  });
 
   res.send({
     message: "Canvas Gated Successfully",
