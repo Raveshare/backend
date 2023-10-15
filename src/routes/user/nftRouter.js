@@ -83,7 +83,7 @@ nftRouter.get("/:id", async (req, res) => {
 });
 
 nftRouter.get("/", async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
   let query = req.query.query;
 
   let queriedNFTs = [];
@@ -91,7 +91,8 @@ nftRouter.get("/", async (req, res) => {
   if (query) {
     let nfts = await prisma.nftData.findMany({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
       },
     });
 
@@ -132,7 +133,8 @@ nftRouter.get("/", async (req, res) => {
 
     let queriedNFTs = await prisma.nftData.findMany({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
       },
       orderBy: {
         createdAt: "asc",
