@@ -87,7 +87,7 @@ templateRouter.get("/user", async (req, res) => {
         if (accessToken) {
           collected = await hasCollected(
             pubId,
-            address,
+            evm_address,
             accessToken,
             refreshToken
           );

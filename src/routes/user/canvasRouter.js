@@ -99,7 +99,7 @@ canvasRouter.post("/create", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send(`Error: ${error}`);
-    sendError(`${error} - ${address} - /create`);
+    sendError(`${error} - ${user_id} - /create`);
     return;
   }
 });

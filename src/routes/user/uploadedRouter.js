@@ -3,7 +3,7 @@ const prisma = require("../../prisma");
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
 
 uploadedRouter.post("/", async (req, res) => {
-  let address = req.user.user_id;
+  let user_id = req.user.user_id;
   let { image } = req.body;
 
   if (!image) return res.status(404).send({ error: "No image provided" });
@@ -13,12 +13,12 @@ uploadedRouter.post("/", async (req, res) => {
 
     let result = await uploadImageToS3(
       imageBuffer,
-      `user/${address}/user_assets/${Date.now()}.png`
+      `user/${user_id}/user_assets/${Date.now()}.png`
     );
 
     await prisma.uploadeds.create({
       data: {
-        address: address,
+        ownerId: user_id,
         image: result,
       },
     });
@@ -34,26 +34,44 @@ uploadedRouter.post("/", async (req, res) => {
 });
 
 uploadedRouter.get("/", async (req, res) => {
-  let address = req.user.address;
+  let evm_address = req.user.evm_address;
+  let user_id = req.user.user_id;
 
   let page = req.query.page || 1;
 
   let limit = 50;
   let offset = (page - 1) * limit;
 
-  let uploaded = await prisma.uploadeds.findMany({
-    where: {
-      address: address,
-    },
-    skip: offset,
-    take: limit,
-  });
+  let uploaded, count;
+  if (!user_id) {
+    uploaded = await prisma.uploadeds.findMany({
+      where: {
+        address: evm_address,
+      },
+      skip: offset,
+      take: limit,
+    });
 
-  let count = await prisma.uploadeds.count({
-    where: {
-      address: address,
-    },
-  });
+    count = await prisma.uploadeds.count({
+      where: {
+        address: evm_address,
+      },
+    });
+  } else {
+    uploaded = await prisma.uploadeds.findMany({
+      where: {
+        ownerId: user_id,
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    count = await prisma.uploadeds.count({
+      where: {
+        ownerId: user_id,
+      },
+    });
+  }
 
   let pages = Math.ceil(count / limit);
 
@@ -65,7 +83,8 @@ uploadedRouter.get("/", async (req, res) => {
 });
 
 uploadedRouter.delete("/:id", async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
+  let evm_address = req.user.evm_address;
   let id = req.params.id;
 
   if (!id) {
@@ -80,7 +99,8 @@ uploadedRouter.delete("/:id", async (req, res) => {
     .delete({
       where: {
         id: parseInt(id),
-        address: address,
+        // address: evm_address,
+        ownerId: user_id,
       },
     })
     .catch((err) => {

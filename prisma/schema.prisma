@@ -126,7 +126,7 @@ model templates {
 model uploadeds {
   id        Int      @id @default(autoincrement())
   image     String   @db.VarChar(255)
-  address   String   @db.VarChar(255)
+  address   String?   @db.VarChar(255)
   ownerId  Int?
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
