@@ -33,7 +33,14 @@ const mintCompressedNft = async (metadata, address, params) => {
 
   console.log(error)
   
-  return result?.assetId || error;
+  // return result?.assetId || error;
+  return result?.assetId ? {
+    status : 200,
+    assetId :`http://xray.helius.xyz/token/${result.assetId}`,
+  } : {
+    status : 500,
+    error : error
+  };
 };
 
 module.exports = mintCompressedNft;

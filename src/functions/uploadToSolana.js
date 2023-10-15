@@ -29,9 +29,7 @@ const uploadToSolana = async (postMetadata, owner, canvasParams) => {
     canvasParams
   );
 
-  return {
-    txHash: `http://xray.helius.xyz/token/${assetId}`,
-  };
+  return assetId;
 };
 
 module.exports = uploadToSolana;

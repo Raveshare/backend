@@ -301,6 +301,13 @@ canvasRouter.post("/publish", async (req, res) => {
     };
 
     resp = await uploadToSolana(postMetadata, owner, canvasParams);
+
+    if(resp.status == 500){
+      res.status(500).send({
+        message: resp.error,
+      });
+      return;
+    }
   }
 
   res.send(resp);
