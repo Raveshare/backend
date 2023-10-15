@@ -10,7 +10,7 @@ nftRouter.post("/update", async (req, res) => {
 
   let owner = await prisma.owners.findUnique({
     where: {
-      id : user_id
+      id: user_id,
     },
   });
 
@@ -22,10 +22,10 @@ nftRouter.post("/update", async (req, res) => {
   }
 
   owner = {
-    user_id : owner.id,
-    evm_address : owner.evm_address,
-    solana_address : owner.solana_address,
-  }
+    user_id: owner.id,
+    evm_address: owner.evm_address,
+    solana_address: owner.solana_address,
+  };
 
   updateNFTsForOwner(owner);
 
@@ -60,7 +60,7 @@ nftRouter.get("/:id", async (req, res) => {
     where: {
       id: id,
       // ownerAddress: ownerAddress,
-      ownerId: user_id
+      ownerId: user_id,
     },
   });
 
@@ -124,7 +124,11 @@ nftRouter.get("/", async (req, res) => {
     });
   } else {
     let page = req.query.page || 1;
+
+    let chainId = req.query.chainId || 1;
+
     page = parseInt(page);
+    chainId = parseInt(chainId);
 
     page = page < 1 ? 1 : page;
 
@@ -136,6 +140,7 @@ nftRouter.get("/", async (req, res) => {
       where: {
         // ownerAddress: address,
         ownerId: user_id,
+        chainId: chainId,
       },
       orderBy: {
         createdAt: "asc",
@@ -148,6 +153,7 @@ nftRouter.get("/", async (req, res) => {
       where: {
         // ownerAddress: address,
         ownerId: user_id,
+        chainId: chainId,
       },
     });
 
