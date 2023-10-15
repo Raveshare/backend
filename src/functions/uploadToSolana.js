@@ -12,13 +12,17 @@ const uploadToSolana = async (postMetadata, owner, canvasParams) => {
   let share = (creatorAddress.length % 2 == 0) ? (100 / creatorAddress.length) : (100 / creatorAddress.length - 1);
   // share = Math.round(share);
 
-
   canvasParams.creators = creatorAddress.map((recipients) => {
     return {
       address: recipients,
       share: share,
     };
   });
+
+  canvasParams.creators = !(share == 100) ? [{
+    address: solana_address,
+    share: 100,
+  }] : canvasParams.creators;
 
   // console.log("canvasParams", canvasParams);
   // return;
