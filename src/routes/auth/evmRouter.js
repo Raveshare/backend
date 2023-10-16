@@ -58,6 +58,10 @@ evmRouter.post("/", async (req, res) => {
       return;
     } else {
       // if the user is neither authenticated nor has a previous record, then create the record after user's signautre has been verified.
+      
+      // we can cache the user's data till the time it get's updated
+      // like in case of new auth_token getting generated
+      
       // We can also cache the user's data for a day.
       if (!ownerData) {
         ownerData = await prisma.owners.create({

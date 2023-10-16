@@ -84,6 +84,7 @@ nftRouter.get("/", async (req, res) => {
 
   if (query) {
     // We can cache the NFT data here.
+    // till the user has not pressed update button
     let nfts = await prisma.nftData.findMany({
       where: {
         ownerAddress: address,

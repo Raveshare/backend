@@ -14,6 +14,9 @@ const prisma = require("../../prisma");
 lensRouter.get("/challenge", async (req, res) => {
   let address = req.user.address;
   let challengeData = await challenge(address);
+
+  // the challenge is time sensitive so it should not be cached
+
   // Cache the challenge data 
   res.status(200).send({
     challenge: challengeData,
@@ -35,6 +38,9 @@ lensRouter.post("/authenticate", async (req, res) => {
   }
 
   try {
+
+    // again, this is based on challenge, so can't be cached
+
     // We can cache the authenticate data for a day.
     let authenticateData = await authenticate(address, signature);
     const { accessToken, refreshToken } = authenticateData;

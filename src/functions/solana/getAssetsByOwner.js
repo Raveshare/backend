@@ -20,6 +20,9 @@ const getAssetsByOwner = async (ownerAddress , page = 1) => {
     }),
   });
 
+  // As the owner NFTs can change from previous, we need to fetch the data again.
+
+  
   // This can be cached unless the owner NFTs changes from previous. 
   const { result } = await response.json();
   let items = result.items;
