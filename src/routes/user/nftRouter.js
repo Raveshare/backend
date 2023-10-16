@@ -6,11 +6,11 @@ const cache = require("../../middleware/cache");
 const sendError = require("../../functions/webhook/sendError.webhook");
 
 nftRouter.post("/update", async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
     where: {
-      address: address,
+      id: user_id,
     },
   });
 
@@ -21,7 +21,13 @@ nftRouter.post("/update", async (req, res) => {
     return;
   }
 
-  updateNFTsForOwner(address);
+  owner = {
+    user_id: owner.id,
+    evm_address: owner.evm_address,
+    solana_address: owner.solana_address,
+  };
+
+  updateNFTsForOwner(owner);
 
   res.status(200).send({
     status: "success",
@@ -30,7 +36,7 @@ nftRouter.post("/update", async (req, res) => {
 });
 
 nftRouter.get("/:id", async (req, res) => {
-  let ownerAddress = req.user.address;
+  let user_id = req.user.user_id;
 
   if (!req.params.id) {
     res.status(400).send({
@@ -53,7 +59,8 @@ nftRouter.get("/:id", async (req, res) => {
   let nft = await prisma.nftData.findUnique({
     where: {
       id: id,
-      ownerAddress: ownerAddress,
+      // ownerAddress: ownerAddress,
+      ownerId: user_id,
     },
   });
 
@@ -77,7 +84,7 @@ nftRouter.get("/:id", async (req, res) => {
 });
 
 nftRouter.get("/", async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
   let query = req.query.query;
 
   let queriedNFTs = [];
@@ -87,7 +94,8 @@ nftRouter.get("/", async (req, res) => {
     // till the user has not pressed update button
     let nfts = await prisma.nftData.findMany({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
       },
     });
 
@@ -118,7 +126,11 @@ nftRouter.get("/", async (req, res) => {
     });
   } else {
     let page = req.query.page || 1;
+
+    let chainId = req.query.chainId || 1;
+
     page = parseInt(page);
+    chainId = parseInt(chainId);
 
     page = page < 1 ? 1 : page;
 
@@ -128,7 +140,9 @@ nftRouter.get("/", async (req, res) => {
 
     let queriedNFTs = await prisma.nftData.findMany({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
+        chainId: chainId,
       },
       orderBy: {
         createdAt: "asc",
@@ -139,7 +153,9 @@ nftRouter.get("/", async (req, res) => {
 
     let totalAssets = await prisma.nftData.count({
       where: {
-        ownerAddress: address,
+        // ownerAddress: address,
+        ownerId: user_id,
+        chainId: chainId,
       },
     });
 

@@ -14,6 +14,14 @@ const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
+
+  try {
+    token = req.headers.authorization.split(" ")[1];
+    decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+    req.user = decoded;
+    } catch {}
+  
+
   let user_id = req.user?.user_id;
   let signature, message, evm_address;
 
@@ -90,6 +98,9 @@ evmRouter.post("/", async (req, res) => {
         }
       }
 
+
+      if(!user_id) 
+      sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
       res.status(200).send({
         status: "success",
         message : hasExpired ? "" : (ownerData.lens_handle ? ownerData.lens_handle : ""),

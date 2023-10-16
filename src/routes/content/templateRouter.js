@@ -42,7 +42,8 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 });
 
 templateRouter.get("/user", async (req, res) => {
-  let address = req.user.address;
+  let evm_address = req.user.evm_address;
+  let user_id = req.user.user_id;
   let page = req.query.page;
   page = parseInt(page);
 
@@ -67,7 +68,7 @@ templateRouter.get("/user", async (req, res) => {
 
     let owners = await prisma.owners.findUnique({
       where: {
-        address: address,
+        id: user_id
       },
       select: {
         lens_auth_token: true,
@@ -76,7 +77,7 @@ templateRouter.get("/user", async (req, res) => {
     });
 
     let accessToken, refreshToken;
-    if (owners.lens_auth_token == null) {
+    if (owners.lens_auth_token == null || evm_address == null) {
       accessToken = null;
       refreshToken = null;
     } else {
@@ -95,16 +96,12 @@ templateRouter.get("/user", async (req, res) => {
         if (pubId.length > 20) continue;
         let collected = false;
         if (accessToken) {
-          collected = await checkElementInList(`user_${owners.id}`, pubId);
-          if (!collected) {
-            collected = await hasCollected(
-              pubId,
-              address,
-              accessToken,
-              refreshToken
-            );
-            if (collected) addElementToList(`user_${owners.id}`, pubId);
-          }
+          collected = await hasCollected(
+            pubId,
+            evm_address,
+            accessToken,
+            refreshToken
+          );
         }
         if (collected) {
           template.allowList = [];

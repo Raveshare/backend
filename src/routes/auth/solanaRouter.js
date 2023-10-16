@@ -5,17 +5,30 @@ const bs58 = require("bs58");
 const prisma = require("../../prisma");
 const generateJwt = require("../../utils/auth/generateJwt");
 
+const userLogin = require("../../functions/events/userLogin.event");
+const sendLogin = require("../../functions/webhook/sendLogin.webhook");
+
+
 const jsonwebtoken = require("jsonwebtoken");
 
 solanaRouter.post("/", async (req, res) => {
+
+  try {
+  token = req.headers.authorization.split(" ")[1];
+  decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+  console.log(decoded)
+  req.user = decoded;
+  } catch {}
+
   // To check if the request is already authenticated, and user_id is present.
+  console.log(req.user)
   let user_id = req.user?.user_id;
   let signature, message, solana_address;
 
   try {
     signature = req.body.signature;
     message = req.body.message;
-    solana_address = req.body.address;
+    solana_address = req.body.solana_address;
   } catch (error) {
     res.status(400).send({
       status: "failed",
@@ -83,6 +96,9 @@ solanaRouter.post("/", async (req, res) => {
         }
       }
 
+
+      if(!user_id)
+      sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
       res.status(200).send({
         status: "success",
         message : hasExpired ? "" : (ownerData.lens_handle ? ownerData.lens_handle : ""),
