@@ -12,8 +12,6 @@ const prisma = require("../../prisma");
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 
-const cache = require("../../middleware/cache");
-
 const { getCache, setCache } = require("../../functions/handleCache");
 
 evmRouter.post("/", async (req, res) => {
@@ -46,7 +44,7 @@ evmRouter.post("/", async (req, res) => {
     // If the user is already authenticated then get tha USER else find the user using the evm address
     // Cache the user's data for a day.
     if (user_id) {
-      let ownerDataCache = await getCache(`evmRouter_${user_id}`);
+      let ownerDataCache = await getCache(`user_${user_id}`);
 
       if (!ownerDataCache) {
         ownerData = await prisma.owners.findUnique({
@@ -54,12 +52,12 @@ evmRouter.post("/", async (req, res) => {
             id: user_id,
           },
         });
-        await setCache(`evmRouter_${user_id}`, JSON.stringify(ownerData));
+        await setCache(`user_${user_id}`, JSON.stringify(ownerData));
       } else {
         ownerData = JSON.parse(ownerDataCache);
       }
     } else {
-      let ownerDataCache = await getCache(`evmRouter_${evm_address}`);
+      let ownerDataCache = await getCache(`user_${evm_address}`);
 
       if (!ownerDataCache) {
         ownerData = await prisma.owners.findUnique({
@@ -67,7 +65,7 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
-        await setCache(`evmRouter_${evm_address}`, JSON.stringify(ownerData));
+        await setCache(`user_${evm_address}`, JSON.stringify(ownerData));
       } else {
         ownerData = JSON.parse(ownerDataCache);
       }

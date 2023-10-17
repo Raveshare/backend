@@ -5,8 +5,6 @@ const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 const cache = require("../../middleware/cache");
 const sendError = require("../../functions/webhook/sendError.webhook");
 
-const cache = require("../../middleware/cache");
-
 const {
   getCache,
   setCache,
@@ -14,9 +12,12 @@ const {
 } = require("../../functions/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
-  deleteCache(`nftRouter_${user_id}`);
+ 
   let user_id = req.user.user_id;
 
+  deleteCache(`nfts_${user_id}`);
+
+  // TODO: cache this
   let owner = await prisma.owners.findUnique({
     where: {
       id: user_id,
@@ -65,6 +66,7 @@ nftRouter.get("/:id", async (req, res) => {
     return;
   }
 
+  // TODO: cache this
   let nft = await prisma.nftData.findUnique({
     where: {
       id: id,
@@ -101,27 +103,20 @@ nftRouter.get("/", async (req, res) => {
   if (query) {
     // We can cache the NFT data here.
     // till the user has not pressed update button
-    let nftsCache = await getCache(`nftRouter_${user_id}`);
+    let nftsCache = await getCache(`nfts_${user_id}`);
 
+    let nfts;
     if(!nftsCache) {
-      let nfts = await prisma.nftData.findMany({
+      nfts = await prisma.nftData.findMany({
         where: {
-          // ownerAddress: address,
           ownerId: user_id,
         },
       });
 
-      await setCache(`nftRouter_${user_id}`, JSON.stringify(nfts));
+      await setCache(`nfts_${user_id}`, JSON.stringify(nfts));
     } else {
       nfts = JSON.parse(nftsCache);
     }
-    
-    let nfts = await prisma.nftData.findMany({
-      where: {
-        // ownerAddress: address,
-        ownerId: user_id,
-      },
-    });
 
     for (let i = 0; i < nfts.length; i++) {
       let nft = nfts[i];
@@ -162,6 +157,7 @@ nftRouter.get("/", async (req, res) => {
 
     let offset = (page - 1) * limit;
 
+    // TODO: cache this 
     let queriedNFTs = await prisma.nftData.findMany({
       where: {
         // ownerAddress: address,
@@ -175,6 +171,7 @@ nftRouter.get("/", async (req, res) => {
       skip: offset,
     });
 
+    // TODO: cache this
     let totalAssets = await prisma.nftData.count({
       where: {
         // ownerAddress: address,

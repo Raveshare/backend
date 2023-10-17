@@ -105,7 +105,7 @@ collectionRouter.get("/:collection/:id", cache("5 hours"), async (req, res) => {
   });
 });
 
-collectionRouter.get("/", cache("5 hours"), async (req, res) => {
+collectionRouter.get("/" ,  async (req, res) => {
   let page = req.query.page || 1;
   page = parseInt(page);
 
@@ -114,12 +114,12 @@ collectionRouter.get("/", cache("5 hours"), async (req, res) => {
   let limit = req.query.limit || 20;
 
   let offset = (page - 1) * limit;
-  // We can cache this query, as the collections are not changing frequently
 
   let collectionsCache = await getCache(`collections-${page}-${limit}`);
 
+  let collections;
   if (!collectionsCache) {
-    let collections = await prisma.collections.findMany({
+    collections = await prisma.collections.findMany({
       take: limit,
       skip: offset,
       orderBy: {
@@ -133,16 +133,8 @@ collectionRouter.get("/", cache("5 hours"), async (req, res) => {
     );
     
   } else {
-    collections = collectionsCache;
+    collections = JSON.parse(collectionsCache);
   }
-
-  let collections = await prisma.collections.findMany({
-    take: limit,
-    skip: offset,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
 
   let totalAssets = await prisma.collections.count({});
 
