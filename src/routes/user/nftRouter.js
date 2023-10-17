@@ -5,7 +5,16 @@ const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
 const cache = require("../../middleware/cache");
 const sendError = require("../../functions/webhook/sendError.webhook");
 
+const cache = require("../../middleware/cache");
+
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/handleCache");
+
 nftRouter.post("/update", async (req, res) => {
+  deleteCache(`nftRouter_${user_id}`);
   let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
@@ -92,6 +101,21 @@ nftRouter.get("/", async (req, res) => {
   if (query) {
     // We can cache the NFT data here.
     // till the user has not pressed update button
+    let nftsCache = await getCache(`nftRouter_${user_id}`);
+
+    if(!nftsCache) {
+      let nfts = await prisma.nftData.findMany({
+        where: {
+          // ownerAddress: address,
+          ownerId: user_id,
+        },
+      });
+
+      await setCache(`nftRouter_${user_id}`, JSON.stringify(nfts));
+    } else {
+      nfts = JSON.parse(nftsCache);
+    }
+    
     let nfts = await prisma.nftData.findMany({
       where: {
         // ownerAddress: address,

@@ -1,10 +1,14 @@
 const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/uploadImageToS3");
-const checkDispatcher = require("../../lens/api").checkDispatcher;;
+const checkDispatcher = require("../../lens/api").checkDispatcher;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
+
+const cache = require("../../middleware/cache");
+
+const { getCache, setCacheWithExpire } = require("../../functions/handleCache");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -69,7 +73,6 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let ownerAddress = req.user.address;
 
-
   let owner = await prisma.owners.findUnique({
     where: {
       address: ownerAddress,
@@ -97,13 +100,26 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
 
 utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
+  let isWhitelistedCache = await getCache(`isWhitelisted_${wallet}`);
 
-  let isWhitelisted = await getIsWhitelisted(wallet);
-  //if wallet is whitelisted then Cache the data.
-  res.send({
-    status: "success",
-    message: isWhitelisted,
-  });
+  if (!isWhitelistedCache) {
+    let isWhitelisted = await getIsWhitelisted(wallet);
+    res.send({
+      status: "success",
+      message: isWhitelisted,
+    });
+
+    await setCacheWithExpire(
+      `isWhitelisted_${wallet}`,
+      isWhitelisted,
+      60 * 60 * 24
+    );
+  } else {
+    res.send({
+      status: "success",
+      message: isWhitelistedCache,
+    });
+  }
 });
 
 module.exports = utilRouter;

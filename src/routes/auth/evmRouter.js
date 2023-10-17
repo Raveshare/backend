@@ -12,6 +12,10 @@ const prisma = require("../../prisma");
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 
+const cache = require("../../middleware/cache");
+
+const { getCache, setCache } = require("../../functions/handleCache");
+
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
 
@@ -19,8 +23,7 @@ evmRouter.post("/", async (req, res) => {
     token = req.headers.authorization.split(" ")[1];
     decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
     req.user = decoded;
-    } catch {}
-  
+  } catch {}
 
   let user_id = req.user?.user_id;
   let signature, message, evm_address;
@@ -43,33 +46,46 @@ evmRouter.post("/", async (req, res) => {
     // If the user is already authenticated then get tha USER else find the user using the evm address
     // Cache the user's data for a day.
     if (user_id) {
-      ownerData = await prisma.owners.findUnique({
-        where: {
-          id: user_id,
-        },
-      });
+      let ownerDataCache = await getCache(`evmRouter_${user_id}`);
+
+      if (!ownerDataCache) {
+        ownerData = await prisma.owners.findUnique({
+          where: {
+            id: user_id,
+          },
+        });
+        await setCache(`evmRouter_${user_id}`, JSON.stringify(ownerData));
+      } else {
+        ownerData = JSON.parse(ownerDataCache);
+      }
     } else {
-      ownerData = await prisma.owners.findUnique({
-        where: {
-          evm_address,
-        },
-      });
+      let ownerDataCache = await getCache(`evmRouter_${evm_address}`);
+
+      if (!ownerDataCache) {
+        ownerData = await prisma.owners.findUnique({
+          where: {
+            evm_address,
+          },
+        });
+        await setCache(`evmRouter_${evm_address}`, JSON.stringify(ownerData));
+      } else {
+        ownerData = JSON.parse(ownerDataCache);
+      }
     }
 
-    let isVerified = verifyEthSignature(evm_address , signature , message)
+    let isVerified = verifyEthSignature(evm_address, signature, message);
 
     if (!isVerified) {
       res.status(401).send({
-        message:
-          "Invalid Signature for EVM, please sign using correct message",
+        message: "Invalid Signature for EVM, please sign using correct message",
       });
       return;
     } else {
       // if the user is neither authenticated nor has a previous record, then create the record after user's signautre has been verified.
-      
+
       // we can cache the user's data till the time it get's updated
       // like in case of new auth_token getting generated
-      
+
       // We can also cache the user's data for a day.
       if (!ownerData) {
         ownerData = await prisma.owners.create({
@@ -80,7 +96,11 @@ evmRouter.post("/", async (req, res) => {
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
-      let jwt = generateJwt(evm_address, ownerData.solana_address ? ownerData.solana_address : "" , ownerData.id)
+      let jwt = generateJwt(
+        evm_address,
+        ownerData.solana_address ? ownerData.solana_address : "",
+        ownerData.id
+      );
 
       // to check for lens_handle if lens_auth_token are present.
       let hasExpired = false;
@@ -98,13 +118,20 @@ evmRouter.post("/", async (req, res) => {
         }
       }
 
-
-      if(!user_id) 
-      sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
+      if (!user_id)
+        sendLogin(
+          ownerData.id,
+          ownerData.evm_address,
+          ownerData.solana_address
+        );
       res.status(200).send({
         status: "success",
-        message : hasExpired ? "" : (ownerData.lens_handle ? ownerData.lens_handle : ""),
-        jwt
+        message: hasExpired
+          ? ""
+          : ownerData.lens_handle
+          ? ownerData.lens_handle
+          : "",
+        jwt,
       });
     }
   } catch (error) {

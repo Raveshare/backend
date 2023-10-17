@@ -3,7 +3,9 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
+const { getCache, setCacheWithExpire } = require("../../functions/handleCache");
+
+collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
   let collectionAddress = req.params.collection;
 
   let page = req.query.page || 1;
@@ -15,20 +17,20 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
 
   let offset = (page - 1) * limit;
 
-   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
+  // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
   let collections = await prisma.collections.findFirst({
     where: {
-      address : {
-        equals : collectionAddress,
-        mode : 'insensitive'
-      }
+      address: {
+        equals: collectionAddress,
+        mode: "insensitive",
+      },
     },
   });
   // We can cache the contents too as they are not changing frequently
   let contents = await prisma.contents.findMany({
     take: limit,
     skip: offset,
-    orderBy : {
+    orderBy: {
       createdAt: "desc",
     },
     where: {
@@ -51,7 +53,7 @@ collectionRouter.get("/:collection/", cache('5 hours') ,  async (req, res) => {
   });
 });
 
-collectionRouter.get("/:collection/:id",cache('5 hours') , async (req, res) => {
+collectionRouter.get("/:collection/:id", cache("5 hours"), async (req, res) => {
   let id = req.params.id;
 
   if (isNaN(id)) {
@@ -74,27 +76,27 @@ collectionRouter.get("/:collection/:id",cache('5 hours') , async (req, res) => {
 
   let collections = await prisma.collections.findFirst({
     where: {
-      address : {
-        equals : collectionAddress,
-        mode : 'insensitive'
-      }
+      address: {
+        equals: collectionAddress,
+        mode: "insensitive",
+      },
     },
   });
 
   let contents = await prisma.contents.findFirst({
-    where: { 
-      AND : [
+    where: {
+      AND: [
         {
           id: {
             equals: parseInt(id),
-          }
+          },
         },
         {
           collectionId: {
             equals: collections.id,
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
   });
 
@@ -103,7 +105,7 @@ collectionRouter.get("/:collection/:id",cache('5 hours') , async (req, res) => {
   });
 });
 
-collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
+collectionRouter.get("/", cache("5 hours"), async (req, res) => {
   let page = req.query.page || 1;
   page = parseInt(page);
 
@@ -113,12 +115,33 @@ collectionRouter.get("/", cache('5 hours') ,async (req, res) => {
 
   let offset = (page - 1) * limit;
   // We can cache this query, as the collections are not changing frequently
+
+  let collectionsCache = await getCache(`collections-${page}-${limit}`);
+
+  if (!collectionsCache) {
+    let collections = await prisma.collections.findMany({
+      take: limit,
+      skip: offset,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    await setCacheWithExpire(
+      `collections-${page}-${limit}`,
+      JSON.stringify(collections),
+      60 * 60 * 5
+    );
+    
+  } else {
+    collections = collectionsCache;
+  }
+
   let collections = await prisma.collections.findMany({
     take: limit,
     skip: offset,
-    orderBy : {
-      createdAt : "desc"
-    }
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   let totalAssets = await prisma.collections.count({});
