@@ -2,6 +2,7 @@ const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api").hasCollected;
+const jsonwebtoken = require("jsonwebtoken");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -59,7 +60,7 @@ templateRouter.get("/user", async (req, res) => {
 
     let owners = await prisma.owners.findUnique({
       where: {
-        id: user_id
+        id: user_id,
       },
       select: {
         lens_auth_token: true,
@@ -73,6 +74,22 @@ templateRouter.get("/user", async (req, res) => {
     } else {
       accessToken = owners.lens_auth_token.accessToken;
       refreshToken = owners.lens_auth_token.refreshToken;
+
+      let hasExpired = false;
+      if (!accessToken || !refreshToken) {
+        hasExpired = true;
+      } else {
+        const decodedToken = jsonwebtoken.decode(refreshToken, {
+          complete: true,
+        });
+
+        hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
+      }
+
+      if (hasExpired) {
+        accessToken = null;
+        refreshToken = null;
+      }
     }
 
     for (let i = 0; i < publicTemplates.length; i++) {
