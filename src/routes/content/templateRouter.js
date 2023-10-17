@@ -2,6 +2,7 @@ const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api").hasCollected;
+const jsonwebtoken = require("jsonwebtoken");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -36,7 +37,6 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
 templateRouter.get("/user", async (req, res) => {
   let address = req.user.address;
-  // let address = "0x726Fbc2349c4033366242A7Db2721066999eB1e1";
   let page = req.query.page;
   page = parseInt(page);
 
@@ -73,6 +73,23 @@ templateRouter.get("/user", async (req, res) => {
     } else {
       accessToken = owners.lens_auth_token.accessToken;
       refreshToken = owners.lens_auth_token.refreshToken;
+
+      
+      let hasExpired = false;
+      if (!accessToken || !refreshToken) {
+        hasExpired = true;
+      } else {
+        const decodedToken = jsonwebtoken.decode(refreshToken, {
+          complete: true,
+        });
+
+        hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
+      }
+
+      if (hasExpired) {
+        accessToken = null;
+        refreshToken = null;
+      }
     }
 
     for (let i = 0; i < publicTemplates.length; i++) {
