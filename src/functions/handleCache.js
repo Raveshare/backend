@@ -16,29 +16,11 @@ redis.connect();
 
 
 const getCache = async (key) => {
-  redis.get(key, (err, data) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    if (data) {
-      console.log("Cache Hit");
-      return data;
-    } else {
-      console.log("Cache Miss");
-      return null;
-    }
-  });
+  return await redis.get(key);
 };
 
 const setCache = async (key, value) => {
-  redis.set(key, value, (err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Cache Set");
-  });
+  await redis.set(key, value);
 };
 
 const setCacheWithExpire = async (key, value, expire) => {
