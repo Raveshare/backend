@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Aryan",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "dependencies": {
     "@0xsplits/splits-sdk": "^2.15.0",
     "@metaplex-foundation/js": "^0.19.5",
