@@ -3,7 +3,6 @@ const canvasRouter = require("express").Router();
 const prisma = require("../../prisma");
 
 const uploadToLens = require("../../functions/uploadToLens");
-const uploadToTwitter = require("../../functions/uploadToTwitter");
 const uploadToSolana = require("../../functions/uploadToSolana");
 const updateImagePreview = require("../../functions/updateImagePreview");
 const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
@@ -12,7 +11,6 @@ const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForP
 const _ = require("lodash");
 
 const canvasCreated = require("../../functions/events/canvasCreated.event");
-const canvasPostedToTwitter = require("../../functions/events/canvasPostedToTwitter.event");
 const canvasPostedToLens = require("../../functions/events/canvasPostedToLens.event");
 const canvasMadePublic = require("../../functions/events/canvasMadePublic.event");
 
@@ -149,7 +147,6 @@ canvasRouter.put("/update", async (req, res) => {
       message: "Canvas Updated",
     });
   } catch (error) {
-    // console.log(error);
     res.status(500).send({
       status: "error",
       message: `Error: ${error}`,
@@ -174,12 +171,6 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   let canvasId = canvasData.id;
   let isPublic = canvasData.isPublic;
-
-  // let canvas = await canvasSchema.findOne({
-  //   where: {
-  //     id: canvasId,
-  //   },
-  // });
 
   let canvas = await prisma.canvases.findUnique({
     where: {
@@ -290,9 +281,6 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
     canvasPostedToLens(canvasId, user_id);
-  } else if (platform == "twitter") {
-    resp = await uploadToTwitter(postMetadata, owner);
-    canvasPostedToTwitter(canvasId, ownerAddress);
   } else if (platform == "solana") {
     let postMetadata = {
       name: name,
