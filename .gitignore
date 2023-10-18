@@ -4,6 +4,9 @@ node_modules
 src/dumpdata/assets
 src/dumpdata/collections
 yarn-error.log
+yarn.lock
+
+```
 src/routes/admin
 
 plotno_json_file.json
