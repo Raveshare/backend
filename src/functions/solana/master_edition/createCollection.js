@@ -1,0 +1,39 @@
+const { Connection, Keypair, PublicKey } = require("@solana/web3.js");
+const {
+  Metaplex,
+  keypairIdentity,
+  bundlrStorage,
+  toMetaplexFile,
+  toBigNumber,
+  CreateCandyMachineInput,
+  DefaultCandyGuardSettings,
+  CandyMachineItem,
+  toDateTime,
+  sol,
+  TransactionBuilder,
+  CreateCandyMachineBuilderContext,
+} = require("@metaplex-foundation/js");
+const bs58 = require("bs58");
+const metaplex = require("../../../utils/metaplex");
+
+const LENSPOST_WALLET = process.env.LENSPOST_SOLANA_WALLET;
+
+console.log("LENSPOST_WALLET", LENSPOST_WALLET);
+const wallet = Keypair.fromSecretKey(bs58.decode(LENSPOST_WALLET));
+
+const { Helius } = require("helius-sdk");
+
+const helius = new Helius("7af4bda5-23e2-4d78-a78f-49e79cf354ed", "mainnet-beta");
+
+const createCollection = async () => {
+  const nft = await metaplex.nfts().create({
+    name: "Lenspost Remix Collection",
+    uri: "https://arweave.net/maMg6dqFNnSzwiDlYfbwnqcjmWDrX9ydhxQkywiBa9Q",
+    sellerFeeBasisPoints: 500,
+    isCollection: true,
+    updateAuthority: wallet,
+  });
+
+  console.log(nft);
+};
+module.exports = createCollection;

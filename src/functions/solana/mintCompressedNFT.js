@@ -16,6 +16,7 @@ const mintCompressedNft = async (metadata, address, params) => {
         name: metadata.name,
         symbol: metadata.symbol || "",
         owner: address,
+        collection : "zahTJa64eLoisdEryax5PUq7jvaCZqAVh5D9zSQBuMT",
         description: metadata.content ? metadata.content + " Made using @lenspost.xyz" : "This is created using @lenspostxyz",
         attributes: [],
         creators: params.creators || [{
@@ -31,6 +32,7 @@ const mintCompressedNft = async (metadata, address, params) => {
 
   const { result, error } = await response.json();
 
+  console.log(result)
   console.log(error)
   
   // return result?.assetId || error;
