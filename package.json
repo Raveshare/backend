@@ -5,7 +5,7 @@
   "author": "Aryan",
   "license": "MIT",
   "engines": {
-    "node": ">=18.18.0"
+    "node": "18.18.0"
   },
   "dependencies": {
     "@0xsplits/splits-sdk": "^2.15.0",
