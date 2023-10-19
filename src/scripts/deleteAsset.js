@@ -15,12 +15,11 @@ async function deleteAsset() {
   });
 }
 
-async function deleteNFT(address) {
+async function deleteNFT() {
   nftSchema.destroy({
     where: {
-      address
-    },
-    truncate: true,
+      permaLink: "https://shibnft.cc/nft2.png"
+    }
   });
 }
 

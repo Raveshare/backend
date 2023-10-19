@@ -1,3 +1,4 @@
+const { sol , toBigNumber , toDateTime} = require("@metaplex-foundation/js")
 const metaplex = require("../../../utils/metaplex");
 
 async function mintMasterEdition(masterEditionSettings) {
@@ -5,8 +6,8 @@ async function mintMasterEdition(masterEditionSettings) {
     itemsAvailable: toBigNumber(masterEditionSettings.itemsAvailable), // Collection Size: 3
     sellerFeeBasisPoints: masterEditionSettings.sellerFeeBasisPoints, // 10% Royalties on Collection
     symbol: masterEditionSettings.symbol,
-    maxEditionSupply: toBigNumber(masterEditionSettings.maxEditionSupply), // 0 reproductions of each NFT allowed
-    isMutable: masterEditionSettings.isMutable,
+    maxEditionSupply: toBigNumber(masterEditionSettings.itemsAvailable), // 0 reproductions of each NFT allowed
+    isMutable: "false",
     creators: masterEditionSettings.creators,
     collection: {
       address: new PublicKey(COLLECTION_NFT_MINT), // Can replace with your own NFT or upload a new one
