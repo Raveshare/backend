@@ -1,6 +1,7 @@
 const lensRouter = require("express").Router();
 
-const challenge = require("../../lens/api").challenge;
+// const challenge = require("../../lens/api").challenge;
+const challenge = require("../../lens/api-v2").challenge;
 const authenticate = require("../../lens/api").authenticate;
 const getFollowContractAddress =
   require("../../lens/api").getFollowContractAddress;
@@ -13,8 +14,9 @@ const prisma = require("../../prisma");
 
 lensRouter.get("/challenge", async (req, res) => {
   // let user_id = req.user.user_id;
+  let profileId = req.query.profileId;
   let evm_address = req.user.evm_address;
-  let challengeData = await challenge(evm_address);
+  let challengeData = await challenge(evm_address ,profileId );
   res.status(200).send({
     challenge: challengeData,
   });
