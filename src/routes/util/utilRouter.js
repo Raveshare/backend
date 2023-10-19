@@ -11,7 +11,7 @@ utilRouter.get("/", async (req, res) => {
 });
 
 utilRouter.post("/remove-bg", auth, async (req, res) => {
-  let { image } = req.query;
+  let { image , id } = req.query;
 
   if (!image) return res.send({ error: "No image provided" });
 
@@ -26,6 +26,7 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
     let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
 
     res.send({
+      id: id,
       s3link: result,
     });
     return;
