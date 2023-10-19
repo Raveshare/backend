@@ -281,14 +281,29 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
     canvasPostedToLens(canvasId, user_id);
-  } else if (platform == "solana") {
+  } else if (platform == "solana-cnft") {
     let postMetadata = {
       name: name,
       content: content,
       image: url,
     };
 
-    resp = await uploadToSolana(postMetadata, owner, canvasParams);
+    resp = await uploadToSolana(postMetadata, owner, canvasParams , "cnft");
+
+    if(resp.status == 500){
+      res.status(500).send({
+        message: resp.error,
+      });
+      return;
+    }
+  } else if (platform == "solana-master") {
+    let postMetadata = {
+      name: name,
+      content: content,
+      image: url,
+    };
+
+    resp = await uploadToSolana(postMetadata, owner, canvasParams , "master");
 
     if(resp.status == 500){
       res.status(500).send({

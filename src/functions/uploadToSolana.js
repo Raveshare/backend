@@ -1,6 +1,7 @@
 const mintCompressedNft = require("./solana/mintCompressedNFT");
+const mintMasterEdition = require("./solana/master_edition/mintMasterEdition");
 
-const uploadToSolana = async (postMetadata, owner, canvasParams) => {
+const uploadToSolana = async (postMetadata, owner, canvasParams, type) => {
   let solana_address = owner.solana_address;
 
   let creatorAddress = canvasParams.creators.map((recipients) => {
@@ -24,8 +25,7 @@ const uploadToSolana = async (postMetadata, owner, canvasParams) => {
     share: 100,
   }] : canvasParams.creators;
 
-  // console.log("canvasParams", canvasParams);
-  // return;
+  if(type === "cnft") {
 
   let assetId = await mintCompressedNft(
     postMetadata,
@@ -34,6 +34,17 @@ const uploadToSolana = async (postMetadata, owner, canvasParams) => {
   );
 
   return assetId;
+
+  } else if(type === "master") {
+      
+      let assetId = await mintMasterEdition(
+        postMetadata,
+        solana_address,
+        canvasParams
+      );
+    
+      return assetId;
+  }
 };
 
 module.exports = uploadToSolana;

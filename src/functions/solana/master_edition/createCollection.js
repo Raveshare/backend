@@ -25,6 +25,8 @@ const { Helius } = require("helius-sdk");
 
 const helius = new Helius("7af4bda5-23e2-4d78-a78f-49e79cf354ed", "mainnet-beta");
 
+// lENSPOST_collection_address=zahTJa64eLoisdEryax5PUq7jvaCZqAVh5D9zSQBuMT
+
 const createCollection = async () => {
   const nft = await metaplex.nfts().create({
     name: "Lenspost Remix Collection",
