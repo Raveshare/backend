@@ -18,6 +18,13 @@ const canvasMadePublic = require("../../functions/events/canvasMadePublic.event"
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
+const {
+  getCache,
+  setCache,
+  setCacheWithExpire,
+  deleteCache,
+} = require("../../functions/handleCache");
+
 // TODO: For canvasArray - cache the response and remove cache on create/update
 // TODO: For canvasId - cache the response and remove cache only on update
 // TODO: Get Cache -> if NULL then fetch else READ and store in cache
@@ -39,23 +46,41 @@ canvasRouter.get("/", async (req, res) => {
   // cache till any update action have not taken place
 
   // TODO: cache it
-  let canvasData = await prisma.canvases.findMany({
-    where: {
-      ownerId: user_id,
-    },
-    take: limit,
-    skip: offset,
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  let canvasData;
+  let canvasCache = await getCache(`canvasData_${user_id}`);
+  if (!canvasCache) {
+    canvasData = await prisma.canvases.findMany({
+      where: {
+        ownerId: user_id,
+      },
+      take: limit,
+      skip: offset,
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    await setCache(`canvasData_${user_id}`, JSON.stringify(canvasData));
+  } else {
+    canvasData = JSON.parse(canvasCache);
+  }
 
   // TODO: cache it
-  let totalAssets = await prisma.canvases.count({
-    where: {
-      ownerId: user_id,
-    },
-  });
+
+  let totalAssets;
+  let totalAssetsCache = await getCache(`canvasTotalAssets_${user_id}`);
+
+  if (!totalAssetsCache) {
+    totalAssets = await prisma.canvases.count({
+      where: {
+        ownerId: user_id,
+      },
+    });
+
+    await setCache(`canvasTotalAssets_${user_id}`, JSON.stringify(totalAssets));
+  } else {
+    totalAssets = JSON.parse(totalAssetsCache);
+  }
 
   let totalPages = Math.ceil(totalAssets / limit);
 
@@ -99,8 +124,9 @@ canvasRouter.post("/create", async (req, res) => {
       return;
     }
 
+    // TODO: uncache
 
-  // TODO: uncache
+    deleteCache(`canvasData_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -157,10 +183,9 @@ canvasRouter.put("/update", async (req, res) => {
 
     updateImagePreview(preview, user_id, canvas.id);
 
-
-  // TODO: un-cache it
-  // TODO: un-cache it - for given canvasId
-
+    // TODO: un-cache it
+    // TODO: un-cache it - for given canvasId
+    deleteCache(`canvasData_${user_id}`);
     res.status(200).send({
       status: "success",
       message: "Canvas Updated",
@@ -198,20 +223,30 @@ canvasRouter.put("/visibility", async (req, res) => {
   //   },
   // });
 
-  
   // TODO: cache it
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-  });
+  let canvas;
+  const visibilityCanvasCache = await getCache(
+    `VisibilityCanvasData_${user_id}`
+  );
 
-  if (!canvas) {
-    res.status(404).send({
-      status: "error",
-      message: "Canvas Not Found",
+  if (!visibilityCanvasCache) {
+    canvas = await prisma.canvases.findUnique({
+      where: {
+        id: canvasId,
+      },
     });
-    return;
+
+    if (!canvas) {
+      res.status(404).send({
+        status: "error",
+        message: "Canvas Not Found",
+      });
+      return;
+    } else {
+      await setCache(`VisibilityCanvasData_${user_id}`, JSON.stringify(canvas));
+    }
+  } else {
+    canvas = JSON.parse(visibilityCanvasCache);
   }
 
   if (canvas.ownerId != user_id) {
@@ -264,17 +299,24 @@ canvasRouter.post("/publish", async (req, res) => {
     return;
   }
 
-
   // TODO: cache it
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-  });
+  let canvas;
+  let publicCanvasCache = await getCache(`publicCanvas_${canvasId}`);
+  if (!publicCanvasCache) {
+    canvas = await prisma.canvases.findUnique({
+      where: {
+        id: canvasId,
+      },
+    });
 
-  if (!canvas) {
-    res.status(404).send("Canvas not found");
-    return;
+    if (!canvas) {
+      res.status(404).send("Canvas not found");
+      return;
+    } else {
+      setCache(`publicCanvas_${canvasId}`, JSON.stringify(canvas));
+    }
+  } else {
+    canvas = JSON.parse(publicCanvasCache);
   }
 
   let owner = await prisma.owners.findUnique({
@@ -323,7 +365,7 @@ canvasRouter.post("/publish", async (req, res) => {
 
     resp = await uploadToSolana(postMetadata, owner, canvasParams);
 
-    if(resp.status == 500){
+    if (resp.status == 500) {
       res.status(500).send({
         message: resp.error,
       });
@@ -334,8 +376,6 @@ canvasRouter.post("/publish", async (req, res) => {
   res.send(resp);
 });
 
-
-
 canvasRouter.delete("/delete/:id", async (req, res) => {
   let canvasId = req.params.id;
   let user_id = req.user.user_id;
@@ -343,11 +383,19 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   canvasId = parseInt(canvasId);
 
   // TODO: cache it
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-  });
+  let canvas;
+  let canvasCache = await getCache(`deleteCanvasCache_${user_id}`);
+  if (!canvasCache) {
+    canvas = await prisma.canvases.findUnique({
+      where: {
+        id: canvasId,
+      },
+    });
+
+    setCache(`deleteCanvasCache_${user_id}`, JSON.stringify(canvas));
+  } else {
+    canvas = JSON.parse(canvasCache);
+  }
 
   if (canvas.ownerId != user_id) {
     res.status(401).send("Unauthorized");
@@ -383,17 +431,24 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   }
 
   // TODO: cache it
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-  });
-
-  if (!canvas) {
-    res.status(404).send({
-      message: "Canvas Not Found",
+  let canvas;
+  let gateCanvasCache = await getCache(`gateCanvasCache_${user_id}`);
+  if (!gateCanvasCache) {
+    canvas = await prisma.canvases.findUnique({
+      where: {
+        id: canvasId,
+      },
     });
-    return;
+    if (!canvas) {
+      res.status(404).send({
+        message: "Canvas Not Found",
+      });
+      return;
+    } else {
+      setCache(`gateCanvasCache_${user_id}`, JSON.stringify(canvas));
+    }
+  } else {
+    canvas = JSON.parse(gateCanvasCache);
   }
 
   if (canvas.ownerId != user_id) {
