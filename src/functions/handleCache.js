@@ -14,31 +14,12 @@ redis.on("connect", () => {
 
 redis.connect();
 
-
 const getCache = async (key) => {
-  redis.get(key, (err, data) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    if (data) {
-      console.log("Cache Hit");
-      return data;
-    } else {
-      console.log("Cache Miss");
-      return null;
-    }
-  });
+  return await redis.get(key);
 };
 
 const setCache = async (key, value) => {
-  redis.set(key, value, (err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Cache Set");
-  });
+  await redis.set(key, value);
 };
 
 const setCacheWithExpire = async (key, value, expire) => {
@@ -52,19 +33,20 @@ const setCacheWithExpire = async (key, value, expire) => {
 };
 
 const deleteCache = async (key) => {
-  redis.del(key, (err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Cache Deleted");
-  });
+  await redis.del(key);
+};
+
+const deleteCacheMatchPattern = async (key) => {
+  let keys = await redis.keys('*');
+  for (let i = 0; i < keys.length; i++) {
+    keys[i].includes(key) && (await redis.del(keys[i]));
+  }
 };
 
 /**
  * Adds an element to the list or creates a new list if not present
- * @param {List} key 
- * @param {String} value 
+ * @param {List} key
+ * @param {String} value
  */
 const addElementToList = async (key, value) => {
   redis.lPush(key, value, (err) => {
@@ -99,12 +81,11 @@ const deleteList = async (key) => {
 
 /**
  * Checks if the element is present in the list
- * @param {List} key 
- * @param {String} value 
+ * @param {List} key
+ * @param {String} value
  */
 const checkElementInList = async (key, value) => {
-
-  return (await redis.lRange(key,0,-1)).includes(value)
+  return (await redis.lRange(key, 0, -1)).includes(value);
 };
 
 module.exports = {
@@ -116,4 +97,5 @@ module.exports = {
   getList,
   deleteList,
   checkElementInList,
+  deleteCacheMatchPattern
 };
