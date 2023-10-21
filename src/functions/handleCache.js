@@ -23,12 +23,8 @@ const setCache = async (key, value) => {
 };
 
 const setCacheWithExpire = async (key, value, expire) => {
-  redis.set(key, value, "EX", expire, (err) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log("Cache Set");
+  await redis.set(key, value, {
+    EX: parseInt(expire),
   });
 };
 
