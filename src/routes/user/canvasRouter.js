@@ -49,8 +49,10 @@ canvasRouter.get("/", async (req, res) => {
       },
     });
 
-
-    await setCache(`canvases_${user_id}_${page}_${limit}`, JSON.stringify(canvasData));
+    await setCache(
+      `canvases_${user_id}_${page}_${limit}`,
+      JSON.stringify(canvasData)
+    );
   } else {
     canvasData = JSON.parse(canvasCache);
   }
@@ -115,7 +117,7 @@ canvasRouter.post("/create", async (req, res) => {
     // TODO: uncache
 
     deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvases_count_${user_id}`)
+    deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -173,7 +175,7 @@ canvasRouter.put("/update", async (req, res) => {
 
     deleteCacheMatchPattern(`canvases_${user_id}`);
     deleteCache(`canvas_${canvas.id}`);
-    deleteCache(`canvases_count_${user_id}`)
+    deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -206,9 +208,7 @@ canvasRouter.put("/visibility", async (req, res) => {
   let isPublic = canvasData.isPublic;
 
   let canvas;
-  const visibilityCanvasCache = await getCache(
-    `canvas_${canvasId}`
-  );
+  const visibilityCanvasCache = await getCache(`canvas_${canvasId}`);
 
   if (!visibilityCanvasCache) {
     canvas = await prisma.canvases.findUnique({
@@ -338,9 +338,9 @@ canvasRouter.post("/publish", async (req, res) => {
       image: url,
     };
 
-    resp = await uploadToSolana(postMetadata, owner, canvasParams , "cnft");
+    resp = await uploadToSolana(postMetadata, owner, canvasParams, "cnft");
 
-    if(resp.status == 500){
+    if (resp.status == 500) {
       res.status(500).send({
         message: resp.error,
       });
@@ -353,7 +353,7 @@ canvasRouter.post("/publish", async (req, res) => {
       image: url,
     };
 
-    resp = await uploadToSolana(postMetadata, owner, canvasParams , "master");
+    resp = await uploadToSolana(postMetadata, owner, canvasParams, "master");
 
     if (resp.status == 500) {
       res.status(500).send({
