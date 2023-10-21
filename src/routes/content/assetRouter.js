@@ -4,7 +4,7 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-const { getCache, setCache } = require("../../functions/handleCache");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 assetRouter.get("/featured", async (req, res) => {
   let type = req.query.type || "props";
