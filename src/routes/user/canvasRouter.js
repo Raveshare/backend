@@ -21,7 +21,7 @@ const {
   setCache,
   deleteCacheMatchPattern,
   deleteCache,
-} = require("../../functions/handleCache");
+} = require("../../functions/cache/handleCache");
 
 canvasRouter.get("/", async (req, res) => {
   let user_id = req.user.user_id;

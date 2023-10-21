@@ -9,7 +9,7 @@ const {
   getCache,
   setCache,
   deleteCache,
-} = require("../../functions/handleCache");
+} = require("../../functions/cache/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
  

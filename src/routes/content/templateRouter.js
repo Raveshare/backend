@@ -6,7 +6,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const {
   addElementToList,
   checkElementInList,
-} = require("../../functions/handleCache");
+} = require("../../functions/cache/handleCache");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {

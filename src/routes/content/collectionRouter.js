@@ -3,7 +3,7 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-const { getCache, setCacheWithExpire } = require("../../functions/handleCache");
+const { getCache, setCacheWithExpire } = require("../../functions/cache/handleCache");
 
 collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
   let collectionAddress = req.params.collection;

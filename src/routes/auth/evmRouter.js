@@ -12,7 +12,7 @@ const prisma = require("../../prisma");
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 
-const { getCache, setCache } = require("../../functions/handleCache");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.

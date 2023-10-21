@@ -6,7 +6,7 @@ const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 
-const { getCache, setCacheWithExpire } = require("../../functions/handleCache");
+const { getCache, setCacheWithExpire } = require("../../functions/cache/handleCache");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
