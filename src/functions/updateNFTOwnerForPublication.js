@@ -1,5 +1,5 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const canvasSchema = require("../schema/canvasSchema");
+const prisma = require("../prisma");
 
 const config = {
   apiKey: process.env.ALCHEMY_API_KEY,
@@ -10,7 +10,8 @@ const alchemy = new Alchemy(config);
 const updateNFTOwnerForPublication = async (contractAddress, canvasId) => {
   const { owners } = await alchemy.nft.getOwnersForContract(contractAddress);
 
-  let canvas = await canvasSchema.findOne({
+  // TODO: cache
+  let canvas = await prisma.canvases.findUnique({
     where: {
       id: canvasId,
     },
@@ -18,15 +19,20 @@ const updateNFTOwnerForPublication = async (contractAddress, canvasId) => {
 
   let allowList = canvas.allowList;
   allowList = allowList.concat(owners);
-  canvas.allowList = allowList;
 
   let gatedWith = canvas.gatedWith;
-  if(!gatedWith.includes(contractAddress)) 
-  gatedWith = gatedWith.concat(contractAddress);
-  canvas.gatedWith = gatedWith;
+  if (!gatedWith.includes(contractAddress))
+    gatedWith = gatedWith.concat(contractAddress);
 
-  await canvas.save();
-  
+  await prisma.canvases.update({
+    where: {
+      id: canvasId,
+    },
+    data: {
+      allowList,
+      gatedWith,
+    },
+  });
 };
 
 module.exports = updateNFTOwnerForPublication;

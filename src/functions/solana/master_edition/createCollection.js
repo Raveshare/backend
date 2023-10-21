@@ -21,10 +21,6 @@ const LENSPOST_WALLET = process.env.LENSPOST_SOLANA_WALLET;
 console.log("LENSPOST_WALLET", LENSPOST_WALLET);
 const wallet = Keypair.fromSecretKey(bs58.decode(LENSPOST_WALLET));
 
-const { Helius } = require("helius-sdk");
-
-const helius = new Helius("7af4bda5-23e2-4d78-a78f-49e79cf354ed", "mainnet-beta");
-
 // lENSPOST_collection_address=zahTJa64eLoisdEryax5PUq7jvaCZqAVh5D9zSQBuMT
 
 const createCollection = async () => {

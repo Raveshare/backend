@@ -1,6 +1,5 @@
 const updateEVMNFTs = require("./evm/updateEVMNFTs");
 const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
-const nftSchema = require("../schema/nftSchema");
 const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
 const prisma = require("../../src/prisma");
 

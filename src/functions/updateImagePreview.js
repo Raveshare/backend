@@ -1,4 +1,3 @@
-const canvasSchema = require("../schema/canvasSchema");
 const uploadImageToS3 = require("./uploadImageToS3");
 const { uploadMediaToIpfs } = require("./uploadToIPFS");
 const purgeImageCache = require("./cache/purgeImageCache");
