@@ -1,6 +1,6 @@
 const uploadedRouter = require("express").Router();
 const prisma = require("../../prisma");
-const uploadImageToS3 = require("../../functions/uploadImageToS3");
+const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
 
 uploadedRouter.post("/", async (req, res) => {
   let user_id = req.user.user_id;

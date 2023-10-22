@@ -24,7 +24,6 @@ redis.on("connect", () => {
 redis.connect();
 
 const eth_alchemy = new Alchemy(eth_config);
-// eth_alchemy.nft.verifyNftOwnership
 
 const getIsWhitelisted = async (walletAddress) => {
   try {

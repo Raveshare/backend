@@ -1,4 +1,4 @@
-const uploadImageToS3 = require("./uploadImageToS3");
+const uploadImageToS3 = require("./helper/uploadImageToS3");
 const { uploadMediaToIpfs } = require("./uploadToIPFS");
 const purgeImageCache = require("./cache/purgeImageCache");
 const prisma = require("../../src/prisma");

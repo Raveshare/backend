@@ -1,5 +1,5 @@
 const utilRouter = require("express").Router();
-const uploadImageToS3 = require("../../functions/uploadImageToS3");
+const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
 const checkDispatcher = require("../../lens/api").checkDispatcher;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
