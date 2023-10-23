@@ -91,6 +91,16 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
+      } else {
+        // if the user is already present, then update the user's data.
+        await prisma.owners.update({
+          where: {
+            id: ownerData.id,
+          },
+          data: {
+            evm_address,
+          },
+        });
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
