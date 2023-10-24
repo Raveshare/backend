@@ -12,12 +12,10 @@ const {
 } = require("../../functions/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
- 
   let user_id = req.user.user_id;
 
   deleteCache(`nfts_${user_id}`);
 
-  // TODO: cache this
   let owner = await prisma.owners.findUnique({
     where: {
       id: user_id,
@@ -29,6 +27,16 @@ nftRouter.post("/update", async (req, res) => {
       message: "Owner not found",
     });
     return;
+  }
+
+  if (owner) {
+    let nfts = await prisma.nftData.findMany({
+      where: {
+        ownerId: user_id,
+      },
+    });
+
+    await setCache(`nfts_${user_id}`, JSON.stringify(nfts));
   }
 
   owner = {
@@ -66,14 +74,22 @@ nftRouter.get("/:id", async (req, res) => {
     return;
   }
 
-  // TODO: cache this
-  let nft = await prisma.nftData.findUnique({
-    where: {
-      id: id,
-      // ownerAddress: ownerAddress,
-      ownerId: user_id,
-    },
-  });
+  let nftCache = await getCache(`nfts_${user_id}`);
+  let nft;
+
+  if (!nftCache) {
+    nft = await prisma.nftData.findUnique({
+      where: {
+        id: id,
+        // ownerAddress: ownerAddress,
+        ownerId: user_id,
+      },
+    });
+
+    setCache(`nfts_${user_id}`, JSON.stringify(nft));
+  } else {
+    nft = JSON.parse(nftCache);
+  }
 
   if (!nft) {
     res.status(404).send({
@@ -101,12 +117,10 @@ nftRouter.get("/", async (req, res) => {
   let queriedNFTs = [];
 
   if (query) {
-    // We can cache the NFT data here.
-    // till the user has not pressed update button
     let nftsCache = await getCache(`nfts_${user_id}`);
 
     let nfts;
-    if(!nftsCache) {
+    if (!nftsCache) {
       nfts = await prisma.nftData.findMany({
         where: {
           ownerId: user_id,
@@ -157,28 +171,42 @@ nftRouter.get("/", async (req, res) => {
 
     let offset = (page - 1) * limit;
 
-    // TODO: cache this 
-    let queriedNFTs = await prisma.nftData.findMany({
-      where: {
-        // ownerAddress: address,
-        ownerId: user_id,
-        chainId: chainId,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-      take: limit,
-      skip: offset,
-    });
+    let queriedNFTs;
+    let queriedNFTsCache = await getCache(`queriednfts_${user_id}`);
+    if (!queriedNFTsCache) {
+      queriedNFTs = await prisma.nftData.findMany({
+        where: {
+          // ownerAddress: address,
+          ownerId: user_id,
+          chainId: chainId,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: limit,
+        skip: offset,
+      });
 
-    // TODO: cache this
-    let totalAssets = await prisma.nftData.count({
-      where: {
-        // ownerAddress: address,
-        ownerId: user_id,
-        chainId: chainId,
-      },
-    });
+      await setCache(`queriednfts_${user_id}`, JSON.stringify(queriedNFTs));
+    } else {
+      queriedNFTs = JSON.parse(queriedNFTsCache);
+    }
+
+    let totalAssets;
+    let totalAssetsCache = await getCache(`totalassets_${user_id}`);
+    if (!totalAssetsCache) {
+      totalAssets = await prisma.nftData.count({
+        where: {
+          // ownerAddress: address,
+          ownerId: user_id,
+          chainId: chainId,
+        },
+      });
+
+      await setCache(`totalassets_${user_id}`, totalAssets);
+    } else {
+      totalAssets = totalAssetsCache;
+    }
 
     let totalPage = Math.ceil(totalAssets / limit);
 
