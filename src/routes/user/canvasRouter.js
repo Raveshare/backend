@@ -51,8 +51,10 @@ canvasRouter.get("/", async (req, res) => {
       },
     });
 
-
-    await setCache(`canvases_${user_id}_${page}_${limit}`, JSON.stringify(canvasData));
+    await setCache(
+      `canvases_${user_id}_${page}_${limit}`,
+      JSON.stringify(canvasData)
+    );
   } else {
     canvasData = JSON.parse(canvasCache);
   }
@@ -117,7 +119,7 @@ canvasRouter.post("/create", async (req, res) => {
     // TODO: uncache
 
     deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvases_count_${user_id}`)
+    deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -175,7 +177,7 @@ canvasRouter.put("/update", async (req, res) => {
 
     deleteCacheMatchPattern(`canvases_${user_id}`);
     deleteCache(`canvas_${canvas.id}`);
-    deleteCache(`canvases_count_${user_id}`)
+    deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -208,9 +210,7 @@ canvasRouter.put("/visibility", async (req, res) => {
   let isPublic = canvasData.isPublic;
 
   let canvas;
-  const visibilityCanvasCache = await getCache(
-    `canvas_${canvasId}`
-  );
+  const visibilityCanvasCache = await getCache(`canvas_${canvasId}`);
 
   if (!visibilityCanvasCache) {
     canvas = await prisma.canvases.findUnique({
@@ -361,21 +361,16 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   let user_id = req.user.user_id;
 
   canvasId = parseInt(canvasId);
+  await deleteCache(`canvas_${canvasId}`);
 
   let canvas;
-  let canvasCache = await getCache(`canvas_${canvasId}`);
-  if (!canvasCache) {
-    canvas = await prisma.canvases.findUnique({
-      where: {
-        id: canvasId,
-      },
-    });
-  } else {
-    canvas = JSON.parse(canvasCache);
 
-    // deleting the cache is it's not required anymore
-    await deleteCache(`canvas_${canvasId}`);
-  }
+  canvas = await prisma.canvases.findUnique({
+    where: {
+      id: canvasId,
+    },
+  });
+  await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
 
   if (canvas.ownerId != user_id) {
     res.status(401).send("Unauthorized");
