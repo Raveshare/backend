@@ -75,6 +75,19 @@ solanaRouter.post("/", async (req, res) => {
             solana_address,
           },
         });
+      } else {
+
+        // if the user is authenticated but has no solana address, then update the solana address.
+
+        await prisma.owners.update({
+          where: {
+            id: ownerData.id,
+          },
+          data: {
+            solana_address,
+          },
+        });
+
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.

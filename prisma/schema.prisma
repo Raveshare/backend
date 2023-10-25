@@ -96,22 +96,23 @@ model nftData {
 }
 
 model owners {
-  address            String?    @unique @db.VarChar(255)
-  canvasOwned        Int?       @default(0)
-  nftOwned           Int?       @default(0)
-  mail               String?    @db.VarChar(255)
-  lens_auth_token    Json?
-  twitter_auth_token Json?
-  lens_handle        String?    @db.VarChar(255)
-  followNftAddress   String?    @db.VarChar(255)
-  profileId          String?    @db.VarChar(255)
-  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
-  solana_address     String?    @unique @db.VarChar(255)
-  evm_address        String?    @unique @db.VarChar(255)
-  id                 Int        @id @default(autoincrement())
-  canvases           canvases[]
-  nftData            nftData[]
+  address                 String?                   @unique @db.VarChar(255)
+  canvasOwned             Int?                      @default(0)
+  nftOwned                Int?                      @default(0)
+  mail                    String?                   @db.VarChar(255)
+  lens_auth_token         Json?
+  twitter_auth_token      Json?
+  lens_handle             String?                   @db.VarChar(255)
+  followNftAddress        String?                   @db.VarChar(255)
+  profileId               String?                   @db.VarChar(255)
+  createdAt               DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime                  @updatedAt @db.Timestamptz(6)
+  solana_address          String?                   @unique @db.VarChar(255)
+  evm_address             String?                   @unique @db.VarChar(255)
+  id                      Int                       @id @default(autoincrement())
+  canvases                canvases[]
+  nftData                 nftData[]
+  public_canvas_templates public_canvas_templates[]
 }
 
 model templates {
@@ -126,8 +127,8 @@ model templates {
 model uploadeds {
   id        Int      @id @default(autoincrement())
   image     String   @db.VarChar(255)
-  address   String?   @db.VarChar(255)
-  ownerId  Int?
+  address   String?  @db.VarChar(255)
+  ownerId   Int?
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
@@ -139,19 +140,22 @@ model user_collected_posts {
 }
 
 view public_canvas_templates {
-  id           Int       @unique
-  data         Json?
-  params       Json?
-  isPublic     Boolean?
-  ipfsLink     String[]  @db.VarChar(255)
-  imageLink    String[]  @db.VarChar(255)
-  createdAt    DateTime? @db.Timestamptz(6)
-  updatedAt    DateTime? @db.Timestamptz(6)
-  ownerAddress String?   @db.VarChar(255)
-  referredFrom String[]  @db.VarChar(255)
-  isGated      Boolean?
-  allowList    String[]  @db.VarChar(255)
-  gatedWith    String[]  @db.VarChar(255)
+  id                         Int      @id @default(autoincrement())
+  data                       Json
+  params                     Json?
+  isPublic                   Boolean  @default(false)
+  ipfsLink                   String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  imageLink                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  createdAt                  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
+  ownerAddress               String?  @db.VarChar(255)
+  referredFrom               String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  isGated                    Boolean? @default(false)
+  allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  assetsRecipientElementData Json[]   @default([])
+  ownerId                    Int?
+  owner                      owners?  @relation(fields: [ownerId], references: [id])
 }
 
 view template_view {

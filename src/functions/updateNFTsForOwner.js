@@ -1,6 +1,6 @@
 const updateEVMNFTs = require("./evm/updateEVMNFTs");
 const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
-const nftSchema = require("../schema/nftSchema");
+const updateZoraNFTs = require("./evm/updateZoraNFTs");
 const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
 const prisma = require("../../src/prisma");
 
@@ -10,14 +10,14 @@ async function updateNFTsForOwner(owner) {
     let evm_address = owner.evm_address;
     let solana_address = owner.solana_address;
 
-    console.log(evm_address, solana_address);
-
     let nfts = [];
 
     if (solana_address)
       nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
-    if (evm_address)
+    if (evm_address) {
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
+      nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
+    }
 
     try {
       await prisma.nftData.createMany({
@@ -36,7 +36,13 @@ async function updateNFTsForOwner(owner) {
       let res = await uploadImageFromLinkToS3(
         nft.permaLink,
         user_id,
-        (nft.chainId == 2 ? "sol/" : "evm/") + nft.title + Date.now()
+        (nft.chainId == 2
+          ? "sol/"
+          : nft.chainId == 7777777
+          ? "zora/"
+          : "eth/") +
+          nft.title +
+          Date.now()
       );
 
       if (!res) continue;
@@ -61,6 +67,8 @@ async function updateNFTsForOwner(owner) {
         console.log(nft.tokenId, nft.address);
       }
     }
+
+
 
     return true;
   } catch (e) {

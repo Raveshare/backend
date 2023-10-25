@@ -8,9 +8,10 @@ const uploadToSolana = async (postMetadata, owner, canvasParams, type) => {
     return recipients.address;
   });
 
-  console.log("creatorAddress", creatorAddress);
-  // let share = 100 / creatorAddress.length;
-  let share = (creatorAddress.length % 2 == 0) ? (100 / creatorAddress.length) : (100 / creatorAddress.length - 1);
+  let share =
+    creatorAddress.length % 2 == 0
+      ? 100 / creatorAddress.length
+      : 100 / creatorAddress.length - 1;
   // share = Math.round(share);
 
   canvasParams.creators = creatorAddress.map((recipients) => {
@@ -20,30 +21,31 @@ const uploadToSolana = async (postMetadata, owner, canvasParams, type) => {
     };
   });
 
-  canvasParams.creators = !(share == 100) ? [{
-    address: solana_address,
-    share: 100,
-  }] : canvasParams.creators;
+  canvasParams.creators = !(share == 100)
+    ? [
+        {
+          address: solana_address,
+          share: 100,
+        },
+      ]
+    : canvasParams.creators;
 
-  if(type === "cnft") {
+  if (type === "cnft") {
+    let assetId = await mintCompressedNft(
+      postMetadata,
+      solana_address,
+      canvasParams
+    );
 
-  let assetId = await mintCompressedNft(
-    postMetadata,
-    solana_address,
-    canvasParams
-  );
+    return assetId;
+  } else if (type === "master") {
+    let assetId = await mintMasterEdition(
+      postMetadata,
+      solana_address,
+      canvasParams
+    );
 
-  return assetId;
-
-  } else if(type === "master") {
-      
-      let assetId = await mintMasterEdition(
-        postMetadata,
-        solana_address,
-        canvasParams
-      );
-    
-      return assetId;
+    return assetId;
   }
 };
 

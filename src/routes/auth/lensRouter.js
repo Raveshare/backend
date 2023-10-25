@@ -15,6 +15,9 @@ const prisma = require("../../prisma");
 lensRouter.get("/challenge", async (req, res) => {
   // let user_id = req.user.user_id;
   let profileId = req.query.profileId;
+
+   // This query can be cached for 24hrs, as the profileID ,Handle and NFT address will remain the same for a user
+   
   let evm_address = req.user.evm_address;
   let challengeData = await challenge(evm_address ,profileId );
   res.status(200).send({
@@ -37,6 +40,9 @@ lensRouter.post("/", async (req, res) => {
   }
 
   try {
+        // again, this is based on challenge, so can't be cached
+
+    // We can cache the authenticate data for a day.
     let authenticateData = await authenticate(evm_address, signature);
     const { accessToken, refreshToken } = authenticateData;
 
@@ -52,6 +58,7 @@ lensRouter.post("/", async (req, res) => {
       });
     }
 
+     // This query can be cached for 24hrs, as the profileID ,Handle and NFT address will remain the same for a user
     let { handle, id } = await getProfileHandleAndId(evm_address);
     let followNftAddress = await getFollowContractAddress(id);
 

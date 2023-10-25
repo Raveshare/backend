@@ -1,5 +1,5 @@
 const { request, gql } = require("graphql-request");
-const ownerSchema = require("../schema/ownerSchema");
+const prisma = require("../prisma");
 
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
@@ -228,7 +228,7 @@ async function createPostViaDispatcher(
   postRequest,
   accessToken,
   refreshAccessToken,
-  address
+  evmAddress
 ) {
   const variables = {
     request: postRequest,
@@ -246,13 +246,14 @@ async function createPostViaDispatcher(
       refreshToken: refreshAccessToken,
     };
 
-    let owner = await ownerSchema.findOne({
+    await prisma.owners.update({
       where: {
-        address: address,
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
       },
     });
-    owner.lens_auth_token = lens_auth_token;
-    await owner.save();
   }
 
   const result = await request(
@@ -368,7 +369,12 @@ const hasCollectedQuery = gql`
   }
 `;
 
-const hasCollected = async (publicationId, address, accessToken , refreshAccessToken) => {
+const hasCollected = async (
+  publicationId,
+  evmAddress,
+  accessToken,
+  refreshAccessToken
+) => {
   const variables = {
     publicationId: publicationId,
   };
@@ -385,13 +391,14 @@ const hasCollected = async (publicationId, address, accessToken , refreshAccessT
       refreshToken: refreshAccessToken,
     };
 
-    let owner = await ownerSchema.findOne({
+    await prisma.owners.update({
       where: {
-        address: address,
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
       },
     });
-    owner.lens_auth_token = lens_auth_token;
-    await owner.save();
   }
 
   const result = await request(LENS_API_URL, hasCollectedQuery, variables, {

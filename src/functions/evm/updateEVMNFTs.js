@@ -1,13 +1,16 @@
 const getNfts = require("../../lens/api").getNfts;
 const { isEmpty } = require("lodash");
 const prisma = require("../../prisma");
+const convertToPng = require("../helper/convertToPng");
 
+// TODO: cache this
 async function checkIfNFTExists(nft) {
   return !isEmpty(
     await prisma.nftData.findMany({
       where: {
         tokenId: nft.tokenId,
         address: nft.contractAddress,
+        chainId: nft.chainId,
       },
     })
   );
@@ -67,7 +70,11 @@ async function updateEVMNFTs(user_id,evm_address) {
       console.log(`Error with ${nft.tokenId} ${nft.contractAddress}}}`);
     }
 
-    if (nft.originalContent.uri.startsWith("data:image/svg+xml")) continue;
+    if (nft.originalContent.uri.startsWith("data:image/svg+xml")) {
+      let png = await convertToPng(nft.originalContent.uri);
+
+      nft.originalContent.uri = png;
+    }
 
     let nftData = {
       tokenId: nft.tokenId,
