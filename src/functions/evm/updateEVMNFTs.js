@@ -64,7 +64,7 @@ async function updateEVMNFTs(user_id,evm_address) {
     if (nft.originalContent.uri.includes("ipfs://")) {
       nft.originalContent.uri = nft.originalContent.uri.replace(
         "ipfs://",
-        "https://ipfs.io/ipfs/"
+        "https://gateway.pinata.cloud/ipfs/"
       );
     } else {
       console.log(`Error with ${nft.tokenId} ${nft.contractAddress}}}`);
