@@ -19,26 +19,43 @@ collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
 
   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
 
-  let collections = await prisma.collections.findFirst({
-    where: {
-      address: {
-        equals: collectionAddress,
-        mode: "insensitive",
-      },
-    },
-  });
-  // We can cache the contents too as they are not changing frequently
-  let contents = await prisma.contents.findMany({
-    take: limit,
-    skip: offset,
-    orderBy: {
-      createdAt: "desc",
-    },
-    where: {
-      collectionId: collections.id,
-    },
-  });
+  let collectionsCache = await getCache(`collections_insensitive`);
+  let collections;
 
+  if (!collectionsCache) {
+    collections = await prisma.collections.findFirst({
+      where: {
+        address: {
+          equals: collectionAddress,
+          mode: "insensitive",
+        },
+      },
+    });
+    await setCache(`collections_insensitive`, JSON.stringify(collections));
+  } else {
+    collections = JSON.parse(collectionsCache);
+  }
+
+  // We can cache the contents too as they are not changing frequently
+  let contentsCache = await getCache(`collectionContent_${collections.id}`);
+  let contents;
+
+  if(!contentsCache) {
+    contents = await prisma.contents.findMany({
+      take: limit,
+      skip: offset,
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        collectionId: collections.id,
+      },
+    });
+    await setCache(`collectionContent_${collections.id}`, JSON.stringify(contents));
+  } else {
+    contents = JSON.parse(contentsCache);
+  }
+  
   let totalAssets = await prisma.contents.count({
     where: {
       collectionId: collections.id,
@@ -106,7 +123,7 @@ collectionRouter.get("/:collection/:id", async (req, res) => {
   });
 });
 
-collectionRouter.get("/" ,  async (req, res) => {
+collectionRouter.get("/", async (req, res) => {
   let page = req.query.page || 1;
   page = parseInt(page);
 
@@ -127,11 +144,7 @@ collectionRouter.get("/" ,  async (req, res) => {
         createdAt: "desc",
       },
     });
-    await setCache(
-      `collections-${page}-${limit}`,
-      JSON.stringify(collections)
-    );
-    
+    await setCache(`collections-${page}-${limit}`, JSON.stringify(collections));
   } else {
     collections = JSON.parse(collectionsCache);
   }
