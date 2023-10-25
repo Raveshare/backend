@@ -1,5 +1,4 @@
 const { request, gql } = require("graphql-request");
-const ownerSchema = require("../schema/ownerSchema");
 
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
@@ -70,7 +69,22 @@ async function challenge(signedBy, forProfileId) {
   return resp.challenge.text;
 }
 
+const checkProfileManagerQuery = gql`
+  query Profile($profileId: ProfileId!) {
+    profile(request: { forProfileId: $profileId }) {
+      signless
+    }
+  }
+`;
+
+async function checkProfileManager(profileId) {
+  const variables = { profileId: profileId };
+  let resp = await request(LENS_API_URL, checkProfileManagerQuery, variables);
+  return resp.profile.signless;
+}
+
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
+  checkProfileManager,
 };

@@ -1,6 +1,6 @@
 const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
-const checkDispatcher = require("../../lens/api").checkDispatcher;
+const checkProfileManager  = require("../../lens/api-v2").checkProfileManager;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
@@ -86,7 +86,7 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
       message: "No profileId found",
     });
 
-  const result = await checkDispatcher(profileId);
+  const result = await checkProfileManager(profileId);
 
   res.send({
     status: "success",
