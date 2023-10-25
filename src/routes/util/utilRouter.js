@@ -70,15 +70,13 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 });
 
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
-  let ownerAddress = req.user.address;
+  let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
     where: {
-      address: ownerAddress,
+        id: user_id,
     },
   });
-
-  console.log(owner);
 
   let profileId = owner.profileId;
 
