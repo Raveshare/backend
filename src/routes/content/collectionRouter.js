@@ -3,7 +3,7 @@ const prisma = require("../../prisma");
 
 const cache = require("../../middleware/cache");
 
-const { getCache, setCacheWithExpire } = require("../../functions/cache/handleCache");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
   let collectionAddress = req.params.collection;
@@ -18,6 +18,7 @@ collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
   let offset = (page - 1) * limit;
 
   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
+
   let collections = await prisma.collections.findFirst({
     where: {
       address: {
@@ -53,7 +54,7 @@ collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
   });
 });
 
-collectionRouter.get("/:collection/:id", cache("5 hours"), async (req, res) => {
+collectionRouter.get("/:collection/:id", async (req, res) => {
   let id = req.params.id;
 
   if (isNaN(id)) {
@@ -126,10 +127,9 @@ collectionRouter.get("/" ,  async (req, res) => {
         createdAt: "desc",
       },
     });
-    await setCacheWithExpire(
+    await setCache(
       `collections-${page}-${limit}`,
-      JSON.stringify(collections),
-      60 * 60 * 5
+      JSON.stringify(collections)
     );
     
   } else {

@@ -1,6 +1,6 @@
 const { Alchemy, Network } = require("alchemy-sdk");
 const prisma = require("../prisma");
-const { getCache, setCache } = require("../functions/handleCache");
+const { getCache, setCache } = require("../functions/cache/handleCache");
 
 const config = {
   apiKey: process.env.ALCHEMY_API_KEY,
@@ -10,7 +10,7 @@ const alchemy = new Alchemy(config);
 
 const updateNFTOwnerForPublication = async (contractAddress, canvasId) => {
   const { owners } = await alchemy.nft.getOwnersForContract(contractAddress);
-  let canvasownerCache = getCache(`canvas_${canvasId}`);
+  let canvasownerCache = await getCache(`canvas_${canvasId}`);
   let canvas;
 
   if (canvasownerCache) {

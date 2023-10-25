@@ -384,7 +384,7 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   });
   await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
 
-  if (canvas.ownerId != user_id) {
+  if (canvas?.ownerId != user_id) {
     res.status(401).send("Unauthorized");
     return;
   }

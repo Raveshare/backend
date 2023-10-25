@@ -36,7 +36,13 @@ async function updateNFTsForOwner(owner) {
       let res = await uploadImageFromLinkToS3(
         nft.permaLink,
         user_id,
-        (nft.chainId == 2 ? "sol/" : nft.chainId == 7777777 ? "zora/" : "eth/") + nft.title + Date.now()
+        (nft.chainId == 2
+          ? "sol/"
+          : nft.chainId == 7777777
+          ? "zora/"
+          : "eth/") +
+          nft.title +
+          Date.now()
       );
 
       if (!res) continue;
@@ -61,6 +67,8 @@ async function updateNFTsForOwner(owner) {
         console.log(nft.tokenId, nft.address);
       }
     }
+
+
 
     return true;
   } catch (e) {

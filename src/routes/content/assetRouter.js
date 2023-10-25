@@ -2,8 +2,6 @@ const assetRouter = require("express").Router();
 
 const prisma = require("../../prisma");
 
-const cache = require("../../middleware/cache");
-
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 assetRouter.get("/featured", async (req, res) => {
