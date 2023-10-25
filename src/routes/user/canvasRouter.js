@@ -251,6 +251,8 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   canvasMadePublic(canvasId, req.user.address);
 
+  // TODO: uncache
+
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
   res.status(200).send({
@@ -361,10 +363,10 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   let user_id = req.user.user_id;
 
   canvasId = parseInt(canvasId);
-  await deleteCache(`canvas_${canvasId}`);
 
   let canvas;
 
+  // TODO: do with cache
   canvas = await prisma.canvases.findUnique({
     where: {
       id: canvasId,
@@ -382,6 +384,10 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
       id: canvasId,
     },
   });
+
+
+  await deleteCache(`canvas_${canvasId}`);
+  await deleteCacheMatchPattern(`canvases_${user_id}`);
 
   res.status(200).send({
     status: "success",
