@@ -249,6 +249,8 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   canvasMadePublic(canvasId, req.user.address);
 
+  // TODO: uncache
+
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
   res.status(200).send({
@@ -373,19 +375,14 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   canvasId = parseInt(canvasId);
 
   let canvas;
-  let canvasCache = await getCache(`canvas_${canvasId}`);
-  if (!canvasCache) {
-    canvas = await prisma.canvases.findUnique({
-      where: {
-        id: canvasId,
-      },
-    });
-  } else {
-    canvas = JSON.parse(canvasCache);
 
-    // deleting the cache is it's not required anymore
-    await deleteCache(`canvas_${canvasId}`);
-  }
+  // TODO: do with cache
+  canvas = await prisma.canvases.findUnique({
+    where: {
+      id: canvasId,
+    },
+  });
+  await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
 
   if (canvas.ownerId != user_id) {
     res.status(401).send("Unauthorized");
@@ -397,6 +394,10 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
       id: canvasId,
     },
   });
+
+
+  await deleteCache(`canvas_${canvasId}`);
+  await deleteCacheMatchPattern(`canvases_${user_id}`);
 
   res.status(200).send({
     status: "success",
