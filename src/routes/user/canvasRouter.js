@@ -124,7 +124,7 @@ canvasRouter.post("/create", async (req, res) => {
       message: "Canvas Created",
       id: canvas.id,
     });
-
+    // We are already using user_id here for canvasCreated
     canvasCreated(canvas.id, user_id);
   } catch (error) {
     res.status(500).send(`Error: ${error}`);
@@ -246,8 +246,9 @@ canvasRouter.put("/visibility", async (req, res) => {
       isPublic: isPublic,
     },
   });
-
-  canvasMadePublic(canvasId, req.user.address);
+  
+  // Changed to user_id here from req.user.address
+  canvasMadePublic(canvasId, user_id);
 
   // TODO: uncache
 
@@ -334,6 +335,8 @@ canvasRouter.post("/publish", async (req, res) => {
       });
       return;
     }
+
+    // Already using user_id here
     canvasPostedToLens(canvasId, user_id);
   } else if (platform == "solana-cnft") {
     let postMetadata = {
