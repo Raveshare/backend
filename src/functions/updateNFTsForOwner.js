@@ -120,7 +120,7 @@ async function updateNFTsForOwner(ownerAddress) {
 
         await nftInstance.save();
       } catch (e) {
-        console.log(nftInstance.permaLink)
+        console.error(nftInstance.permaLink)
       }
     }
 
