@@ -2,13 +2,16 @@ const { request, gql } = require("graphql-request");
 
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
+const { isEmpty } = require("lodash");
 
 const profileManagedQuery = gql`
   query ProfilesManaged($for: EvmAddress!) {
     profilesManaged(request: { for: $for }) {
       items {
         id
-        handle
+        handle {
+          fullHandle
+        }
         metadata {
           displayName
           picture {
@@ -51,7 +54,6 @@ const profileManagedQuery = gql`
 async function getProfilesManagedByAddress(evm_address) {
   const variables = { for: evm_address };
   let resp = await request(LENS_API_URL, profileManagedQuery, variables);
-  console.log(resp.profilesManaged.items);
   return resp.profilesManaged.items;
 }
 
@@ -83,8 +85,52 @@ async function checkProfileManager(profileId) {
   return resp.profile.signless;
 }
 
+const checkIfFollowQuery = gql`
+  query followStatusBulk($request: FollowStatusBulkRequest!) {
+    followStatusBulk(request: $request) {
+      follower
+      profileId
+      status {
+        value
+        isFinalisedOnchain
+      }
+    }
+  }
+`;
+
+async function checkIfFollow(walletAddress) {
+  let profiles = await getProfilesManagedByAddress(walletAddress);
+
+  let profileId = profiles.map((profile) => profile.id);
+
+  if (isEmpty(profileId)) return false;
+
+  let followInfos = profileId.map((profile) => {
+    return {
+      follower: "0x0137",
+      profileId: profile,
+    };
+  });
+
+  const variables = {
+    request: {
+      followInfos: followInfos,
+    },
+  };
+  let resp = await request(LENS_API_URL, checkIfFollowQuery, variables);
+
+  let followStatusBulk = resp.followStatusBulk;
+
+  let doesFollow = followStatusBulk.some(
+    (follow) => follow.status.value === true
+  );
+
+  return doesFollow;
+}
+
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
   checkProfileManager,
+  checkIfFollow,
 };
