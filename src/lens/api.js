@@ -4,35 +4,13 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
-const checkDispatcherQuery = gql`
-  query Profile($profileId: ProfileId!) {
-    profile(request: { profileId: $profileId }) {
-      dispatcher {
-        address
-        canUseRelay
-      }
-    }
-  }
-`;
-
-async function checkDispatcher(profileId) {
-  const variables = { profileId };
-  let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
-
-  if (resp.profile.dispatcher === null) {
-    return false;
-  }
-
-  return resp.profile.dispatcher.canUseRelay;
-}
-
 const getFollowContractAddressQuery = gql`
   query Profile($profileId: ProfileId!) {
     profile(request: { profileId: $profileId }) {
       followNftAddress
     }
   }
-`;
+`;  
 
 async function getFollowContractAddress(profileId) {
   const variables = { profileId };
@@ -329,35 +307,6 @@ const getWhoCollectedPublication = async (whocollectedpublicationrequest) => {
   return result.whoCollectedPublication;
 };
 
-const doesFollowQuery = gql`
-  query DoesFollow($followerAddress: EthereumAddress!, $profileId: ProfileId!) {
-    doesFollow(
-      request: {
-        followInfos: [
-          { followerAddress: $followerAddress, profileId: $profileId }
-        ]
-      }
-    ) {
-      follows
-    }
-  }
-`;
-
-const doesFollow = async (followerAddress) => {
-  let profileId;
-  if (NODE_ENV === "development") profileId = "0x90c3";
-  else profileId = "0x01b984";
-
-  const variables = {
-    followerAddress: followerAddress,
-    profileId: profileId,
-  };
-
-  const result = await request(LENS_API_URL, doesFollowQuery, variables);
-
-  return result.doesFollow[0]?.follows;
-};
-
 const hasCollectedQuery = gql`
   query Publication($publicationId: InternalPublicationId!) {
     publication(request: { publicationId: $publicationId }) {
@@ -409,7 +358,6 @@ const hasCollected = async (
 };
 
 module.exports = {
-  checkDispatcher,
   checkAccessToken,
   validateMetadata,
   refreshToken,
@@ -422,6 +370,5 @@ module.exports = {
   getNfts,
   getWhoCollectedPublication,
   getProfileAddressFromHandle,
-  doesFollow,
   hasCollected,
 };
