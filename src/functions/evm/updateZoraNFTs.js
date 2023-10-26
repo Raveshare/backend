@@ -105,7 +105,7 @@ async function updateZoraNFTs(user_id, evm_address) {
     if (!image) continue;
 
     if (image.startsWith("ipfs://")) {
-      image = image.replace("ipfs://", "https://ipfs.io/ipfs/");
+      image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     }
 
     // if (await checkIfNFTExists(nft)) continue;
