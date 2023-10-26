@@ -6,17 +6,33 @@ const fs = require("fs");
 const uploadImageToS3 = require("../helper/uploadImageToS3");
 const isEmpty = require("lodash/isEmpty");
 
+const {
+  getCache,
+  setCache,
+  deleteCacheMatchPattern,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
+
 // TODO: cache this
 async function checkIfNFTExists(nft) {
-  return !isEmpty(
-    await prisma.nftData.findMany({
-      where: {
-        tokenId: nft.tokenId,
-        address: nft.collectionAddress,
-        chainId: 7777777,
-      },
-    })
-  );
+  let nftData = await getCache(`nft_${tokenId}_${address}_${chainId}`);
+
+  if (!nftData) {
+    const nftData = await isEmpty(
+      await prisma.nftData.findMany({
+        where: {
+          tokenId: nft.tokenId,
+          address: nft.collectionAddress,
+          chainId: 7777777,
+        },
+      })
+    );
+    await setCache(`nft_${tokenId}_${address}_${chainId}`, nftData);
+
+    return nftData;
+  } else {
+    return nftData;
+  }
 }
 
 const getZoraNFTsQuery = gql`
