@@ -1,11 +1,9 @@
 const collectionRouter = require("express").Router();
 const prisma = require("../../prisma");
 
-const cache = require("../../middleware/cache");
-
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
-collectionRouter.get("/:collection/", cache("5 hours"), async (req, res) => {
+collectionRouter.get("/:collection/", async (req, res) => {
   let collectionAddress = req.params.collection;
 
   let page = req.query.page || 1;

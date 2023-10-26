@@ -9,8 +9,6 @@ const isEmpty = require("lodash/isEmpty");
 const {
   getCache,
   setCache,
-  deleteCacheMatchPattern,
-  deleteCache,
 } = require("../../functions/cache/handleCache");
 
 // TODO: cache this
