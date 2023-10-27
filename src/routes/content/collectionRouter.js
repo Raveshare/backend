@@ -17,7 +17,9 @@ collectionRouter.get("/:collection/", async (req, res) => {
 
   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
 
-  let collectionsCache = await getCache(`collections_insensitive`);
+  let collectionsCache = await getCache(
+    `collections_insensitive_${collectionAddress}`
+  );
   let collections;
 
   if (!collectionsCache) {
@@ -29,7 +31,10 @@ collectionRouter.get("/:collection/", async (req, res) => {
         },
       },
     });
-    await setCache(`collections_insensitive`, JSON.stringify(collections));
+    await setCache(
+      `collections_insensitive_${collectionAddress}`,
+      JSON.stringify(collections)
+    );
   } else {
     collections = JSON.parse(collectionsCache);
   }
@@ -38,7 +43,7 @@ collectionRouter.get("/:collection/", async (req, res) => {
   let contentsCache = await getCache(`collectionContent_${collections.id}`);
   let contents;
 
-  if(!contentsCache) {
+  if (!contentsCache) {
     contents = await prisma.contents.findMany({
       take: limit,
       skip: offset,
@@ -49,11 +54,14 @@ collectionRouter.get("/:collection/", async (req, res) => {
         collectionId: collections.id,
       },
     });
-    await setCache(`collectionContent_${collections.id}`, JSON.stringify(contents));
+    await setCache(
+      `collectionContent_${collections.id}`,
+      JSON.stringify(contents)
+    );
   } else {
     contents = JSON.parse(contentsCache);
   }
-  
+
   let totalAssets = await prisma.contents.count({
     where: {
       collectionId: collections.id,
