@@ -60,7 +60,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
 
 const updateLensHandles = async (referredFrom) => {
   for (let i = 0; i < referredFrom.length; i++) {
-    if (referredFrom[i].recipient.startsWith("@")) {
+    if (referredFrom[i].recipient?.startsWith("@")) {
       referredFrom[i].recipient = referredFrom[i].recipient.substring(1);
       referredFrom[i].recipient = await getProfileAddressFromHandle(
         referredFrom[i].recipient
