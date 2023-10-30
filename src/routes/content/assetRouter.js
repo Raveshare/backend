@@ -56,7 +56,7 @@ assetRouter.get("/featured", async (req, res) => {
 });
 
 assetRouter.get("/", async (req, res) => {
-  const { author, type } = req.query;
+  const { author, type, campaign } = req.query;
 
   let page = req.query.page || 1;
   page = parseInt(page);
@@ -103,6 +103,49 @@ assetRouter.get("/", async (req, res) => {
       totalAssets = await prisma.assets.count({
         where: {
           author: author,
+          type: type,
+        },
+      });
+    }
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    res.send({
+      assets: assets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
+    return;
+  } else if (campaign) {
+    let assets = await getCache(`assets-${campaign}-${type}-${page}-${limit}`);
+
+    if (!assets) {
+      assets = await prisma.assets.findMany({
+        where: {
+          campaign: campaign,
+          type: type,
+        },
+        take: limit,
+        skip: offset,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      await setCache(
+        `assets-${campaign}-${type}-${page}-${limit}`,
+        JSON.stringify(assets)
+      );
+    } else {
+      assets = JSON.parse(assets);
+    }
+
+    let totalAssets = await getCache(`assets-${campaign}-${type}-total`);
+
+    if (!totalAssets) {
+      totalAssets = await prisma.assets.count({
+        where: {
+          campaign: campaign,
           type: type,
         },
       });

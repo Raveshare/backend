@@ -33,8 +33,6 @@ const updateSolanaNFTs = async (user_id,solana_address, page = 1) => {
   const { result } = await response.json();
   let items = result.items;
 
-  console.log("solana", items.length);
-
   let latestNFTs = [];
 
   for (let i = 0; i < items.length; i++) {

@@ -13,10 +13,10 @@ const {
 
 // TODO: cache this
 async function checkIfNFTExists(nft) {
-  let nftData = await getCache(`nft_${tokenId}_${address}_${chainId}`);
+  let nftData = await getCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`);
 
   if (!nftData) {
-    const nftData = await isEmpty(
+    const nftData = isEmpty(
       await prisma.nftData.findMany({
         where: {
           tokenId: nft.tokenId,
@@ -25,7 +25,7 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${tokenId}_${address}_${chainId}`, nftData);
+    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`, JSON.stringify(nftData));
 
     return nftData;
   } else {
@@ -106,7 +106,7 @@ async function updateZoraNFTs(user_id, evm_address) {
       image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     }
 
-    // if (await checkIfNFTExists(nft)) continue;
+    if (await checkIfNFTExists(nft)) continue;
 
     if (image.startsWith("data:image/svg+xml")) {
       let png = await convertToPng(image);
