@@ -270,6 +270,8 @@ async function createPostViaDispatcher(
     }
   );
 
+  console.log(result)
+
   return result.createPostViaDispatcher;
 }
 
