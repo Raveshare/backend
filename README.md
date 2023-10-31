@@ -11,7 +11,7 @@
 
 ## Getting Started
 
-First, build 
+First, you need to build 
 
 ```bash
 yarn build
