@@ -104,7 +104,11 @@ const getProfileAddressFromHandleQuery = gql`
 `;
 
 async function getProfileAddressFromHandle(handle) {
-  if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  if (NODE_ENV === "production") {
+    if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  } else {
+    if (!handle.endsWith(".test")) handle = handle + ".test";
+  }
   const variables = { handle };
   console.log(variables);
   let resp = await request(
