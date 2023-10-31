@@ -3,7 +3,7 @@
 node_modules
 src/dumpdata/
 yarn-error.log
-
+combined.log
 ```
 
 plotno_json_file.json
