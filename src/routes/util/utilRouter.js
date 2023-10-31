@@ -1,17 +1,19 @@
 const utilRouter = require("express").Router();
-const uploadImageToS3 = require("../../functions/uploadImageToS3");
-const checkDispatcher = require("../../lens/api").checkDispatcher;;
+const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
+const checkDispatcher = require("../../lens/api").checkDispatcher;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
+
+const { getCache, setCacheWithExpire } = require("../../functions/cache/handleCache");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
 });
 
 utilRouter.post("/remove-bg", auth, async (req, res) => {
-  let { image } = req.query;
+  let { image, id } = req.query;
 
   if (!image) return res.send({ error: "No image provided" });
 
@@ -26,6 +28,7 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
     let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
 
     res.send({
+      id: id,
       s3link: result,
     });
     return;
@@ -67,16 +70,13 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 });
 
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
-  let ownerAddress = req.user.address;
-
+  let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
     where: {
-      address: ownerAddress,
+        id: user_id,
     },
   });
-
-  console.log(owner);
 
   let profileId = owner.profileId;
 
@@ -97,13 +97,27 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
 
 utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
+  let isWhitelistedCache = await getCache(`isWhitelisted_${wallet}`);
+  isWhitelistedCache = isWhitelistedCache === "true" ? true : false;
 
-  let isWhitelisted = await getIsWhitelisted(wallet);
+  if (!isWhitelistedCache) {
+    let isWhitelisted = await getIsWhitelisted(wallet);
+    res.send({
+      status: "success",
+      message: isWhitelisted,
+    });
 
-  res.send({
-    status: "success",
-    message: isWhitelisted,
-  });
+    await setCacheWithExpire(
+      `isWhitelisted_${wallet}`,
+      String(isWhitelisted || false),
+      60 * 60 * 24
+    );
+  } else {
+    res.send({
+      status: "success",
+      message: isWhitelistedCache,
+    });
+  }
 });
 
 module.exports = utilRouter;

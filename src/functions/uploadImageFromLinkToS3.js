@@ -1,6 +1,6 @@
 const fs = require("fs");
 const axios = require("axios");
-const uploadImageToS3 = require("./uploadImageToS3");
+const uploadImageToS3 = require("./helper/uploadImageToS3");
 const sizeOf = require("image-size");
 
 const uploadImageFromLinkToS3 = async (link, address, fileName) => {
@@ -17,7 +17,9 @@ const uploadImageFromLinkToS3 = async (link, address, fileName) => {
       format = dimensions.type;
 
       dimensions = [width, height];
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
 
     let filepath = `user/${address}/nft/${fileName}.${format}`;
 

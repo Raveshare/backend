@@ -1,5 +1,5 @@
 const { request, gql } = require("graphql-request");
-const ownerSchema = require("../schema/ownerSchema");
+const prisma = require("../prisma");
 
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
@@ -19,11 +19,11 @@ async function checkDispatcher(profileId) {
   const variables = { profileId };
   let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
 
-  if (resp.profile.dispatcher === null) {
+  if (resp.profile?.dispatcher === null) {
     return false;
   }
 
-  return resp.profile.dispatcher.canUseRelay;
+  return resp.profile?.dispatcher.canUseRelay;
 }
 
 const getFollowContractAddressQuery = gql`
@@ -104,7 +104,11 @@ const getProfileAddressFromHandleQuery = gql`
 `;
 
 async function getProfileAddressFromHandle(handle) {
-  if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  if (NODE_ENV === "production") {
+    if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  } else {
+    if (!handle.endsWith(".test")) handle = handle + ".test";
+  }
   const variables = { handle };
   console.log(variables);
   let resp = await request(
@@ -127,8 +131,6 @@ const checkAccessTokenQuery = gql`
 async function checkAccessToken(accessToken) {
   const variables = { accessToken };
   let resp = await request(LENS_API_URL, checkAccessTokenQuery, variables);
-
-  console.log(resp);
 
   return resp.verify;
 }
@@ -230,7 +232,7 @@ async function createPostViaDispatcher(
   postRequest,
   accessToken,
   refreshAccessToken,
-  address
+  evmAddress
 ) {
   const variables = {
     request: postRequest,
@@ -248,13 +250,14 @@ async function createPostViaDispatcher(
       refreshToken: refreshAccessToken,
     };
 
-    let owner = await ownerSchema.findOne({
+    await prisma.owners.update({
       where: {
-        address: address,
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
       },
     });
-    owner.lens_auth_token = lens_auth_token;
-    await owner.save();
   }
 
   const result = await request(
@@ -266,6 +269,8 @@ async function createPostViaDispatcher(
       Origin: "https://app.lenspost.xyz",
     }
   );
+
+  console.log(result)
 
   return result.createPostViaDispatcher;
 }
@@ -370,7 +375,12 @@ const hasCollectedQuery = gql`
   }
 `;
 
-const hasCollected = async (publicationId, address, accessToken , refreshAccessToken) => {
+const hasCollected = async (
+  publicationId,
+  evmAddress,
+  accessToken,
+  refreshAccessToken
+) => {
   const variables = {
     publicationId: publicationId,
   };
@@ -387,13 +397,14 @@ const hasCollected = async (publicationId, address, accessToken , refreshAccessT
       refreshToken: refreshAccessToken,
     };
 
-    let owner = await ownerSchema.findOne({
+    await prisma.owners.update({
       where: {
-        address: address,
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
       },
     });
-    owner.lens_auth_token = lens_auth_token;
-    await owner.save();
   }
 
   const result = await request(LENS_API_URL, hasCollectedQuery, variables, {

@@ -1,6 +1,6 @@
 const getWhoCollectedPublication =
   require("../lens/api").getWhoCollectedPublication;
-const canvasSchema = require("../schema/canvasSchema");
+const prisma = require("../prisma");
 
 const updateCollectsForPublication = async (publicationId, canvasId) => {
   let offset = 0;
@@ -24,7 +24,7 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
     }
   }
 
-  let canvas = await canvasSchema.findOne({
+  let canvas = await prisma.canvases.findUnique({
     where: {
       id: canvasId,
     },
@@ -32,14 +32,20 @@ const updateCollectsForPublication = async (publicationId, canvasId) => {
 
   let allowList = canvas.allowList;
   allowList = allowList.concat(addresses);
-  canvas.allowList = allowList;
   
   let gatedWith = canvas.gatedWith;
   if(!gatedWith.includes(publicationId)) 
   gatedWith = gatedWith.concat(publicationId);
-  canvas.gatedWith = gatedWith;
-  
-  await canvas.save();
+
+  await prisma.canvases.update({
+    where: {
+      id: canvasId,
+    },
+    data: {
+      allowList,
+      gatedWith,
+    },
+  });
 
   return addresses;
 };

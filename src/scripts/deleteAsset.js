@@ -1,11 +1,4 @@
-const fs = require("fs");
-const assetSchema = require("../schema/assetSchema");
-const nftSchema = require("../schema/nftSchema");
-const canvasSchema = require("../schema/canvasSchema");
-const templateSchema = require("../schema/templateSchema");
-
-const content = require("../schema/content");
-const collections = require("../schema/collections");
+const prisma = require("../prisma");
 
 async function deleteAsset() {
   assetSchema.destroy({
@@ -15,10 +8,26 @@ async function deleteAsset() {
   });
 }
 
+async function updateCanvas() {
+  const owners = await prisma.owners.findMany();
+
+  for (const owner of owners) {
+    await prisma.canvases.updateMany({
+      where: {
+        ownerAddress: owner.address,
+      },
+      data: {
+        ownerId: owner.id,
+      },
+    });
+  }
+}
+
 async function deleteNFT() {
-  nftSchema.destroy({
-    where: {},
-    truncate: true,
+  await prisma.nftData.deleteMany({
+    where: {
+      ownerId: null,
+    },
   });
 }
 
@@ -40,9 +49,7 @@ async function deleteTemplate() {
 
 async function deleteCollection(id) {
   await content.destroy({
-    where: {
-
-    }
+    where: {},
   });
 
   await collections.destroy({
@@ -57,5 +64,6 @@ module.exports = {
   deleteNFT,
   deleteCanvas,
   deleteTemplate,
-  deleteCollection
+  deleteCollection,
+  updateCanvas,
 };

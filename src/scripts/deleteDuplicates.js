@@ -1,4 +1,4 @@
-const nftSchema = require("../schema/nftSchema");
+// const nftSchema = require("../schema/nftSchema");
 const prisma = require("../prisma");
 const deleteDuplicates = async () => {
   try {

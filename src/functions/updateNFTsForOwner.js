@@ -1,128 +1,74 @@
-const getNfts = require("../lens/api").getNfts;
-const getAssetsByOwner = require("../functions/solana/getAssetsByOwner")
-const { isEmpty } = require("lodash");
-const nftSchema = require("../schema/nftSchema");
-const ownerSchema = require("../schema/ownerSchema");
+const updateEVMNFTs = require("./evm/updateEVMNFTs");
+const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
+const updateZoraNFTs = require("./evm/updateZoraNFTs");
 const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
+const prisma = require("../../src/prisma");
 
-async function checkIfNFTExists(nft) {
-  return await nftSchema.findOne({
-    where: {
-      tokenId: nft.tokenId,
-      address: nft.contractAddress,
-    },
-  });
-}
-
-async function updateNFTsForOwner(ownerAddress) {
+async function updateNFTsForOwner(owner) {
   try {
-    let owner = await ownerSchema.findOne({
-      where: {
-        address: ownerAddress,
-      },
-    });
+    let user_id = owner.user_id;
+    let evm_address = owner.evm_address;
+    let solana_address = owner.solana_address;
 
-    if(owner.solana_address) getAssetsByOwner(owner.solana_address)
-    
-    let latestNFTs = [];
+    let nfts = [];
 
-    let cursor = {};
-
-    let chainIds = [1,137];
-
-    while (true) {
-      let request = {
-        ownerAddress: ownerAddress,
-        chainIds: chainIds,
-        limit: 50,
-        cursor: cursor,
-      };
-
-      let res;
-      try {
-        res = await getNfts(request);
-
-        latestNFTs = latestNFTs.concat(res.items);
-
-        cursor = res.pageInfo.next;
-      } catch (e) {
-        console.log(e);
-        break;
-      }
-     
-      cursor = JSON.parse(cursor);
-      if (isEmpty(cursor)) {
-        break;
-      }
-    
-      if (!cursor.polygon) chainIds = [1];
-      if (!cursor.eth) chainIds = [137];
+    if (solana_address)
+      nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
+    if (evm_address) {
+      nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
+      nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
 
-    for (let i = 0; i < latestNFTs.length; i++) {
-      let nft = latestNFTs[i];
-
-      if (await checkIfNFTExists(nft)) continue;
-
-      if (!nft.originalContent.uri) continue;
-
-      if (nft.originalContent.uri.includes("ipfs://")) {
-        nft.originalContent.uri = nft.originalContent.uri.replace(
-          "ipfs://",
-          "https://ipfs.io/ipfs/"
-        );
-      } else {
-        console.log(nft.originalContent.uri);
-      }
-
-      let nftData = {
-        tokenId: nft.tokenId,
-        title: nft.name,
-        description: nft.description,
-        openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
-        permaLink: nft.originalContent.uri,
-        address: nft.contractAddress,
-      };
-
-      try {
-        let nftInstance = await nftSchema.create(nftData);
-
-        await owner.addNftData(nftInstance);
-      } catch (e) {
-        console.log(nft.name);
-      }
-    }
-
-    for (let i = 0; i < latestNFTs.length; i++) {
-      let nft = latestNFTs[i];
-
-      let nftInstance = await nftSchema.findOne({
-        where: {
-          tokenId: nft.tokenId,
-          address: nft.contractAddress,
-        },
+    try {
+      await prisma.nftData.createMany({
+        data: nfts,
+        skipDuplicates: true,
       });
+    } catch (e) {
+      console.error(e);
+      console.log(`Error saving nfts for ${owner.user_id}`);
+      return;
+    }
 
-      if (!nftInstance) continue;
-      if (nftInstance.imageURL) continue;
+    for (let i = 0; i < nfts.length; i++) {
+      let nft = nfts[i];
 
       let res = await uploadImageFromLinkToS3(
-        nftInstance.permaLink,
-        ownerAddress,
-        nft.name + Date.now()
+        nft.permaLink,
+        user_id,
+        (nft.chainId == 2
+          ? "sol/"
+          : nft.chainId == 7777777
+          ? "zora/"
+          : "eth/") +
+          nft.title +
+          Date.now()
       );
 
       if (!res) continue;
 
       try {
-        nftInstance.dimensions = res.dimensions;
-        nftInstance.imageURL = res.s3Link;
+        nft.dimensions = res.dimensions;
+        nft.imageURL = res.s3Link;
 
-        await nftInstance.save();
+        await prisma.nftData.updateMany({
+          where: {
+            // id: nft.id,
+            tokenId: nft.tokenId,
+            address: nft.address,
+          },
+          data: {
+            dimensions: nft.dimensions,
+            imageURL: nft.imageURL,
+          },
+        });
       } catch (e) {
-        console.error(nftInstance.permaLink)
+        console.log(e);
+        console.log(nft.tokenId, nft.address);
       }
     }
+
+
 
     return true;
   } catch (e) {

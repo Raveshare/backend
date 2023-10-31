@@ -3,15 +3,32 @@ const solanaRouter = require("express").Router();
 const nacl = require("tweetnacl");
 const bs58 = require("bs58");
 const prisma = require("../../prisma");
+const generateJwt = require("../../utils/auth/generateJwt");
 
-solanaRouter.post("/authenticate", async (req, res) => {
-  let address = req.user.address;
+const userLogin = require("../../functions/events/userLogin.event");
+const sendLogin = require("../../functions/webhook/sendLogin.webhook");
+
+
+const jsonwebtoken = require("jsonwebtoken");
+
+solanaRouter.post("/", async (req, res) => {
+
+  try {
+  token = req.headers.authorization.split(" ")[1];
+  decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+  console.log(decoded)
+  req.user = decoded;
+  } catch {}
+
+  // To check if the request is already authenticated, and user_id is present.
+  console.log(req.user)
+  let user_id = req.user?.user_id;
   let signature, message, solana_address;
 
   try {
     signature = req.body.signature;
     message = req.body.message;
-    solana_address = req.body.address;
+    solana_address = req.body.solana_address;
   } catch (error) {
     res.status(400).send({
       status: "failed",
@@ -20,17 +37,21 @@ solanaRouter.post("/authenticate", async (req, res) => {
     return;
   }
 
-
   try {
-    let ownerData = await prisma.owners.findUnique({
-      where: {
-        address: address,
-      },  
-    });
+    let ownerData;
 
-    if (!ownerData) {
-      res.status(404).send({
-        message: "User not found",
+    // If the user is already authenticated then get tha USER else find the user using the solana address
+    if (user_id) {
+      ownerData = await prisma.owners.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
+    } else {
+      ownerData = await prisma.owners.findUnique({
+        where: {
+          solana_address,
+        },
       });
     }
 
@@ -42,22 +63,59 @@ solanaRouter.post("/authenticate", async (req, res) => {
 
     if (!isVerified) {
       res.status(401).send({
-        message: "Invalid Signature",
+        message:
+          "Invalid Signature for Solana, please sign using correct message",
       });
       return;
     } else {
+      // if the user is neither authenticated nor has a previous record, then create the record after user's signautre has been verified.
+      if (!ownerData) {
+        ownerData = await prisma.owners.create({
+          data: {
+            solana_address,
+          },
+        });
+      } else {
 
-      await prisma.owners.update({
-        where: {
-          address: address,
-        },
-        data: {
-          solana_address: solana_address,
-        },
-      });
+        // if the user is authenticated but has no solana address, then update the solana address.
 
+        await prisma.owners.update({
+          where: {
+            id: ownerData.id,
+          },
+          data: {
+            solana_address,
+          },
+        });
+
+      }
+
+      // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
+      let jwt = generateJwt(ownerData.evm_address ? ownerData.evm_address : "" , solana_address , ownerData.id)
+
+      // to check for lens_handle if lens_auth_token are present.
+      let hasExpired = false;
+      if (ownerData.lens_auth_token) {
+        let { accessToken, refreshToken } = ownerData.lens_auth_token;
+
+        if (!accessToken || !refreshToken) {
+          hasExpired = true;
+        } else {
+          const decodedToken = jsonwebtoken.decode(refreshToken, {
+            complete: true,
+          });
+
+          hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
+        }
+      }
+
+
+      if(!user_id)
+      sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
       res.status(200).send({
         status: "success",
+        message : hasExpired ? "" : (ownerData.lens_handle ? ownerData.lens_handle : ""),
+        jwt
       });
     }
   } catch (error) {
@@ -66,6 +124,5 @@ solanaRouter.post("/authenticate", async (req, res) => {
     });
   }
 });
-
 
 module.exports = solanaRouter;

@@ -38,7 +38,7 @@ app.use(express.json({ limit: "30mb", extended: true }));
 app.use(handleError);
 
 app.use("/collection", auth, collectionRouter);
-app.use("/user", userRouter);
+app.use("/user",auth, userRouter);
 app.use("/auth", authRouter);
 app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);

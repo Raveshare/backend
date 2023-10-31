@@ -8,9 +8,11 @@ const { add } = require('lodash');
  * @param {string} signature
  * @param {string} message
  */
-const verifyEthSignature = async (address, signature , message) => {
+
+// If signature is verified, we can cache the user's data.
+const verifyEthSignature =  (address, signature , message) => {
     try {
-    let recoveredAddress = await ethers.utils.verifyMessage(message, signature);
+    let recoveredAddress =  ethers.utils.verifyMessage(message, signature);
     
     return recoveredAddress == address;
 

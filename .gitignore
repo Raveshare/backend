@@ -1,11 +1,13 @@
 .env
 
 node_modules
-src/dumpdata/assets
-src/dumpdata/collections
+src/dumpdata/
 yarn-error.log
-src/routes/admin
-prisma/migrations
+
+```
 
 plotno_json_file.json
 template.json
+
+.DS_Store
+```

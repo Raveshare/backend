@@ -1,22 +1,26 @@
 const jsonwebtoken = require("jsonwebtoken");
 
 /**
- * Generates a JWT token
- * @param {string} address - the address of the user
- * @param {signature} signature - the signature of the user
- * @returns {string} - the JWT token
+ * Generates JWT
+ * @param {String} evm_address EVM Address of the user
+ * @param {String} solana_address Solana Address of the user
+ * @param {String} user_id Unique ID of the authenticated user
+ * @returns 
  */
 
-function generateJwt(address, signature) {
-    return jsonwebtoken.sign(
-        {
-            address,
-            signature
-        }
-        , process.env.JWT_SECRET_KEY,
-        {
-            expiresIn: "1d"
-        });
+// if JWT is generated successfully, then cache the JWT for a day.
+function generateJwt(evm_address, solana_address, user_id) {
+  return jsonwebtoken.sign(
+    {
+      evm_address,
+      solana_address,
+      user_id,
+    },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "1d",
+    }
+  );
 }
 
 module.exports = generateJwt;

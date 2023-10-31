@@ -3,6 +3,10 @@ const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api").hasCollected;
 const jsonwebtoken = require("jsonwebtoken");
+const {
+  addElementToList,
+  checkElementInList,
+} = require("../../functions/cache/handleCache");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -15,6 +19,9 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
     offset = limit * (page - 1);
 
+    // this query can be cached again
+    // as the templates are not changing frequently - 
+    // so we can remove the cache middleware and cache till the templates are not updated
     const templates = await prisma.template_view.findMany({
       skip: offset,
     });
@@ -36,7 +43,8 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 });
 
 templateRouter.get("/user", async (req, res) => {
-  let address = req.user.address;
+  let evm_address = req.user.evm_address;
+  let user_id = req.user.user_id;
   let page = req.query.page;
   page = parseInt(page);
 
@@ -47,6 +55,8 @@ templateRouter.get("/user", async (req, res) => {
   offset = limit * (page - 1);
 
   try {
+    // this query can be cached again
+    //  the cache for this query will get invalidated when a new template is created
     let publicTemplates = await prisma.public_canvas_templates.findMany({
       take: limit,
       skip: offset,
@@ -59,22 +69,22 @@ templateRouter.get("/user", async (req, res) => {
 
     let owners = await prisma.owners.findUnique({
       where: {
-        address: address,
+        id: user_id,
       },
       select: {
         lens_auth_token: true,
+        id: true,
       },
     });
 
     let accessToken, refreshToken;
-    if (owners.lens_auth_token == null) {
+    if (owners.lens_auth_token == null || evm_address == null) {
       accessToken = null;
       refreshToken = null;
     } else {
       accessToken = owners.lens_auth_token.accessToken;
       refreshToken = owners.lens_auth_token.refreshToken;
 
-      
       let hasExpired = false;
       if (!accessToken || !refreshToken) {
         hasExpired = true;
@@ -105,7 +115,7 @@ templateRouter.get("/user", async (req, res) => {
         if (accessToken) {
           collected = await hasCollected(
             pubId,
-            address,
+            evm_address,
             accessToken,
             refreshToken
           );
