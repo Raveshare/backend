@@ -11,7 +11,7 @@
 
 ## Getting Started
 
-First, build 
+First, you need to build the app 
 
 ```bash
 yarn build
