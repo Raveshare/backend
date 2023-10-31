@@ -2,6 +2,7 @@ const getNfts = require("../../lens/api").getNfts;
 const { isEmpty } = require("lodash");
 const prisma = require("../../prisma");
 const convertToPng = require("../helper/convertToPng");
+const NODE_ENV = process.env.NODE_ENV;
 
 // TODO: cache this
 async function checkIfNFTExists(nft) {
@@ -21,7 +22,9 @@ async function updateEVMNFTs(user_id,evm_address) {
 
   let cursor = {};
 
-  let chainIds = [1, 137];
+  let chainIds = [137];
+
+  if(NODE_ENV === "production") chainIds = [1,137];
 
   while (true) {
     let request = {
