@@ -116,8 +116,8 @@ canvasRouter.post("/create", async (req, res) => {
 
     // TODO: uncache
 
-    deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvases_count_${user_id}`);
+    await deleteCacheMatchPattern(`canvases_${user_id}`);
+    await deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -173,9 +173,10 @@ canvasRouter.put("/update", async (req, res) => {
 
     updateImagePreview(preview, user_id, canvas.id);
 
-    deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvas_${canvas.id}`);
-    deleteCache(`canvases_count_${user_id}`);
+    await deleteCacheMatchPattern(`canvases_${user_id}`);
+    await deleteCache(`canvas_${canvas.id}`);
+    await deleteCache(`canvases_count_${user_id}`);
+    await deleteCache(`publicTemplates`);
 
     res.status(200).send({
       status: "success",
@@ -252,7 +253,7 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   // TODO: uncache
 
-  deleteCacheMatchPattern(`canvases_${user_id}`);
+  await deleteCacheMatchPattern(`canvases_${user_id}`);
 
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
@@ -298,7 +299,7 @@ canvasRouter.post("/publish", async (req, res) => {
       res.status(404).send("Canvas not found");
       return;
     } else {
-      setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
+      await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
     }
   } else {
     canvas = JSON.parse(publicCanvasCache);
@@ -445,7 +446,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
       });
       return;
     } else {
-      setCache(`gateCanvasCache_${canvasId}`, JSON.stringify(canvas));
+      await setCache(`gateCanvasCache_${canvasId}`, JSON.stringify(canvas));
     }
   } else {
     canvas = JSON.parse(gateCanvasCache);

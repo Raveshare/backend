@@ -15,7 +15,7 @@ const {
 nftRouter.post("/update", async (req, res) => {
   let user_id = req.user.user_id;
 
-  deleteCacheMatchPattern(`nfts_${user_id}`);
+  await deleteCacheMatchPattern(`nfts_${user_id}`);
 
   let user
   let userCache = await getCache(`user_${user_id}`);
@@ -85,7 +85,7 @@ nftRouter.get("/:id", async (req, res) => {
       },
     });
 
-    setCache(`nfts_${user_id}`, JSON.stringify(nft));
+    await setCache(`nfts_${user_id}`, JSON.stringify(nft));
   } else {
     nft = JSON.parse(nftCache);
   }

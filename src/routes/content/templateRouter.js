@@ -6,7 +6,11 @@ const jsonwebtoken = require("jsonwebtoken");
 const {
   addElementToList,
   checkElementInList,
+  getCache,
+  setCache,
+  deleteCache,
 } = require("../../functions/cache/handleCache");
+const { set, get } = require("lodash");
 
 templateRouter.get("/", cache("5 hours"), async (req, res) => {
   try {
@@ -20,11 +24,20 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
     offset = limit * (page - 1);
 
     // this query can be cached again
-    // as the templates are not changing frequently - 
+    // as the templates are not changing frequently -
     // so we can remove the cache middleware and cache till the templates are not updated
-    const templates = await prisma.template_view.findMany({
-      skip: offset,
-    });
+
+    let templatesCache = await getCache("templates");
+    let templates;
+    if (!templatesCache) {
+      templates = await prisma.template_view.findMany({
+        skip: offset,
+      });
+
+      await setCache("templates", JSON.stringify(templates));
+    } else {
+      templates = JSON.parse(templatesCache);
+    }
 
     let totalAssets = await prisma.template_view.count({});
 
@@ -59,27 +72,50 @@ templateRouter.get("/user", async (req, res) => {
     //  the cache for this query will get invalidated when a new template is created
     // TODO : cache
     // TODO: un-cache when /canvas/update is called
-    let publicTemplates = await prisma.public_canvas_templates.findMany({
-      take: limit,
-      skip: offset,
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
+
+    let publicTemplatesCache = await getCache("publicTemplates");
+    let publicTemplates;
+    if (!publicTemplatesCache) {
+      publicTemplates = await prisma.public_canvas_templates.findMany({
+        take: limit,
+        skip: offset,
+        orderBy: {
+          updatedAt: "desc",
+        },
+      });
+      await setCache("publicTemplates", JSON.stringify(publicTemplates));
+    } else {
+      publicTemplates = await JSON.parse(publicTemplatesCache);
+    }
+
+    let publicTemplatesCountCache = await getCache("publicTemplatesCount");
+    let publicTemplatesCount;
+
+    if (!publicTemplatesCountCache) {
+      publicTemplatesCount = await prisma.public_canvas_templates.count({});
+      await setCache("publicTemplatesCount", publicTemplatesCount);
+    } else {
+      publicTemplatesCount = publicTemplatesCountCache;
+    }
 
     // TODO: cache
-    let publicTemplatesCount = await prisma.public_canvas_templates.count({});
+    // const publicTemplatesCount = await prisma.public_canvas_templates.count({});
+    // console.log("FUCK YOU " + publicTemplatesCount);
 
     // TODO: cache
-    let owners = await prisma.owners.findUnique({
-      where: {
-        id: user_id,
-      },
-      select: {
-        lens_auth_token: true,
-        id: true,
-      },
-    });
+    let ownersCache = await getCache(`user_${user_id}`);
+    let owners;
+    if (!ownersCache) {
+      owners = await prisma.owners.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
+
+      await setCache(`user_${user_id}`, JSON.stringify(owners));
+    } else {
+      owners = JSON.parse(ownersCache);
+    }
 
     let accessToken, refreshToken;
     if (owners.lens_auth_token == null || evm_address == null) {
@@ -118,13 +154,22 @@ templateRouter.get("/user", async (req, res) => {
         let collected = false;
         if (accessToken) {
           // TODO: cache
-          collected = await hasCollected(
-            pubId,
-            evm_address,
-            accessToken,
-            refreshToken
-          );
+          let collectedCache = await getCache(`collected_${user_id}_${pubId}`);
+          if (!collectedCache) {
+            collected = await hasCollected(
+              pubId,
+              evm_address,
+              accessToken,
+              refreshToken
+            );
+
+            if (collected)
+              await setCache(`collected_${user_id}_${pubId}`, collected);
+          } else {
+            collected = collectedCache;
+          }
         }
+
         if (collected) {
           template.allowList = [];
           publicTemplates[i] = template;
