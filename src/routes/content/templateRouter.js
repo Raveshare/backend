@@ -154,7 +154,7 @@ templateRouter.get("/user", async (req, res) => {
         let collected = false;
         if (accessToken) {
           // TODO: cache
-          let collectedCache = await getCache(`collected_${user_id}_${pubId}`);
+          let gateCanvasCache = await getCache(`gateCanvasCache_${canvasId}`);
           if (!collectedCache) {
             collected = await hasCollected(
               pubId,

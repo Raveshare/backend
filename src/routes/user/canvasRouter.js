@@ -433,7 +433,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
 
   let canvas;
   // Canvas is cached based on canvasId
-  let gateCanvasCache = await getCache(`gateCanvasCache_${canvasId}`);
+  let gateCanvasCache = await getCache(`canvas_${canvasId}`);
   if (!gateCanvasCache) {
     canvas = await prisma.canvases.findUnique({
       where: {
@@ -446,7 +446,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
       });
       return;
     } else {
-      await setCache(`gateCanvasCache_${canvasId}`, JSON.stringify(canvas));
+      await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
     }
   } else {
     canvas = JSON.parse(gateCanvasCache);
