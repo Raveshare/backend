@@ -1,5 +1,4 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const getProfileHandleAndId = require("../lens/api").getProfileHandleAndId;
 // const doesFollow = require("../lens/api").doesFollow;
 const checkIfFollow = require("../lens/api-v2").checkIfFollow;
 

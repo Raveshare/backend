@@ -4,6 +4,100 @@ const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const { isEmpty } = require("lodash");
 
+const authenticateMutation = gql`
+  mutation Authenticate($id: ChallengeId!, $signature: Signature!) {
+    authenticate(request: { id: $id, signature: $signature }) {
+      accessToken
+      refreshToken
+    }
+  }
+`;
+
+/**
+ * Returns the access and refresh token for the given id and signature for a given user
+ * @param {*} id
+ * @param {*} signature
+ * @returns
+ */
+const authenticate = async (id, signature) => {
+  const variables = { id, signature };
+  const result = await request(LENS_API_URL, authenticateMutation, variables);
+
+  return result.authenticate;
+};
+
+const getProfileAddressFromHandleQuery = gql`
+  query Profile($handle: Handle!) {
+    profile(request: { forHandle: $handle }) {
+      ownedBy {
+        address
+      }
+    }
+  }
+`;
+
+async function getProfileAddressFromHandle(handle) {
+  if (NODE_ENV === "production") {
+    if (!handle.startsWith("lens/")) handle = "lens/" + handle;
+  } else {
+    if (!handle.startsWith("test/")) handle = "test/" + handle;
+  }
+
+  const variables = { handle };
+  let resp = await request(
+    LENS_API_URL,
+    getProfileAddressFromHandleQuery,
+    variables
+  );
+
+  return resp.profile?.ownedBy.address;
+}
+
+const checkAccessTokenQuery = gql`
+  query Query($accessToken: Jwt!) {
+    verify(request: { accessToken: $accessToken })
+  }
+`;
+
+async function checkAccessToken(accessToken) {
+  const variables = { accessToken };
+  let resp = await request(LENS_API_URL, checkAccessTokenQuery, variables);
+
+  return resp.verify;
+}
+
+const refreshTokenMutation = gql`
+  mutation Refresh($refreshToken: Jwt!) {
+    refresh(request: { refreshToken: $refreshToken }) {
+      accessToken
+      refreshToken
+    }
+  }
+`;
+
+async function refreshToken(refreshToken) {
+  const variables = { refreshToken };
+  let resp = await request(LENS_API_URL, refreshTokenMutation, variables);
+
+  return resp.refresh;
+}
+
+const validateMetadataQuery = gql`
+  query ValidatePublicationMetadata($metadata: String!) {
+    validatePublicationMetadata(request: { json: $metadata }) {
+      valid
+      reason
+    }
+  }
+`;
+
+async function validateMetadata(metadata) {
+  const variables = { metadata };
+  let resp = await request(LENS_API_URL, validateMetadataQuery, variables);
+
+  return resp.validatePublicationMetadata;
+}
+
 const profileManagedQuery = gql`
   query ProfilesManaged($for: EvmAddress!) {
     profilesManaged(request: { for: $for }) {
@@ -131,6 +225,10 @@ async function checkIfFollow(walletAddress) {
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
+  authenticate,
   checkProfileManager,
+  getProfileAddressFromHandle,
   checkIfFollow,
+  checkAccessToken,
+  refreshToken,
 };

@@ -1,4 +1,4 @@
-const { validateMetadata } = require("../lens/api");
+const { validateMetadata } = require("../lens/api-v2");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
