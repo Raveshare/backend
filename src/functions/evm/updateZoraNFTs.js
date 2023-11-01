@@ -29,7 +29,7 @@ async function checkIfNFTExists(nft) {
 
     return nftData;
   } else {
-    return nftData;
+    return nftData
   }
 }
 
