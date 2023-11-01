@@ -4,53 +4,6 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
-const createSetDispatcherTypedData = gql`
-  mutation CreateSetDispatcherTypedData($profileId: ProfileId!) {
-    createSetDispatcherTypedData(request: { profileId: $profileId }) {
-      id
-      expiresAt
-      typedData {
-        types {
-          SetDispatcherWithSig {
-            name
-            type
-          }
-        }
-        domain {
-          name
-          chainId
-          version
-          verifyingContract
-        }
-        value {
-          nonce
-          deadline
-          profileId
-          dispatcher
-        }
-      }
-    }
-  }
-`;
-
-const setDispatcher = async (profileId, accessToken) => {
-  const variables = {
-    profileId: profileId,
-  };
-
-  const result = await request(
-    LENS_API_URL,
-    createSetDispatcherTypedData,
-    variables,
-    {
-      Authorization: `Bearer ${accessToken}`,
-      Origin: "https://app.lenspost.xyz",
-    }
-  );
-
-  return result.createSetDispatcherTypedData?.typedData;
-};
-
 const createPostViaDispatcherQuery = gql`
   mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
     createPostViaDispatcher(request: $request) {
@@ -224,7 +177,6 @@ const hasCollected = async (
 
 module.exports = {
   createPostViaDispatcher,
-  setDispatcher,
   getNfts,
   getWhoCollectedPublication,
   hasCollected,

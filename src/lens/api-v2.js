@@ -98,6 +98,84 @@ async function validateMetadata(metadata) {
   return resp.validatePublicationMetadata;
 }
 
+const createProfileManagerQuery = gql`
+  mutation createChangeProfileManagersTypedData(
+    $options: TypedDataOptions
+    $request: ChangeProfileManagersRequest!
+  ) {
+    createChangeProfileManagersTypedData(options: $options, request: $request) {
+      id
+      expiresAt
+      typedData {
+        types {
+          ChangeDelegatedExecutorsConfig {
+            name
+            type
+          }
+        }
+        domain {
+          name
+          chainId
+          version
+          verifyingContract
+        }
+        value {
+          nonce
+          deadline
+          delegatorProfileId
+          delegatedExecutors
+          approvals
+          configNumber
+          switchToGivenConfig
+        }
+      }
+    }
+  }
+`;
+
+async function createProfileManager(accessToken) {
+  const variables = {
+    request: {
+      approveSignless: false,
+    },
+  };
+
+  let resp = await request(LENS_API_URL, createProfileManagerQuery, variables, {
+    Authorization: `Bearer ${accessToken}`,
+    Origin: "https://app.lenspost.xyz",
+  });
+
+  return resp.createChangeProfileManagersTypedData?.typedData;
+}
+
+const broadcastTxMutation = gql`
+mutation BroadcastOnchain($request: BroadcastRequest!) {
+  broadcastOnchain(request: $request) {
+    ... on RelaySuccess {
+      txHash
+      txId
+    }
+    ... on RelayError {
+      reason
+    }
+  }
+}`;
+
+async function broadcastTx(id , signature) {
+  const variables = {
+    request: {
+      id,
+      signature,
+    },
+  };
+
+  let resp = await request(LENS_API_URL, broadcastTxMutation, variables, {
+    Origin: "https://app.lenspost.xyz",
+  });
+
+  return resp.broadcastOnchain;
+}
+
 const profileManagedQuery = gql`
   query ProfilesManaged($for: EvmAddress!) {
     profilesManaged(request: { for: $for }) {
@@ -231,4 +309,6 @@ module.exports = {
   checkIfFollow,
   checkAccessToken,
   refreshToken,
+  createProfileManager,
+  broadcastTx,
 };
