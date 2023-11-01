@@ -1,7 +1,9 @@
 const lensRouter = require("express").Router();
 
 const authenticate = require("../../lens/api-v2").authenticate;
-const setDispatcher = require("../../lens/api").setDispatcher;
+// const setDispatcher = require("../../lens/api").setDispatcher;
+const createProfileManager = require("../../lens/api-v2").createProfileManager;
+const broadcastTx = require("../../lens/api-v2").broadcastTx;
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
 const { refreshToken: refreshAccessToken } = require("../../lens/api-v2");
 
@@ -26,7 +28,7 @@ lensRouter.post("/", async (req, res) => {
   }
 
   try {
-        // again, this is based on challenge, so can't be cached
+    // again, this is based on challenge, so can't be cached
 
     // We can cache the authenticate data for a day.
     let authenticateData = await authenticate(id, signature);
@@ -35,7 +37,7 @@ lensRouter.post("/", async (req, res) => {
     // TODO: cache it
     let ownerData = await prisma.owners.findUnique({
       where: {
-        id : user_id
+        id: user_id,
       },
     });
 
@@ -55,7 +57,7 @@ lensRouter.post("/", async (req, res) => {
 
     await prisma.owners.update({
       where: {
-        id : user_id
+        id: user_id,
       },
       data: ownerData,
     });
@@ -71,12 +73,13 @@ lensRouter.post("/", async (req, res) => {
   }
 });
 
-lensRouter.get("/set-dispatcher", async (req, res) => {
+lensRouter.get("/set-profile-manager", async (req, res) => {
   let evm_address = req.user.evm_address;
 
+  // TODO: cache it
   let ownerData = await prisma.owners.findUnique({
     where: {
-      evm_address 
+      evm_address,
     },
   });
 
@@ -87,7 +90,7 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
     return;
   }
 
-  let { profileId, lens_auth_token } = ownerData;
+  let { lens_auth_token } = ownerData;
 
   let { accessToken, refreshToken } = lens_auth_token;
 
@@ -107,16 +110,26 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
 
     await prisma.owners.update({
       where: {
-        evm_address
+        evm_address,
       },
       data: ownerData,
     });
   }
 
-  let setDispatcherData = await setDispatcher(profileId, accessToken);
+  let profileManagerTypedData = await createProfileManager(accessToken);
 
   res.status(200).send({
-    message: setDispatcherData,
+    message: profileManagerTypedData,
+  });
+});
+
+lensRouter.post("/broadcast-tx", async (req, res) => {
+  let { id, signature } = req.body;
+
+  let resp = await broadcastTx(id, signature);
+
+  res.status(200).send({
+    message: resp,
   });
 });
 

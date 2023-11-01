@@ -4,67 +4,6 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
-const createPostViaDispatcherQuery = gql`
-  mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
-    createPostViaDispatcher(request: $request) {
-      ... on RelayerResult {
-        txHash
-        txId
-      }
-      ... on RelayError {
-        reason
-      }
-    }
-  }
-`;
-
-async function createPostViaDispatcher(
-  postRequest,
-  accessToken,
-  refreshAccessToken,
-  evmAddress
-) {
-  const variables = {
-    request: postRequest,
-  };
-
-  let isAccessTokenValid = await checkAccessToken(accessToken);
-
-  if (!isAccessTokenValid) {
-    const tokens = await refreshToken(refreshAccessToken);
-    accessToken = tokens.accessToken;
-    refreshAccessToken = tokens.refreshToken;
-
-    const lens_auth_token = {
-      accessToken: accessToken,
-      refreshToken: refreshAccessToken,
-    };
-
-    await prisma.owners.update({
-      where: {
-        evm_address: evmAddress,
-      },
-      data: {
-        lens_auth_token: lens_auth_token,
-      },
-    });
-  }
-
-  const result = await request(
-    LENS_API_URL,
-    createPostViaDispatcherQuery,
-    variables,
-    {
-      Authorization: `Bearer ${accessToken}`,
-      Origin: "https://app.lenspost.xyz",
-    }
-  );
-
-  console.log(result)
-
-  return result.createPostViaDispatcher;
-}
-
 const NftsQuery = gql`
   query Nfts($request: NFTsRequest!) {
     nfts(request: $request) {
@@ -176,7 +115,6 @@ const hasCollected = async (
 };
 
 module.exports = {
-  createPostViaDispatcher,
   getNfts,
   getWhoCollectedPublication,
   hasCollected,

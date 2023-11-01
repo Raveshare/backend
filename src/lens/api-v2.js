@@ -1,5 +1,5 @@
 const { request, gql } = require("graphql-request");
-
+const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const { isEmpty } = require("lodash");
@@ -176,6 +176,55 @@ async function broadcastTx(id , signature) {
   return resp.broadcastOnchain;
 }
 
+const postOnChainMutation = gql`
+mutation postOnchain($request: OnchainPostRequest!) {
+  postOnchain(request: $request) {
+    ... on RelaySuccess {
+      txHash
+      txId
+    }
+    ... on LensProfileManagerRelayError {
+      reason
+    }
+  }
+}
+`;
+
+async function postOnChain(postRequest, accessToken , refreshAccessToken , evmAddress) {
+  const variables = {
+    request: postRequest,
+  };
+
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+
+  if (!isAccessTokenValid) {
+    const tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshAccessToken,
+    };
+
+    await prisma.owners.update({
+      where: {
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
+      },
+    });
+  }
+
+  let resp = await request(LENS_API_URL, postOnChainMutation, variables, {
+    Authorization: `Bearer ${accessToken}`,
+    Origin: "https://app.lenspost.xyz",
+  });
+
+  return resp.postOnchain;
+}
+
 const profileManagedQuery = gql`
   query ProfilesManaged($for: EvmAddress!) {
     profilesManaged(request: { for: $for }) {
@@ -311,4 +360,5 @@ module.exports = {
   refreshToken,
   createProfileManager,
   broadcastTx,
+  postOnChain,
 };

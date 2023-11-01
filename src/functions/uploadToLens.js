@@ -1,5 +1,4 @@
-
-const createPostViaDispatcher = require("../lens/api").createPostViaDispatcher;
+const postOnChain = require("../lens/api-v2").postOnChain;
 const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
 const getProfileAddressFromHandle =
   require("../lens/api-v2").getProfileAddressFromHandle;
@@ -41,7 +40,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
 
     createPostRequest = Object.assign(createPostRequest, params);
 
-    const result = await createPostViaDispatcher(
+    const result = await postOnChain(
       createPostRequest,
       accessToken,
       refreshToken,
