@@ -6,17 +6,31 @@ const fs = require("fs");
 const uploadImageToS3 = require("../helper/uploadImageToS3");
 const isEmpty = require("lodash/isEmpty");
 
+const {
+  getCache,
+  setCache,
+} = require("../../functions/cache/handleCache");
+
 // TODO: cache this
 async function checkIfNFTExists(nft) {
-  return !isEmpty(
-    await prisma.nftData.findMany({
-      where: {
-        tokenId: nft.tokenId,
-        address: nft.collectionAddress,
-        chainId: 7777777,
-      },
-    })
-  );
+  let nftData = await getCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`);
+
+  if (!nftData) {
+    const nftData = isEmpty(
+      await prisma.nftData.findMany({
+        where: {
+          tokenId: nft.tokenId,
+          address: nft.collectionAddress,
+          chainId: 7777777,
+        },
+      })
+    );
+    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`, JSON.stringify(nftData));
+
+    return nftData;
+  } else {
+    return nftData
+  }
 }
 
 const getZoraNFTsQuery = gql`
@@ -89,10 +103,10 @@ async function updateZoraNFTs(user_id, evm_address) {
     if (!image) continue;
 
     if (image.startsWith("ipfs://")) {
-      image = image.replace("ipfs://", "https://ipfs.io/ipfs/");
+      image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     }
 
-    // if (await checkIfNFTExists(nft)) continue;
+    if (await checkIfNFTExists(nft)) continue;
 
     if (image.startsWith("data:image/svg+xml")) {
       let png = await convertToPng(image);

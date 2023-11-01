@@ -4,6 +4,28 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 
+const checkDispatcherQuery = gql`
+  query Profile($profileId: ProfileId!) {
+    profile(request: { profileId: $profileId }) {
+      dispatcher {
+        address
+        canUseRelay
+      }
+    }
+  }
+`;
+
+async function checkDispatcher(profileId) {
+  const variables = { profileId };
+  let resp = await request(LENS_API_URL, checkDispatcherQuery, variables);
+
+  if (resp.profile?.dispatcher === null) {
+    return false;
+  }
+
+  return resp.profile?.dispatcher.canUseRelay;
+}
+
 const getFollowContractAddressQuery = gql`
   query Profile($profileId: ProfileId!) {
     profile(request: { profileId: $profileId }) {
@@ -82,7 +104,11 @@ const getProfileAddressFromHandleQuery = gql`
 `;
 
 async function getProfileAddressFromHandle(handle) {
-  if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  if (NODE_ENV === "production") {
+    if (!handle.endsWith(".lens")) handle = handle + ".lens";
+  } else {
+    if (!handle.endsWith(".test")) handle = handle + ".test";
+  }
   const variables = { handle };
   console.log(variables);
   let resp = await request(
@@ -243,6 +269,8 @@ async function createPostViaDispatcher(
       Origin: "https://app.lenspost.xyz",
     }
   );
+
+  console.log(result)
 
   return result.createPostViaDispatcher;
 }

@@ -124,7 +124,7 @@ canvasRouter.post("/create", async (req, res) => {
       message: "Canvas Created",
       id: canvas.id,
     });
-
+    // We are already using user_id here for canvasCreated
     canvasCreated(canvas.id, user_id);
   } catch (error) {
     res.status(500).send(`Error: ${error}`);
@@ -246,10 +246,13 @@ canvasRouter.put("/visibility", async (req, res) => {
       isPublic: isPublic,
     },
   });
-
-  canvasMadePublic(canvasId, req.user.address);
+  
+  // Changed to user_id here from req.user.address
+  canvasMadePublic(canvasId, user_id);
 
   // TODO: uncache
+
+  deleteCacheMatchPattern(`canvases_${user_id}`);
 
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
@@ -332,6 +335,8 @@ canvasRouter.post("/publish", async (req, res) => {
       });
       return;
     }
+
+    // Already using user_id here
     canvasPostedToLens(canvasId, user_id);
   } else if (platform == "solana-cnft") {
     let postMetadata = {
@@ -377,12 +382,17 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   let canvas;
 
   // TODO: do with cache
-  canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-  });
-  await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
+  let canvasCache = await getCache(`canvas_${canvasId}`);
+  if (!canvasCache) {
+    canvas = await prisma.canvases.findUnique({
+      where: {
+        id: canvasId,
+      },
+    });
+    await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
+  } else {
+    canvas = JSON.parse(canvasCache);
+  }
 
   if (canvas?.ownerId != user_id) {
     res.status(401).send("Unauthorized");
@@ -394,7 +404,6 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
       id: canvasId,
     },
   });
-
 
   await deleteCache(`canvas_${canvasId}`);
   await deleteCacheMatchPattern(`canvases_${user_id}`);

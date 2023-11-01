@@ -1,12 +1,10 @@
 .env
 
 node_modules
-src/dumpdata/assets
-src/dumpdata/collections
+src/dumpdata/
 yarn-error.log
-
+combined.log
 ```
-src/routes/admin
 
 plotno_json_file.json
 template.json

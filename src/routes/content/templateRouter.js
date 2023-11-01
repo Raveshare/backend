@@ -57,6 +57,8 @@ templateRouter.get("/user", async (req, res) => {
   try {
     // this query can be cached again
     //  the cache for this query will get invalidated when a new template is created
+    // TODO : cache
+    // TODO: un-cache when /canvas/update is called
     let publicTemplates = await prisma.public_canvas_templates.findMany({
       take: limit,
       skip: offset,
@@ -65,8 +67,10 @@ templateRouter.get("/user", async (req, res) => {
       },
     });
 
+    // TODO: cache
     let publicTemplatesCount = await prisma.public_canvas_templates.count({});
 
+    // TODO: cache
     let owners = await prisma.owners.findUnique({
       where: {
         id: user_id,
@@ -113,6 +117,7 @@ templateRouter.get("/user", async (req, res) => {
         if (pubId.length > 20) continue;
         let collected = false;
         if (accessToken) {
+          // TODO: cache
           collected = await hasCollected(
             pubId,
             evm_address,
