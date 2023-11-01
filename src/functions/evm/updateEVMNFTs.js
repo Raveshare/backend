@@ -4,27 +4,47 @@ const prisma = require("../../prisma");
 const convertToPng = require("../helper/convertToPng");
 const NODE_ENV = process.env.NODE_ENV;
 
+const {
+  getCache,
+  setCache,
+} = require("../../functions/cache/handleCache");
+
+
 // TODO: cache this
 async function checkIfNFTExists(nft) {
-  return !isEmpty(
-    await prisma.nftData.findMany({
-      where: {
-        tokenId: nft.tokenId,
-        address: nft.contractAddress,
-        chainId: nft.chainId,
-      },
-    })
+  let nftData = await getCache(
+    `nft_${nft.tokenId}_${nft.collectionAddress}_${nft.chainId}`
   );
+
+  if (!nftData) {
+    const nftData = isEmpty(
+      await prisma.nftData.findMany({
+        where: {
+          tokenId: nft.tokenId,
+          address: nft.collectionAddress,
+          chainId: nft.chainId,
+        },
+      })
+    );
+    await setCache(
+      `nft_${nft.tokenId}_${nft.collectionAddress}_${nft.chainId}`,
+      JSON.stringify(nftData)
+    );
+
+    return nftData;
+  } else {
+    return nftData;
+  }
 }
 
-async function updateEVMNFTs(user_id,evm_address) {
+async function updateEVMNFTs(user_id, evm_address) {
   let latestNFTs = [];
 
   let cursor = {};
 
   let chainIds = [137];
 
-  if(NODE_ENV === "production") chainIds = [1,137];
+  if (NODE_ENV === "production") chainIds = [1, 137];
 
   while (true) {
     let request = {
@@ -88,7 +108,7 @@ async function updateEVMNFTs(user_id,evm_address) {
       address: nft.contractAddress,
       ownerAddress: evm_address,
       chainId: nft.chainId,
-      ownerId: user_id
+      ownerId: user_id,
     };
 
     finalNFTs.push(nftData);

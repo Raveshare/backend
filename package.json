@@ -45,7 +45,8 @@
     "signale": "^1.4.0",
     "svg2img": "^1.0.0-beta.2",
     "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1"
+    "tweetnacl-util": "^0.15.1",
+    "winston": "^3.11.0"
   },
   "scripts": {
     "build": "npx prisma generate",

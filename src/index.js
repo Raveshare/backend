@@ -7,9 +7,9 @@ const app = express({
 
 
 const compression = require("compression");
+const logger = require("./middleware/log");
 
 const cors = require("cors");
-const handleError = require("./middleware/error/error");
 const auth = require("./middleware/auth/auth");
 
 const NODE_ENV = process.env.NODE_ENV;
