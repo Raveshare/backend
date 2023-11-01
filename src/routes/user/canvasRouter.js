@@ -431,7 +431,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   }
 
   let canvas;
-  // Canvas is cached based on canvasId
+
   let gateCanvasCache = await getCache(`gateCanvasCache_${canvasId}`);
   if (!gateCanvasCache) {
     canvas = await prisma.canvases.findUnique({
@@ -461,7 +461,6 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   if (gatewith.startsWith("https://")) {
     gatewith = gatewith.split("/");
     gatewith = gatewith[gatewith.length - 1];
-    updateCollectsForPublication(gatewith, canvasId);
   } else if (gatewith.startsWith("0x")) {
     updateNFTOwnerForPublication(gatewith, canvasId);
   } else {
@@ -477,6 +476,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
     },
     data: {
       isGated: true,
+      gatedWith: canvas.gatedWith ? [...canvas.gatedWith, gatewith] : [gatewith],
     },
   });
 
