@@ -309,7 +309,7 @@ const checkProfileManagerQuery = gql`
 async function checkProfileManager(profileId) {
   const variables = { profileId: profileId };
   let resp = await request(LENS_API_URL, checkProfileManagerQuery, variables);
-  return resp.profile.signless;
+  return resp.profile?.signless;
 }
 
 const checkIfFollowQuery = gql`
