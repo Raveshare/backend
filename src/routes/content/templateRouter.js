@@ -120,8 +120,8 @@ templateRouter.get("/user", async (req, res) => {
         if (accessToken) {
           // TODO: cache
           collected = await hasCollected(
-            pubId,
-            evm_address,
+            owners.id,
+            [pubId],
             accessToken,
             refreshToken
           );
