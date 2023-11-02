@@ -149,19 +149,20 @@ async function createProfileManager(accessToken) {
 }
 
 const broadcastTxMutation = gql`
-mutation BroadcastOnchain($request: BroadcastRequest!) {
-  broadcastOnchain(request: $request) {
-    ... on RelaySuccess {
-      txHash
-      txId
-    }
-    ... on RelayError {
-      reason
+  mutation BroadcastOnchain($request: BroadcastRequest!) {
+    broadcastOnchain(request: $request) {
+      ... on RelaySuccess {
+        txHash
+        txId
+      }
+      ... on RelayError {
+        reason
+      }
     }
   }
-}`;
+`;
 
-async function broadcastTx(id , signature) {
+async function broadcastTx(id, signature) {
   const variables = {
     request: {
       id,
@@ -177,20 +178,25 @@ async function broadcastTx(id , signature) {
 }
 
 const postOnChainMutation = gql`
-mutation postOnchain($request: OnchainPostRequest!) {
-  postOnchain(request: $request) {
-    ... on RelaySuccess {
-      txHash
-      txId
-    }
-    ... on LensProfileManagerRelayError {
-      reason
+  mutation postOnchain($request: OnchainPostRequest!) {
+    postOnchain(request: $request) {
+      ... on RelaySuccess {
+        txHash
+        txId
+      }
+      ... on LensProfileManagerRelayError {
+        reason
+      }
     }
   }
-}
 `;
 
-async function postOnChain(postRequest, accessToken , refreshAccessToken , evmAddress) {
+async function postOnChain(
+  postRequest,
+  accessToken,
+  refreshAccessToken,
+  evmAddress
+) {
   const variables = {
     request: postRequest,
   };
@@ -349,6 +355,75 @@ async function checkIfFollow(walletAddress) {
   return doesFollow;
 }
 
+const hasCollectedQuery = gql`
+  query hasCollected($request: PublicationsRequest!) {
+    publications(request: $request) {
+      items {
+        ... on Post {
+          operations {
+            hasActed(request: { filter: { category: COLLECT } }) {
+              value
+            }
+          }
+        }
+      }
+      pageInfo {
+        prev
+        next
+      }
+    }
+  }
+`;
+
+async function hasCollected(
+  user_id,
+  publicationIds,
+  accessToken,
+  refreshAccessToken
+) {
+  const variables = {
+    request: {
+      where: {
+        publicationIds: publicationIds,
+      },
+    },
+  };
+
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+
+  if (!isAccessTokenValid) {
+    let tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshAccessToken,
+    };
+
+    await prisma.owners.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
+      },
+    });
+  }
+
+  let resp = await request(LENS_API_URL, hasCollectedQuery, variables, {
+    Authorization: `Bearer ${accessToken}`,
+  });
+
+  let publications = resp.publications.items;
+
+  let hasCollected = publications.map((publication) => {
+    return publication.operations.hasActed.value;
+  });
+
+  return hasCollected;
+}
+
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
@@ -361,4 +436,5 @@ module.exports = {
   createProfileManager,
   broadcastTx,
   postOnChain,
+  hasCollected,
 };

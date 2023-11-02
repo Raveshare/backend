@@ -1,8 +1,9 @@
 const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
-const hasCollected = require("../../lens/api").hasCollected;
+const hasCollected = require("../../lens/api-v2").hasCollected;
 const jsonwebtoken = require("jsonwebtoken");
+
 const {
   addElementToList,
   checkElementInList,

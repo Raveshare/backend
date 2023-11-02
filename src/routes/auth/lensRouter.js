@@ -1,7 +1,6 @@
 const lensRouter = require("express").Router();
 
 const authenticate = require("../../lens/api-v2").authenticate;
-// const setDispatcher = require("../../lens/api").setDispatcher;
 const createProfileManager = require("../../lens/api-v2").createProfileManager;
 const broadcastTx = require("../../lens/api-v2").broadcastTx;
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;

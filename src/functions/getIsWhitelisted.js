@@ -1,5 +1,4 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-// const doesFollow = require("../lens/api").doesFollow;
 const checkIfFollow = require("../lens/api-v2").checkIfFollow;
 
 const eth_config = {

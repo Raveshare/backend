@@ -1,5 +1,5 @@
 const getWhoCollectedPublication =
-  require("../lens/api").getWhoCollectedPublication;
+  require("../lens/api-v2").hasCollected;
 const prisma = require("../prisma");
 
 const updateCollectsForPublication = async (publicationId, canvasId) => {
