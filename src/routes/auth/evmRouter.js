@@ -130,9 +130,6 @@ evmRouter.post("/", async (req, res) => {
         }
       }
 
-
-      if(!user_id) 
-      // sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
       if (!user_id)
         sendLogin(
           ownerData.id,

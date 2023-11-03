@@ -69,10 +69,6 @@ templateRouter.get("/user", async (req, res) => {
   offset = limit * (page - 1);
 
   try {
-    // this query can be cached again
-    //  the cache for this query will get invalidated when a new template is created
-    // TODO : cache
-    // TODO: un-cache when /canvas/update is called
 
     let publicTemplatesCache = await getCache("publicTemplates");
     let publicTemplates;
@@ -99,11 +95,6 @@ templateRouter.get("/user", async (req, res) => {
       publicTemplatesCount = publicTemplatesCountCache;
     }
 
-    // TODO: cache
-    // const publicTemplatesCount = await prisma.public_canvas_templates.count({});
-    // console.log("FUCK YOU " + publicTemplatesCount);
-
-    // TODO: cache
     let ownersCache = await getCache(`user_${user_id}`);
     let owners;
     if (!ownersCache) {

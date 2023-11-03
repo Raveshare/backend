@@ -11,7 +11,6 @@ const {
   setCache,
 } = require("../../functions/cache/handleCache");
 
-// TODO: cache this
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`);
 

@@ -71,7 +71,7 @@ const getIsWhitelisted = async (walletAddress) => {
       return true;
     }
 
-    let walletWhitelisted = await redis.get("address");
+    let walletWhitelisted = await redis.get("whitelisted_wallets");
     walletWhitelisted = JSON.parse(walletWhitelisted);
 
     walletWhitelisted = walletWhitelisted.map((wallet) => wallet.toUpperCase());
