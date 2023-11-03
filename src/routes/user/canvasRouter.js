@@ -245,7 +245,7 @@ canvasRouter.put("/visibility", async (req, res) => {
       isPublic: isPublic,
     },
   });
-  
+
   // Changed to user_id here from req.user.address
   canvasMadePublic(canvasId, user_id);
 
@@ -300,12 +300,18 @@ canvasRouter.post("/publish", async (req, res) => {
   } else {
     canvas = JSON.parse(publicCanvasCache);
   }
-
-  let owner = await prisma.owners.findUnique({
-    where: {
-      id: user_id,
-    },
-  });
+  let ownerCache = await getCache(`user_${user_id}`);
+  let owner;
+  if (!ownerCache) {
+    owner = await prisma.owners.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
+    await setCache(`user_${user_id}`, JSON.stringify(ownerData));
+  } else {
+    owner = JSON.parse(ownerCache);
+  }
 
   if (canvas.ownerId != user_id) {
     res.status(401).send("Unauthorized");
@@ -377,7 +383,7 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   canvasId = parseInt(canvasId);
 
   let canvas;
-  
+
   let canvasCache = await getCache(`canvas_${canvasId}`);
   if (!canvasCache) {
     canvas = await prisma.canvases.findUnique({
@@ -472,7 +478,9 @@ canvasRouter.post("/gate/:id", async (req, res) => {
     },
     data: {
       isGated: true,
-      gatedWith: canvas.gatedWith ? [...canvas.gatedWith, gatewith] : [gatewith],
+      gatedWith: canvas.gatedWith
+        ? [...canvas.gatedWith, gatewith]
+        : [gatewith],
     },
   });
 

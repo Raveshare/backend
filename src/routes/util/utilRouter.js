@@ -72,11 +72,18 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let user_id = req.user.user_id;
 
-  let owner = await prisma.owners.findUnique({
-    where: {
+  let ownerCache = await getCache(`user_${user_id}`);
+  let owner;
+  if (!ownerCache) {
+    owner = await prisma.owners.findUnique({
+      where: {
         id: user_id,
-    },
-  });
+      },
+    });
+    await setCache(`user_${user_id}`, JSON.stringify(ownerData));
+  } else {
+    owner = JSON.parse(ownerCache);
+  }
 
   let profileId = owner.profileId;
 
