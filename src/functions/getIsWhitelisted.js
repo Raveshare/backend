@@ -1,6 +1,5 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const getProfileHandleAndId = require("../lens/api").getProfileHandleAndId;
-const doesFollow = require("../lens/api").doesFollow;
+const checkIfFollow = require("../lens/api-v2").checkIfFollow;
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
@@ -27,7 +26,7 @@ const eth_alchemy = new Alchemy(eth_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
-     let follow = await doesFollow(walletAddress);
+     let follow = await checkIfFollow(walletAddress);
 
      if (follow) {
        return true;

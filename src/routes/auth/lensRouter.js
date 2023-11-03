@@ -1,34 +1,23 @@
 const lensRouter = require("express").Router();
 
-const challenge = require("../../lens/api").challenge;
-const authenticate = require("../../lens/api").authenticate;
-const getFollowContractAddress =
-  require("../../lens/api").getFollowContractAddress;
-const getProfileHandleAndId = require("../../lens/api").getProfileHandleAndId;
-const setDispatcher = require("../../lens/api").setDispatcher;
-const checkAccessToken = require("../../lens/api").checkAccessToken;
-const { refreshToken: refreshAccessToken } = require("../../lens/api");
+const authenticate = require("../../lens/api-v2").authenticate;
+const createProfileManager = require("../../lens/api-v2").createProfileManager;
+const broadcastTx = require("../../lens/api-v2").broadcastTx;
+const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
+const { refreshToken: refreshAccessToken } = require("../../lens/api-v2");
 
 const prisma = require("../../prisma");
 
-lensRouter.get("/challenge", async (req, res) => {
-  // let user_id = req.user.user_id;
-
-   // This query can be cached for 24hrs, as the profileID ,Handle and NFT address will remain the same for a user
-   
-  let evm_address = req.user.evm_address;
-  let challengeData = await challenge(evm_address);
-  res.status(200).send({
-    challenge: challengeData,
-  });
-});
-
 lensRouter.post("/", async (req, res) => {
   let evm_address = req.user.evm_address;
+  let user_id = req.user.user_id;
   let signature;
 
   try {
     signature = req.body.signature;
+    id = req.body.id;
+    profileId = req.body.profileId;
+    profileHandle = req.body.profileHandle;
   } catch (error) {
     res.status(400).send({
       status: "failed",
@@ -38,15 +27,16 @@ lensRouter.post("/", async (req, res) => {
   }
 
   try {
-        // again, this is based on challenge, so can't be cached
+    // again, this is based on challenge, so can't be cached
 
     // We can cache the authenticate data for a day.
-    let authenticateData = await authenticate(evm_address, signature);
+    let authenticateData = await authenticate(id, signature);
     const { accessToken, refreshToken } = authenticateData;
 
+    // TODO: cache it
     let ownerData = await prisma.owners.findUnique({
       where: {
-        evm_address
+        id: user_id,
       },
     });
 
@@ -56,13 +46,8 @@ lensRouter.post("/", async (req, res) => {
       });
     }
 
-     // This query can be cached for 24hrs, as the profileID ,Handle and NFT address will remain the same for a user
-    let { handle, id } = await getProfileHandleAndId(evm_address);
-    let followNftAddress = await getFollowContractAddress(id);
-
-    ownerData.profileId = id;
-    ownerData.followNftAddress = followNftAddress;
-    ownerData.lens_handle = handle;
+    ownerData.profileId = profileId;
+    ownerData.lens_handle = profileHandle;
 
     ownerData.lens_auth_token = {
       accessToken: accessToken,
@@ -71,7 +56,7 @@ lensRouter.post("/", async (req, res) => {
 
     await prisma.owners.update({
       where: {
-        evm_address
+        id: user_id,
       },
       data: ownerData,
     });
@@ -87,12 +72,13 @@ lensRouter.post("/", async (req, res) => {
   }
 });
 
-lensRouter.get("/set-dispatcher", async (req, res) => {
+lensRouter.get("/set-profile-manager", async (req, res) => {
   let evm_address = req.user.evm_address;
 
+  // TODO: cache it
   let ownerData = await prisma.owners.findUnique({
     where: {
-      evm_address 
+      evm_address,
     },
   });
 
@@ -103,7 +89,7 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
     return;
   }
 
-  let { profileId, lens_auth_token } = ownerData;
+  let { lens_auth_token } = ownerData;
 
   let { accessToken, refreshToken } = lens_auth_token;
 
@@ -123,16 +109,26 @@ lensRouter.get("/set-dispatcher", async (req, res) => {
 
     await prisma.owners.update({
       where: {
-        evm_address
+        evm_address,
       },
       data: ownerData,
     });
   }
 
-  let setDispatcherData = await setDispatcher(profileId, accessToken);
+  let profileManagerTypedData = await createProfileManager(accessToken);
 
   res.status(200).send({
-    message: setDispatcherData,
+    message: profileManagerTypedData,
+  });
+});
+
+lensRouter.post("/broadcast-tx", async (req, res) => {
+  let { id, signature } = req.body;
+
+  let resp = await broadcastTx(id, signature);
+
+  res.status(200).send({
+    message: resp,
   });
 });
 

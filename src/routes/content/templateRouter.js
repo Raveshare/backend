@@ -1,8 +1,9 @@
 const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
 const cache = require("../../middleware/cache");
-const hasCollected = require("../../lens/api").hasCollected;
+const hasCollected = require("../../lens/api-v2").hasCollected;
 const jsonwebtoken = require("jsonwebtoken");
+
 const {
   addElementToList,
   checkElementInList,
@@ -154,20 +155,12 @@ templateRouter.get("/user", async (req, res) => {
         let collected = false;
         if (accessToken) {
           // TODO: cache
-          let gateCanvasCache = await getCache(`gateCanvasCache_${canvasId}`);
-          if (!collectedCache) {
-            collected = await hasCollected(
-              pubId,
-              evm_address,
-              accessToken,
-              refreshToken
-            );
-
-            if (collected)
-              await setCache(`collected_${user_id}_${pubId}`, collected);
-          } else {
-            collected = collectedCache;
-          }
+          collected = await hasCollected(
+            owners.id,
+            [pubId],
+            accessToken,
+            refreshToken
+          );
         }
 
         if (collected) {

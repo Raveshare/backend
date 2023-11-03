@@ -462,7 +462,6 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   if (gatewith.startsWith("https://")) {
     gatewith = gatewith.split("/");
     gatewith = gatewith[gatewith.length - 1];
-    updateCollectsForPublication(gatewith, canvasId);
   } else if (gatewith.startsWith("0x")) {
     updateNFTOwnerForPublication(gatewith, canvasId);
   } else {
@@ -478,6 +477,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
     },
     data: {
       isGated: true,
+      gatedWith: canvas.gatedWith ? [...canvas.gatedWith, gatewith] : [gatewith],
     },
   });
 

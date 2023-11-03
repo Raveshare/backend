@@ -13,7 +13,8 @@ const {
 } = require("../../functions/cache/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
-  let user_id = req.user.user_id;
+  // let user_id = req.user.user_id;
+  let user_id = 109;
 
   await deleteCacheMatchPattern(`nfts_${user_id}`);
 
@@ -171,7 +172,8 @@ nftRouter.get("/", async (req, res) => {
     let offset = (page - 1) * limit;
 
     let queriedNFTs;
-    let queriedNFTsCache = await getCache(`nfts_${user_id}_${chainId}_${page}`);
+    // let queriedNFTsCache = await getCache(`nfts_${user_id}_${chainId}_${page}`);
+    let queriedNFTsCache = null;
     if (!queriedNFTsCache) {
       queriedNFTs = await prisma.nftData.findMany({
         where: {
@@ -185,6 +187,7 @@ nftRouter.get("/", async (req, res) => {
         take: limit,
         skip: offset,
       });
+      console.log(queriedNFTs);
 
       await setCache(`nfts_${user_id}_${chainId}_${page}` , JSON.stringify(queriedNFTs));
     } else {
