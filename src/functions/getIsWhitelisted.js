@@ -1,6 +1,5 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const getProfileHandleAndId = require("../lens/api").getProfileHandleAndId;
-const doesFollow = require("../lens/api").doesFollow;
+const checkIfFollow = require("../lens/api-v2").checkIfFollow;
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
@@ -10,7 +9,7 @@ const eth_config = {
 const { createClient } = require("redis");
 
 const redis = createClient({
-  url: process.env.REDIS_URI,
+  url: process.env.REDIS_CACHE,
 });
 
 redis.on("error", (err) => {
@@ -27,7 +26,7 @@ const eth_alchemy = new Alchemy(eth_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
-     let follow = await doesFollow(walletAddress);
+     let follow = await checkIfFollow(walletAddress);
 
      if (follow) {
        return true;
@@ -72,7 +71,7 @@ const getIsWhitelisted = async (walletAddress) => {
       return true;
     }
 
-    let walletWhitelisted = await redis.get("address");
+    let walletWhitelisted = await redis.get("whitelisted_wallets");
     walletWhitelisted = JSON.parse(walletWhitelisted);
 
     walletWhitelisted = walletWhitelisted.map((wallet) => wallet.toUpperCase());

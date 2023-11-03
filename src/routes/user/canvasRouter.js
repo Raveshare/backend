@@ -114,10 +114,8 @@ canvasRouter.post("/create", async (req, res) => {
       return;
     }
 
-    // TODO: uncache
-
-    deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvases_count_${user_id}`);
+    await deleteCacheMatchPattern(`canvases_${user_id}`);
+    await deleteCache(`canvases_count_${user_id}`);
 
     res.status(200).send({
       status: "success",
@@ -173,9 +171,10 @@ canvasRouter.put("/update", async (req, res) => {
 
     updateImagePreview(preview, user_id, canvas.id);
 
-    deleteCacheMatchPattern(`canvases_${user_id}`);
-    deleteCache(`canvas_${canvas.id}`);
-    deleteCache(`canvases_count_${user_id}`);
+    await deleteCacheMatchPattern(`canvases_${user_id}`);
+    await deleteCache(`canvas_${canvas.id}`);
+    await deleteCache(`canvases_count_${user_id}`);
+    await deleteCache(`publicTemplates`);
 
     res.status(200).send({
       status: "success",
@@ -250,9 +249,7 @@ canvasRouter.put("/visibility", async (req, res) => {
   // Changed to user_id here from req.user.address
   canvasMadePublic(canvasId, user_id);
 
-  // TODO: uncache
-
-  deleteCacheMatchPattern(`canvases_${user_id}`);
+  await deleteCacheMatchPattern(`canvases_${user_id}`);
 
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
@@ -298,7 +295,7 @@ canvasRouter.post("/publish", async (req, res) => {
       res.status(404).send("Canvas not found");
       return;
     } else {
-      setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
+      await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
     }
   } else {
     canvas = JSON.parse(publicCanvasCache);
@@ -380,8 +377,7 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   canvasId = parseInt(canvasId);
 
   let canvas;
-
-  // TODO: do with cache
+  
   let canvasCache = await getCache(`canvas_${canvasId}`);
   if (!canvasCache) {
     canvas = await prisma.canvases.findUnique({
@@ -432,7 +428,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
 
   let canvas;
   // Canvas is cached based on canvasId
-  let gateCanvasCache = await getCache(`gateCanvasCache_${canvasId}`);
+  let gateCanvasCache = await getCache(`canvas_${canvasId}`);
   if (!gateCanvasCache) {
     canvas = await prisma.canvases.findUnique({
       where: {
@@ -445,7 +441,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
       });
       return;
     } else {
-      setCache(`gateCanvasCache_${canvasId}`, JSON.stringify(canvas));
+      await setCache(`canvas_${canvasId}`, JSON.stringify(canvas));
     }
   } else {
     canvas = JSON.parse(gateCanvasCache);
@@ -461,7 +457,6 @@ canvasRouter.post("/gate/:id", async (req, res) => {
   if (gatewith.startsWith("https://")) {
     gatewith = gatewith.split("/");
     gatewith = gatewith[gatewith.length - 1];
-    updateCollectsForPublication(gatewith, canvasId);
   } else if (gatewith.startsWith("0x")) {
     updateNFTOwnerForPublication(gatewith, canvasId);
   } else {
@@ -477,6 +472,7 @@ canvasRouter.post("/gate/:id", async (req, res) => {
     },
     data: {
       isGated: true,
+      gatedWith: canvas.gatedWith ? [...canvas.gatedWith, gatewith] : [gatewith],
     },
   });
 
