@@ -24,18 +24,15 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
 
     offset = limit * (page - 1);
 
-    // this query can be cached again
-    // as the templates are not changing frequently -
-    // so we can remove the cache middleware and cache till the templates are not updated
-
-    let templatesCache = await getCache("templates");
+    let templatesCache = await getCache(`templates_${page}_${limit}`);
     let templates;
     if (!templatesCache) {
       templates = await prisma.template_view.findMany({
         skip: offset,
+        limt: limit,
       });
 
-      await setCache("templates", JSON.stringify(templates));
+      await setCache(`templates_${page}_${limit}`, JSON.stringify(templates));
     } else {
       templates = JSON.parse(templatesCache);
     }
