@@ -9,7 +9,7 @@ const eth_config = {
 const { createClient } = require("redis");
 
 const redis = createClient({
-  url: process.env.REDIS_URI,
+  url: process.env.REDIS_CACHE,
 });
 
 redis.on("error", (err) => {
