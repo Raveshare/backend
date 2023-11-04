@@ -33,12 +33,18 @@ lensRouter.post("/", async (req, res) => {
     let authenticateData = await authenticate(id, signature);
     const { accessToken, refreshToken } = authenticateData;
 
-    // TODO: cache it
-    let ownerData = await prisma.owners.findUnique({
-      where: {
-        id: user_id,
-      },
-    });
+    let ownerCache = await getCache(`user_${user_id}`);
+    let ownerData;
+    if (!ownerCache) {
+      ownerData = await prisma.owners.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
+      await setCache(`user_${user_id}`, JSON.stringify(ownerData));
+    } else {
+      ownerData = JSON.parse(ownerCache);
+    }
 
     if (!ownerData) {
       res.status(404).send({
@@ -75,12 +81,18 @@ lensRouter.post("/", async (req, res) => {
 lensRouter.get("/set-profile-manager", async (req, res) => {
   let evm_address = req.user.evm_address;
 
-  // TODO: cache it
-  let ownerData = await prisma.owners.findUnique({
-    where: {
-      evm_address,
-    },
-  });
+  let ownerCache = await getCache(`user_${user_id}`);
+  let ownerData;
+  if (!ownerCache) {
+    ownerData = await prisma.owners.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
+    await setCache(`user_${user_id}`, JSON.stringify(ownerData));
+  } else {
+    ownerData = JSON.parse(ownerCache);
+  }
 
   if (!ownerData) {
     res.status(404).send({
