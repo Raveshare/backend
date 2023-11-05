@@ -136,7 +136,7 @@ const createProfileManagerQuery = gql`
 async function createProfileManager(accessToken) {
   const variables = {
     request: {
-      approveSignless: false,
+      approveSignless: true,
     },
   };
 
@@ -145,7 +145,10 @@ async function createProfileManager(accessToken) {
     Origin: "https://app.lenspost.xyz",
   });
 
-  return resp.createChangeProfileManagersTypedData?.typedData;
+  return {
+    typedData : resp.createChangeProfileManagersTypedData?.typedData,
+    id: resp.createChangeProfileManagersTypedData?.id,
+  }
 }
 
 const broadcastTxMutation = gql`
@@ -172,7 +175,7 @@ async function broadcastTx(id, signature) {
 
   let resp = await request(LENS_API_URL, broadcastTxMutation, variables, {
     Origin: "https://app.lenspost.xyz",
-  });
+  })
 
   return resp.broadcastOnchain;
 }
