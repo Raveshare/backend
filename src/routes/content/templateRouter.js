@@ -13,7 +13,7 @@ const {
 } = require("../../functions/cache/handleCache");
 const { set, get } = require("lodash");
 
-templateRouter.get("/", cache("5 hours"), async (req, res) => {
+templateRouter.get("/", async (req, res) => {
   try {
     let page = req.query.page;
     page = parseInt(page);

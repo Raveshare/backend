@@ -80,6 +80,7 @@ lensRouter.post("/", async (req, res) => {
 
 lensRouter.get("/set-profile-manager", async (req, res) => {
   let evm_address = req.user.evm_address;
+  let user_id = req.user.user_id;
 
   let ownerCache = await getCache(`user_${user_id}`);
   let ownerData;

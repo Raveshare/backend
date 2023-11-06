@@ -6,7 +6,7 @@ const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 
-const { getCache, setCacheWithExpire } = require("../../functions/cache/handleCache");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -69,7 +69,7 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
   }
 });
 
-utilRouter.get("/check-dispatcher", auth, async (req, res) => {
+utilRouter.get("/check-dispatcher`", auth, async (req, res) => {
   let user_id = req.user.user_id;
 
   let ownerCache = await getCache(`user_${user_id}`);

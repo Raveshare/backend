@@ -6,7 +6,9 @@ const deleteDuplicates = async () => {
     // Find the distinct values of the field you want to filter.
     const distinctValues = await prisma.nftData.findMany({
       select: {
-        imageURL: true,
+        chainId: true,
+        address: true,
+        tokenId: true,
       },
     });
     

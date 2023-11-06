@@ -165,7 +165,7 @@ const broadcastTxMutation = gql`
   }
 `;
 
-async function broadcastTx(id, signature) {
+async function broadcastTx(id, signature, accessToken, refreshAccessToken) {
   const variables = {
     request: {
       id,
@@ -173,7 +173,30 @@ async function broadcastTx(id, signature) {
     },
   };
 
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+
+  if (!isAccessTokenValid) {
+    const tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshAccessToken,
+    };
+
+    await prisma.owners.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
+      },
+    });
+  }
+
   let resp = await request(LENS_API_URL, broadcastTxMutation, variables, {
+    Authorization: `Bearer ${accessToken}`,
     Origin: "https://app.lenspost.xyz",
   })
 
