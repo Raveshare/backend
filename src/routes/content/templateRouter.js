@@ -29,7 +29,7 @@ templateRouter.get("/", cache("5 hours"), async (req, res) => {
     if (!templatesCache) {
       templates = await prisma.template_view.findMany({
         skip: offset,
-        limit: limit,
+        take: limit,
       });
 
       await setCache(`templates_${page}_${limit}`, JSON.stringify(templates));
