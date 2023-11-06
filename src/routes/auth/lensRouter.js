@@ -5,7 +5,7 @@ const createProfileManager = require("../../lens/api-v2").createProfileManager;
 const broadcastTx = require("../../lens/api-v2").broadcastTx;
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
 const { refreshToken: refreshAccessToken } = require("../../lens/api-v2");
-
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 const prisma = require("../../prisma");
 
 lensRouter.post("/", async (req, res) => {
@@ -129,9 +129,7 @@ lensRouter.get("/set-profile-manager", async (req, res) => {
 
   let profileManagerTypedData = await createProfileManager(accessToken);
 
-  res.status(200).send(
-    profileManagerTypedData
-  );  
+  res.status(200).send(profileManagerTypedData);
 });
 
 lensRouter.post("/broadcast-tx", async (req, res) => {
