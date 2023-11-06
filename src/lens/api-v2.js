@@ -165,13 +165,22 @@ const broadcastTxMutation = gql`
   }
 `;
 
-async function broadcastTx(id, signature, accessToken, refreshAccessToken) {
+async function broadcastTx(id, signature, user_id) {
   const variables = {
     request: {
       id,
       signature,
     },
   };
+
+  let ownerData = await prisma.owners.findUnique({
+    where: {
+      id: user_id,
+    },
+  });
+
+  let { lens_auth_token } = ownerData;
+  let { accessToken, refreshToken } = lens_auth_token;
 
   let isAccessTokenValid = await checkAccessToken(accessToken);
 

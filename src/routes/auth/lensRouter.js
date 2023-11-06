@@ -135,8 +135,9 @@ lensRouter.get("/set-profile-manager", async (req, res) => {
 
 lensRouter.post("/broadcast-tx", async (req, res) => {
   let { id, signature } = req.body;
+  let user_id = req.user.user_id;
 
-  let resp = await broadcastTx(id, signature);
+  let resp = await broadcastTx(id, signature, user_id);
 
   res.status(200).send({
     message: resp,
