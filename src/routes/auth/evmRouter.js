@@ -11,8 +11,6 @@ const prisma = require("../../prisma");
 
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
-
-const getProfilesManagedByAddress = require("../../lens/api-v2").getProfilesManagedByAddress;
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 evmRouter.post("/", async (req, res) => {
@@ -71,9 +69,6 @@ evmRouter.post("/", async (req, res) => {
         ownerData = JSON.parse(ownerDataCache);
       }
     }
-
-
-    getProfilesManagedByAddress(evm_address)
 
     let isVerified = verifyEthSignature(evm_address, signature, message);
 
@@ -136,9 +131,11 @@ evmRouter.post("/", async (req, res) => {
           ownerData.evm_address,
           ownerData.solana_address
         );
+
       res.status(200).send({
         status: "success",
-        message: hasExpired
+        profileId: ownerData.profileId ? ownerData.profileId : "",
+        profileHandle: hasExpired
           ? ""
           : ownerData.lens_handle
           ? ownerData.lens_handle
