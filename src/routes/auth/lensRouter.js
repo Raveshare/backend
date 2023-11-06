@@ -129,9 +129,9 @@ lensRouter.get("/set-profile-manager", async (req, res) => {
 
   let profileManagerTypedData = await createProfileManager(accessToken);
 
-  res.status(200).send({
-    message: profileManagerTypedData,
-  });
+  res.status(200).send(
+    profileManagerTypedData
+  );  
 });
 
 lensRouter.post("/broadcast-tx", async (req, res) => {
