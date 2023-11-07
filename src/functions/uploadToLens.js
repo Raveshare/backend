@@ -75,55 +75,55 @@ const getLensParam = async (params) => {
   let collectModule = {};
 
   if (charge) {
-    let multirecipientFeeCollectModule = {};
+    let multirecipientCollectOpenAction = {};
 
-    multirecipientFeeCollectModule.amount = {
+    multirecipientCollectOpenAction.amount = {
       currency: charge.currency,
       value: charge.value,
     };
 
     recipients = await updateLensHandles(recipients);
 
-    multirecipientFeeCollectModule.recipients = recipients;
+    multirecipientCollectOpenAction.recipients = recipients;
 
     if (collectLimit) {
-      multirecipientFeeCollectModule.collectLimit = collectLimit;
+      multirecipientCollectOpenAction.collectLimit = collectLimit;
     }
 
     if (endTimestamp) {
-      multirecipientFeeCollectModule.endTimestamp = endTimestamp;
+      multirecipientCollectOpenAction.endTimestamp = endTimestamp;
     }
 
     if (referralFee) {
-      multirecipientFeeCollectModule.referralFee = referralFee;
+      multirecipientCollectOpenAction.referralFee = referralFee;
     }
 
     if (followerOnly) {
-      multirecipientFeeCollectModule.followerOnly = true;
+      multirecipientCollectOpenAction.followerOnly = true;
     } else {
-      multirecipientFeeCollectModule.followerOnly = false;
+      multirecipientCollectOpenAction.followerOnly = false;
     }
 
-    collectModule.multirecipientFeeCollectModule =
-      multirecipientFeeCollectModule;
+    collectModule.multirecipientCollectOpenAction =
+      multirecipientCollectOpenAction;
   } else {
-    let simpleCollectModule = {};
+    let simpleCollectOpenAction = {};
 
     if (collectLimit) {
-      simpleCollectModule.collectLimit = collectLimit;
+      simpleCollectOpenAction.collectLimit = collectLimit;
     }
 
     if (endTimestamp) {
-      simpleCollectModule.endTimestamp = endTimestamp;
+      simpleCollectOpenAction.endTimestamp = endTimestamp;
     }
 
     if (followerOnly) {
-      simpleCollectModule.followerOnly = true;
+      simpleCollectOpenAction.followerOnly = true;
     } else {
-      simpleCollectModule.followerOnly = false;
+      simpleCollectOpenAction.followerOnly = false;
     }
 
-    collectModule.simpleCollectModule = simpleCollectModule;
+    collectModule.simpleCollectOpenAction = simpleCollectOpenAction;
   }
 
   return {
