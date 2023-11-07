@@ -308,7 +308,7 @@ canvasRouter.post("/publish", async (req, res) => {
         id: user_id,
       },
     });
-    await setCache(`user_${user_id}`, JSON.stringify(ownerData));
+    await setCache(`user_${user_id}`, JSON.stringify(owner));
   } else {
     owner = JSON.parse(ownerCache);
   }
