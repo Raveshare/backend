@@ -3,35 +3,34 @@ const { validateMetadata } = require("../lens/api-v2");
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
 const auth =
-    "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 const { v4: uuid } = require("uuid");
 
 const getIpfsClient = async () => {
   const { create } = await import("ipfs-http-client");
 
   const ipfsClient = create({
-      host: "ipfs.infura.io",
-      port: 5001,
-      protocol: "https",
-      headers: {
-          authorization: auth,
-      },
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+    headers: {
+      authorization: auth,
+    },
   });
 
   return ipfsClient;
-}
+};
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   mimeType = mimeType || "image/png";
 
   const ipfsClient = await getIpfsClient();
   const result = await ipfsClient.add(blob);
-  
+
   return result.cid.toString();
 };
 
 const uploaddMetadataToIpfs = async (postData) => {
-
   const ipfsClient = await getIpfsClient();
 
   let media = [];
@@ -45,30 +44,34 @@ const uploaddMetadataToIpfs = async (postData) => {
     });
   }
 
-  const metaData = {
-    version: "2.0.0",
-    content:
-      postData.content +
-      "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspostxyz - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤",
+  const metadata = {
     description: postData.content,
+    external_url: `https://hey.xyz/u/${postData.handle}`,
     name: `Post by ${postData.handle}`,
-    external_url: `https://lenstube.xyz/${postData.handle}`,
-    image: postData.image[0].startsWith("https://arweave.net") ? postData.image[0] : `ipfs://${postData.image[0]}`,
-    imageMimeType: "image/png",
-    metadata_id: uuid(),
-    mainContentFocus: "IMAGE",
-    attributes: [],
-    locale: "en-US",
-    media,
-    appId: "lenspost",
+    $schema: "https://json-schemas.lens.dev/publications/image/3.0.0.json",
+    lens: {
+      id: uuid(),
+      appId: "Lenspost",
+      locale: "en",
+      mainContentFocus: "IMAGE",
+      image: {
+        item: postData.image[0].startsWith("https://arweave.net")
+          ? postData.image[0]
+          : `ipfs://${postData.image[0]}`,
+        type: "image/png",
+      },
+      title: `Post by ${postData.handle}`,
+      content: postData.content,
+      attachments: media,
+    },
   };
 
-  const { valid, reason } = await validateMetadata(JSON.stringify(metaData));
+  const { valid, reason } = await validateMetadata(JSON.stringify(metadata));
 
   if (!valid) {
     throw new Error(reason);
   }
-  const { path } = await ipfsClient.add(JSON.stringify(metaData));
+  const { path } = await ipfsClient.add(JSON.stringify(metadata));
 
   return path.toString();
 };
