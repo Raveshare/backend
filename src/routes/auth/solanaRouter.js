@@ -88,6 +88,8 @@ solanaRouter.post("/", async (req, res) => {
           },
         });
 
+        await deleteCache(`user_${ownerData.id}`)
+
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.

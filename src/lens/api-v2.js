@@ -3,6 +3,7 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const { isEmpty } = require("lodash");
+const { deleteCache } = require("../functions/cache/handleCache")
 
 const authenticateMutation = gql`
   mutation Authenticate($id: ChallengeId!, $signature: Signature!) {
@@ -180,7 +181,7 @@ async function broadcastTx(id, signature, user_id) {
   });
 
   let { lens_auth_token } = ownerData;
-  let { accessToken, refreshToken } = lens_auth_token;
+  let { accessToken, refreshToken : refreshAccessToken } = lens_auth_token;
 
   let isAccessTokenValid = await checkAccessToken(accessToken);
 
@@ -202,7 +203,11 @@ async function broadcastTx(id, signature, user_id) {
         lens_auth_token: lens_auth_token,
       },
     });
+
+    await deleteCache(`user_${user_id}`)
   }
+
+
 
   let resp = await request(LENS_API_URL, broadcastTxMutation, variables, {
     Authorization: `Bearer ${accessToken}`,
@@ -230,7 +235,8 @@ async function postOnChain(
   postRequest,
   accessToken,
   refreshAccessToken,
-  evmAddress
+  evmAddress,
+  user_id
 ) {
   const variables = {
     request: postRequest,
@@ -256,6 +262,8 @@ async function postOnChain(
         lens_auth_token: lens_auth_token,
       },
     });
+
+    await deleteCache(`user_${user_id}`)
   }
 
   let resp = await request(LENS_API_URL, postOnChainMutation, variables, {
@@ -444,6 +452,7 @@ async function hasCollected(
         lens_auth_token: lens_auth_token,
       },
     });
+    await deleteCache(`user_${user_id}`)
   }
 
   let resp = await request(LENS_API_URL, hasCollectedQuery, variables, {

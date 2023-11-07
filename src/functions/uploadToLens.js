@@ -36,7 +36,8 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
       createPostRequest,
       accessToken,
       refreshToken,
-      ownerData.address
+      ownerData.evm_address,
+      ownerData.id
     );
 
     return result;
@@ -91,7 +92,7 @@ const getLensParam = async (params) => {
     }
 
     if (endTimestamp) {
-      multirecipientCollectOpenAction.endTimestamp = endTimestamp;
+      multirecipientCollectOpenAction.endsAt = endTimestamp;
     }
 
     if (referralFee) {
@@ -114,7 +115,7 @@ const getLensParam = async (params) => {
     }
 
     if (endTimestamp) {
-      simpleCollectOpenAction.endTimestamp = endTimestamp;
+      simpleCollectOpenAction.endsAt = endTimestamp;
     }
 
     if (followerOnly) {

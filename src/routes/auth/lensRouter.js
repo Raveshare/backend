@@ -128,6 +128,8 @@ lensRouter.get("/set-profile-manager", async (req, res) => {
       },
       data: ownerData,
     });
+
+    await deleteCache(`user_${user_id}`)
   }
 
   let profileManagerTypedData = await createProfileManager(accessToken);

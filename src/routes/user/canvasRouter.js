@@ -326,6 +326,7 @@ canvasRouter.post("/publish", async (req, res) => {
       name: name,
       content: content,
       handle: owner.lens_handle,
+      id: owner.id,
       image: url,
     };
 

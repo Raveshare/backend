@@ -11,7 +11,11 @@ const prisma = require("../../prisma");
 
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
-const { getCache, setCache } = require("../../functions/cache/handleCache");
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
@@ -100,6 +104,8 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
+
+        await deleteCache(`user_${ownerData.id}`);
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
