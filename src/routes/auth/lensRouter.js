@@ -5,7 +5,7 @@ const createProfileManager = require("../../lens/api-v2").createProfileManager;
 const broadcastTx = require("../../lens/api-v2").broadcastTx;
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
 const { refreshToken: refreshAccessToken } = require("../../lens/api-v2");
-const { getCache, setCache } = require("../../functions/cache/handleCache");
+const { getCache, setCache , deleteCache } = require("../../functions/cache/handleCache");
 const prisma = require("../../prisma");
 
 lensRouter.post("/", async (req, res) => {
@@ -66,6 +66,8 @@ lensRouter.post("/", async (req, res) => {
       },
       data: ownerData,
     });
+
+    await deleteCache(`user_${user_id}`);
 
     res.status(200).send({
       status: "success",
