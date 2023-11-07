@@ -69,7 +69,7 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
   }
 });
 
-utilRouter.get("/check-dispatcher`", auth, async (req, res) => {
+utilRouter.get("/check-dispatcher", auth, async (req, res) => {
   let user_id = req.user.user_id;
 
   let ownerCache = await getCache(`user_${user_id}`);
