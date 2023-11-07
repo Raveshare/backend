@@ -63,7 +63,7 @@ const uploaddMetadataToIpfs = async (postData) => {
     appId: "lenspost",
   };
 
-  const { valid, reason } = await validateMetadata(metaData);
+  const { valid, reason } = await validateMetadata(JSON.stringify(metaData));
 
   if (!valid) {
     throw new Error(reason);
