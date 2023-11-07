@@ -68,7 +68,7 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
-        await setCache(`user_${evm_address}`, JSON.stringify(ownerData));
+        await setCache(`user_${user_id}`, JSON.stringify(ownerData));
       } else {
         ownerData = JSON.parse(ownerDataCache);
       }
