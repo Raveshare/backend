@@ -21,20 +21,12 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
     }
 
     if (!params) {
-      params = {
-        collectModule: {
-          freeCollectModule: { followerOnly: true },
-        },
-        referenceModule: {
-          followerOnlyReferenceModule: false,
-        },
-      };
+      params = {};
     } else {
       params = await getLensParam(params);
     }
 
     let createPostRequest = {
-      profileId: ownerData.profileId,
       contentURI: `ipfs://${permadata}`,
     };
 
@@ -135,9 +127,12 @@ const getLensParam = async (params) => {
   }
 
   return {
-    collectModule: collectModule,
+    openActionModules: [
+      {
+        collectOpenAction: collectModule,
+      },
+    ],
   };
 };
-
 
 module.exports = uploadToLens;
