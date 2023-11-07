@@ -469,6 +469,7 @@ module.exports = {
   checkAccessToken,
   refreshToken,
   createProfileManager,
+  validateMetadata,
   broadcastTx,
   postOnChain,
   hasCollected,
