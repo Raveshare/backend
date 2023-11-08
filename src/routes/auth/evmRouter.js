@@ -65,7 +65,6 @@ evmRouter.post("/", async (req, res) => {
           evm_address,
         },
       });
-      await setCache(`user_${ownerData.id}`, JSON.stringify(ownerData));
     }
 
     let isVerified = verifyEthSignature(evm_address, signature, message);
