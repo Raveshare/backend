@@ -8,20 +8,21 @@ const generateJwt = require("../../utils/auth/generateJwt");
 const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 
-
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
 const jsonwebtoken = require("jsonwebtoken");
 
 solanaRouter.post("/", async (req, res) => {
-
   try {
-  token = req.headers.authorization.split(" ")[1];
-  decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
-  console.log(decoded)
-  req.user = decoded;
+    token = req.headers.authorization.split(" ")[1];
+    decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+    req.user = decoded;
   } catch {}
 
   // To check if the request is already authenticated, and user_id is present.
-  console.log(req.user)
   let user_id = req.user?.user_id;
   let signature, message, solana_address;
 
@@ -76,7 +77,6 @@ solanaRouter.post("/", async (req, res) => {
           },
         });
       } else {
-
         // if the user is authenticated but has no solana address, then update the solana address.
 
         await prisma.owners.update({
@@ -88,12 +88,15 @@ solanaRouter.post("/", async (req, res) => {
           },
         });
 
-        await deleteCache(`user_${ownerData.id}`)
-
+        await deleteCache(`user_${ownerData.id}`);
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
-      let jwt = generateJwt(ownerData.evm_address ? ownerData.evm_address : "" , solana_address , ownerData.id)
+      let jwt = generateJwt(
+        ownerData.evm_address ? ownerData.evm_address : "",
+        solana_address,
+        ownerData.id
+      );
 
       // to check for lens_handle if lens_auth_token are present.
       let hasExpired = false;
@@ -111,13 +114,20 @@ solanaRouter.post("/", async (req, res) => {
         }
       }
 
-
-      if(!user_id)
-      sendLogin(ownerData.id, ownerData.evm_address, ownerData.solana_address)
+      if (!user_id)
+        sendLogin(
+          ownerData.id,
+          ownerData.evm_address,
+          ownerData.solana_address
+        );
       res.status(200).send({
         status: "success",
-        message : hasExpired ? "" : (ownerData.lens_handle ? ownerData.lens_handle : ""),
-        jwt
+        message: hasExpired
+          ? ""
+          : ownerData.lens_handle
+          ? ownerData.lens_handle
+          : "",
+        jwt,
       });
     }
   } catch (error) {
