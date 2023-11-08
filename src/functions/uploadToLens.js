@@ -9,7 +9,16 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
       handle: ownerData.lens_handle,
     });
 
-    const permadata = await uploadMetadataToIpfs(postMetadata);
+    let permadata = await uploadMetadataToIpfs(postMetadata);
+
+    if (permadata.status == 500) {
+      return {
+        status: "error",
+        message: permadata.message,
+      };
+    } else {
+      permadata = permadata.message;
+    }
 
     let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
@@ -42,7 +51,6 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
 
     return result;
   } catch (e) {
-    console.log(e);
     return {
       status: "error",
       message: e,
