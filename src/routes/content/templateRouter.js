@@ -4,14 +4,8 @@ const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api-v2").hasCollected;
 const jsonwebtoken = require("jsonwebtoken");
 
-const {
-  addElementToList,
-  checkElementInList,
-  getCache,
-  setCache,
-  deleteCache,
-} = require("../../functions/cache/handleCache");
-const { set, get } = require("lodash");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
+const { CostExplorer } = require("aws-sdk");
 
 templateRouter.get("/", async (req, res) => {
   try {
@@ -65,120 +59,94 @@ templateRouter.get("/user", async (req, res) => {
 
   offset = limit * (page - 1);
 
-  try {
-    let publicTemplatesCache = await getCache("publicTemplates");
-    let publicTemplates;
-    if (!publicTemplatesCache) {
-      publicTemplates = await prisma.public_canvas_templates.findMany({
-        take: limit,
-        skip: offset,
-        orderBy: {
-          updatedAt: "desc",
-        },
+  // let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
+  let publicTemplates = await prisma.public_canvas_templates.findMany({
+    where: {
+      isPublic: true,
+    },
+    skip: offset,
+    take: limit,
+  });
+
+  let copy = publicTemplates;
+
+  let totalAssets = await prisma.public_canvas_templates.count({
+    where: {
+      isPublic: true,
+    },
+  });
+
+  let totalPage = Math.ceil(totalAssets / limit);
+
+  let nextPage = page + 1 > totalPage ? null : page + 1;
+
+  let gatedWith = [];
+  let templateIds = [];
+  let canvasIds = [];
+
+  for (let i = 0; i < publicTemplates.length; i++) {
+    if (publicTemplates[i].gatedWith) {
+      // gatedWith.push(publicTemplates[i].gatedWith);
+      publicTemplates[i].gatedWith.forEach((gated) => {
+        gatedWith.push(gated);
+        templateIds.push(publicTemplates[i].id);
       });
-      await setCache("publicTemplates", JSON.stringify(publicTemplates));
+      // templateIds.push(publicTemplates[i].id);
     } else {
-      publicTemplates = await JSON.parse(publicTemplatesCache);
+      gatedWith.push(null);
+      templateIds.push(publicTemplates[i].id);
     }
+  }
 
-    let publicTemplatesCountCache = await getCache("publicTemplatesCount");
-    let publicTemplatesCount;
+  let owner = await prisma.owners.findUnique({
+    where: {
+      id: user_id,
+    },
+  });
 
-    if (!publicTemplatesCountCache) {
-      publicTemplatesCount = await prisma.public_canvas_templates.count({});
-      await setCache("publicTemplatesCount", publicTemplatesCount);
-    } else {
-      publicTemplatesCount = publicTemplatesCountCache;
-    }
+  let hasCollectedPost = [];
 
-    let ownersCache = await getCache(`user_${user_id}`);
-    let owners;
-    if (!ownersCache) {
-      owners = await prisma.owners.findUnique({
-        where: {
-          id: user_id,
-        },
-      });
+  if (!owner.lens_auth_token) {
+    hasCollectedPost = Array(publicTemplates.length).fill(false);
+  } else {
+    hasCollectedPost = await hasCollected(
+      user_id,
+      gatedWith,
+      owner.lens_auth_token.accessToken,
+      owner.lens_auth_token.refreshToken
+    );
+  }
+  console.log(templateIds);
+  console.log(hasCollectedPost);
+  console.log(gatedWith);
+  console.log(publicTemplates.length);
 
-      await setCache(`user_${user_id}`, JSON.stringify(owners));
-    } else {
-      owners = JSON.parse(ownersCache);
-    }
-
-    let accessToken, refreshToken;
-    if (owners.lens_auth_token == null || evm_address == null) {
-      accessToken = null;
-      refreshToken = null;
-    } else {
-      accessToken = owners.lens_auth_token.accessToken;
-      refreshToken = owners.lens_auth_token.refreshToken;
-
-      let hasExpired = false;
-      if (!accessToken || !refreshToken) {
-        hasExpired = true;
-      } else {
-        const decodedToken = jsonwebtoken.decode(refreshToken, {
-          complete: true,
-        });
-
-        hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
-      }
-
-      if (hasExpired) {
-        accessToken = null;
-        refreshToken = null;
-      }
-    }
-
-    for (let i = 0; i < publicTemplates.length; i++) {
-      let template = publicTemplates[i];
-      let isGated = template.isGated;
-      if (!isGated) continue;
-      let gatedWith = template.gatedWith;
-
-      for (let j = 0; j < gatedWith.length; j++) {
-        let pubId = gatedWith[j];
-        if (pubId.length > 20) continue;
-        let collected = false;
-        if (accessToken) {
-          let collectedCache = await getCache(`collected_${user_id}_${pubId}`);
-          if (!collectedCache) {
-            collected = await hasCollected(
-              [pubId],
-              evm_address,
-              accessToken,
-              refreshToken
-            );
-
-            if (collected)
-              await setCache(`collected_${user_id}_${pubId}`, collected);
-          } else {
-            collected = collectedCache;
+  for (let i = 0; i < publicTemplates.length; i++) {
+    console.log(publicTemplates[i].id);
+    if (templateIds.includes(publicTemplates[i].id)) {
+      console.log("here");
+      for (let j = 0; j < templateIds.length; j++) {
+        if (publicTemplates[i].id === templateIds[j]) {
+          if (!hasCollectedPost[j]) {
+            publicTemplates[i].data = {};
+            publicTemplates[i].allowList = [];
+            // hasActed = true;
+          }
+          if(hasCollectedPost) {
+            publicTemplates[i].data = copy[i].data;
+            publicTemplates[i].allowList = copy[i].allowList;
+            break;
           }
         }
-
-        if (collected) {
-          template.allowList = [];
-          publicTemplates[i] = template;
-        } else {
-          template.data = {};
-          template.allowList = [];
-          publicTemplates[i] = template;
-        }
       }
     }
-
-    totalPage = Math.ceil(publicTemplatesCount / limit);
-
-    res.status(200).json({
-      assets: publicTemplates,
-      totalPage,
-      nextPage: page + 1 > totalPage ? null : page + 1,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json(error);
   }
+
+  res.status(200).json({
+    assets: publicTemplates,
+    totalPage,
+    nextPage,
+  });
 });
 
 module.exports = templateRouter;

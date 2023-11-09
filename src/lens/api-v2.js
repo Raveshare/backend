@@ -424,6 +424,9 @@ async function hasCollected(
   accessToken,
   refreshAccessToken
 ) {
+
+  if(isEmpty(publicationIds)) return Array(0).fill(false);
+
   const variables = {
     request: {
       where: {

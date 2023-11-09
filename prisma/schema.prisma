@@ -113,6 +113,7 @@ model owners {
   id                      Int                       @id @default(autoincrement())
   canvases                canvases[]
   nftData                 nftData[]
+  username                String?                   @db.VarChar(255) @unique
   public_canvas_templates public_canvas_templates[]
 }
 
