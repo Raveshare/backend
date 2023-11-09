@@ -87,8 +87,6 @@ solanaRouter.post("/", async (req, res) => {
             solana_address,
           },
         });
-
-        await deleteCache(`user_${ownerData.id}`);
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
@@ -99,7 +97,7 @@ solanaRouter.post("/", async (req, res) => {
       );
 
       // to check for lens_handle if lens_auth_token are present.
-      let hasExpired = false;
+      let hasExpired = true;
       if (ownerData.lens_auth_token) {
         let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
@@ -122,7 +120,12 @@ solanaRouter.post("/", async (req, res) => {
         );
       res.status(200).send({
         status: "success",
-        message: hasExpired
+        profileId: hasExpired
+          ? ""
+          : ownerData.profileId
+          ? ownerData.profileId
+          : "",
+        profileHandle: hasExpired
           ? ""
           : ownerData.lens_handle
           ? ownerData.lens_handle
