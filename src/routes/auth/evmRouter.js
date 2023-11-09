@@ -43,22 +43,12 @@ evmRouter.post("/", async (req, res) => {
 
   try {
     let ownerData;
-
-    // If the user is already authenticated then get tha USER else find the user using the evm address
-    // Cache the user's data for a day.
     if (user_id) {
-      let ownerDataCache = await getCache(`user_${user_id}`);
-
-      if (!ownerDataCache) {
-        ownerData = await prisma.owners.findUnique({
-          where: {
-            id: user_id,
-          },
-        });
-        await setCache(`user_${user_id}`, JSON.stringify(ownerData));
-      } else {
-        ownerData = JSON.parse(ownerDataCache);
-      }
+      ownerData = await prisma.owners.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
     } else {
       ownerData = await prisma.owners.findUnique({
         where: {
@@ -98,8 +88,6 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
-
-        await deleteCache(`user_${ownerData.id}`);
       }
 
       // to only send evm_address if the ownerData already has it, will happen in case where user is pre-authenticated.
@@ -110,7 +98,7 @@ evmRouter.post("/", async (req, res) => {
       );
 
       // to check for lens_handle if lens_auth_token are present.
-      let hasExpired = false;
+      let hasExpired = true;
       if (ownerData.lens_auth_token) {
         let { accessToken, refreshToken } = ownerData.lens_auth_token;
 
@@ -134,7 +122,11 @@ evmRouter.post("/", async (req, res) => {
 
       res.status(200).send({
         status: "success",
-        profileId: ownerData.profileId ? ownerData.profileId : "",
+        profileId: hasExpired
+          ? ""
+          : ownerData.profileId
+          ? ownerData.profileId
+          : "",
         profileHandle: hasExpired
           ? ""
           : ownerData.lens_handle
@@ -144,6 +136,7 @@ evmRouter.post("/", async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       status: "failed",
       message: `Internal Server Error ${error.message}`,
