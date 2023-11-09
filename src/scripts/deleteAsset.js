@@ -59,6 +59,15 @@ async function deleteCollection(id) {
   });
 }
 
+async function deleteLensAuthForAllOwners() {
+  console.log("deleteLensAuthForAllOwners");
+  await prisma.owners.updateMany({
+    data: {
+      lens_auth_token: null,
+    },
+  });
+}
+
 module.exports = {
   deleteAsset,
   deleteNFT,
@@ -66,4 +75,5 @@ module.exports = {
   deleteTemplate,
   deleteCollection,
   updateCanvas,
+  deleteLensAuthForAllOwners,
 };
