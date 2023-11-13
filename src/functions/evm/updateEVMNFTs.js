@@ -1,4 +1,7 @@
-const getNfts = require("../../lens/api").getNfts;
+const getBaseNFT  = require("../reservoir/getBaseNFT")
+const getEthNFT = require("../reservoir/getEthNFT")
+const getPolygonNFT = require("../reservoir/getPolygonNFT")
+
 const { isEmpty } = require("lodash");
 const prisma = require("../../prisma");
 const convertToPng = require("../helper/convertToPng");
@@ -8,6 +11,7 @@ const {
   getCache,
   setCache,
 } = require("../../functions/cache/handleCache");
+
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(
@@ -19,7 +23,7 @@ async function checkIfNFTExists(nft) {
       await prisma.nftData.findMany({
         where: {
           tokenId: nft.tokenId,
-          address: nft.collectionAddress,
+          address: nft.address,
           chainId: nft.chainId,
         },
       })
@@ -36,59 +40,25 @@ async function checkIfNFTExists(nft) {
 }
 
 async function updateEVMNFTs(user_id, evm_address) {
-  let latestNFTs = [];
 
-  let cursor = {};
+  let ethNFTs = await getEthNFT(user_id,evm_address);
+  let polNFTs = await getPolygonNFT(user_id,evm_address);
+  let baseNFTs = await getBaseNFT(user_id,evm_address);
 
-  let chainIds = [137];
-
-  if (NODE_ENV === "production") chainIds = [1, 137];
-
-  while (true) {
-    let request = {
-      ownerAddress: evm_address,
-      chainIds: chainIds,
-      limit: 50,
-      cursor: cursor,
-    };
-
-    let res;
-    try {
-      res = await getNfts(request);
-
-      latestNFTs = latestNFTs.concat(res.items);
-
-      cursor = res.pageInfo.next;
-    } catch (e) {
-      console.log(e);
-      break;
-    }
-
-    cursor = JSON.parse(cursor);
-    if (isEmpty(cursor)) {
-      break;
-    }
-
-    if (!cursor.polygon) chainIds = [1];
-    if (!cursor.eth) chainIds = [137];
-  }
-
-  let finalNFTs = [];
+  let latestNFTs = []
 
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
     if (await checkIfNFTExists(nft)) continue;
 
-    if (!nft.originalContent.uri) continue;
-
-    if (nft.originalContent.uri.includes("ipfs://")) {
-      nft.originalContent.uri = nft.originalContent.uri.replace(
+    if (nft.permaLink.includes("ipfs://")) {
+      nft.permaLink = nft.permaLink.replace(
         "ipfs://",
         "https://gateway.pinata.cloud/ipfs/"
       );
     } else {
-      console.log(`Error with ${nft.tokenId} ${nft.contractAddress}}}`);
+      console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
 
     if (nft.originalContent.uri.startsWith("data:image/svg+xml")) {

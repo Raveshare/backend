@@ -12,12 +12,14 @@ async function updateNFTsForOwner(owner) {
 
     let nfts = [];
 
-    if (solana_address)
-      nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
+    // if (solana_address)
+    //   nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
     if (evm_address) {
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
-      nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
+      // nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
+
+    // return
 
     try {
       await prisma.nftData.createMany({
