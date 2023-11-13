@@ -13,8 +13,7 @@ const {
 } = require("../../functions/cache/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
-  // let user_id = req.user.user_id;
-  let user_id = 109;
+  let user_id = req.user.user_id;
 
   await deleteCacheMatchPattern(`nfts_${user_id}`);
 
