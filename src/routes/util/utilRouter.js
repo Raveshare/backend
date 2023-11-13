@@ -39,7 +39,7 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
 });
 
 utilRouter.post("/upload-image", auth, async (req, res) => {
-  let address = req.user.address;
+  let user_id = req.user.user_id;
   let { image } = req.body;
 
   if (!image) return res.status(404).send({ error: "No image provided" });
@@ -49,12 +49,12 @@ utilRouter.post("/upload-image", auth, async (req, res) => {
 
     let result = await uploadImageToS3(
       imageBuffer,
-      `user/${address}/user_assets/${Date.now()}.png`
+      `user/${user_id}/user_assets/${Date.now()}.png`
     );
 
     await prisma.uploadeds.create({
       data: {
-        address: address,
+        ownerId: user_id,
         image: result,
       },
     });

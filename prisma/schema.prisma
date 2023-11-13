@@ -46,8 +46,8 @@ model canvases {
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   assetsRecipientElementData Json[]   @default([])
-  ownerId                    Int?
-  owner                      owners?  @relation(fields: [ownerId], references: [id])
+  ownerId                    Int
+  owner                      owners   @relation(fields: [ownerId], references: [id])
 }
 
 model collections {
@@ -92,12 +92,11 @@ model nftData {
   chainId      Int?
   dimensions   Int[]
   creators     Json[]   @default([])
-  ownerId      Int?
-  owner        owners?  @relation(fields: [ownerId], references: [id])
+  ownerId      Int
+  owner        owners   @relation(fields: [ownerId], references: [id])
 }
 
 model owners {
-  address                 String?                   @unique @db.VarChar(255)
   canvasOwned             Int?                      @default(0)
   nftOwned                Int?                      @default(0)
   mail                    String?                   @db.VarChar(255)
@@ -113,8 +112,9 @@ model owners {
   id                      Int                       @id @default(autoincrement())
   canvases                canvases[]
   nftData                 nftData[]
-  username                String?                   @db.VarChar(255) @unique
+  username                String?                   @unique @db.VarChar(255)
   public_canvas_templates public_canvas_templates[]
+  uploadeds               uploadeds[]
 }
 
 model templates {
@@ -129,10 +129,10 @@ model templates {
 model uploadeds {
   id        Int      @id @default(autoincrement())
   image     String   @db.VarChar(255)
-  address   String?  @db.VarChar(255)
-  ownerId   Int?
+  ownerId   Int
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  owner     owners   @relation(fields: [ownerId], references: [id])
 }
 
 model user_collected_posts {
@@ -156,8 +156,8 @@ view public_canvas_templates {
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   assetsRecipientElementData Json[]   @default([])
-  ownerId                    Int?
-  owner                      owners?  @relation(fields: [ownerId], references: [id])
+  ownerId                    Int
+  owner                      owners   @relation(fields: [ownerId], references: [id])
 }
 
 view template_view {
