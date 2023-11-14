@@ -174,7 +174,7 @@ canvasRouter.put("/update", async (req, res) => {
     await deleteCacheMatchPattern(`canvases_${user_id}`);
     await deleteCache(`canvas_${canvas.id}`);
     await deleteCache(`canvases_count_${user_id}`);
-    await deleteCache(`publicTemplates`);
+    await deleteCacheMatchPattern(`public_templates`);
 
     res.status(200).send({
       status: "success",
@@ -229,6 +229,8 @@ canvasRouter.put("/visibility", async (req, res) => {
     canvas = JSON.parse(visibilityCanvasCache);
   }
 
+  console.log(user_id);
+
   if (canvas.ownerId != user_id) {
     res.status(403).send({
       status: "error",
@@ -248,8 +250,8 @@ canvasRouter.put("/visibility", async (req, res) => {
 
   // Changed to user_id here from req.user.address
   canvasMadePublic(canvasId, user_id);
-
   await deleteCacheMatchPattern(`canvases_${user_id}`);
+  await deleteCacheMatchPattern(`public_templates`);
 
   let msg = `Canvas ${canvasId} made ${isPublic ? "public" : "private"}`;
 
@@ -410,6 +412,7 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
 
   await deleteCache(`canvas_${canvasId}`);
   await deleteCacheMatchPattern(`canvases_${user_id}`);
+  await deleteCacheMatchPattern(`public_templates`);
 
   res.status(200).send({
     status: "success",
@@ -484,6 +487,9 @@ canvasRouter.post("/gate/:id", async (req, res) => {
         : [gatewith],
     },
   });
+
+  await deleteCacheMatchPattern(`canvases_${user_id}`);
+  await deleteCacheMatchPattern(`public_templates`);
 
   res.send({
     message: "Canvas Gated Successfully",

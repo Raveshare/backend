@@ -59,14 +59,22 @@ templateRouter.get("/user", async (req, res) => {
 
   offset = limit * (page - 1);
 
-  // let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
-  let publicTemplates = await prisma.public_canvas_templates.findMany({
-    where: {
-      isPublic: true,
-    },
-    skip: offset,
-    take: limit,
-  });
+  let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
+  if(!publicTemplates){
+    publicTemplates = await prisma.public_canvas_templates.findMany({
+      where: {
+        isPublic: true,
+      },
+      orderBy: {
+        "updatedAt": "desc",
+      },
+      skip: offset,
+      take: limit,
+    });
+    await setCache(`public_templates_${page}_${limit}`, JSON.stringify(publicTemplates));
+  }else{
+    publicTemplates = JSON.parse(publicTemplates);
+  }
 
   let copy = publicTemplates;
 
@@ -86,12 +94,10 @@ templateRouter.get("/user", async (req, res) => {
 
   for (let i = 0; i < publicTemplates.length; i++) {
     if (publicTemplates[i].gatedWith) {
-      // gatedWith.push(publicTemplates[i].gatedWith);
       publicTemplates[i].gatedWith.forEach((gated) => {
         gatedWith.push(gated);
         templateIds.push(publicTemplates[i].id);
       });
-      // templateIds.push(publicTemplates[i].id);
     } else {
       gatedWith.push(null);
       templateIds.push(publicTemplates[i].id);
@@ -116,15 +122,8 @@ templateRouter.get("/user", async (req, res) => {
       owner.lens_auth_token.refreshToken
     );
   }
-  console.log(templateIds);
-  console.log(hasCollectedPost);
-  console.log(gatedWith);
-  console.log(publicTemplates.length);
-
   for (let i = 0; i < publicTemplates.length; i++) {
-    console.log(publicTemplates[i].id);
     if (templateIds.includes(publicTemplates[i].id)) {
-      console.log("here");
       for (let j = 0; j < templateIds.length; j++) {
         if (publicTemplates[i].id === templateIds[j]) {
           if (!hasCollectedPost[j]) {
@@ -132,7 +131,7 @@ templateRouter.get("/user", async (req, res) => {
             publicTemplates[i].allowList = [];
             // hasActed = true;
           }
-          if(hasCollectedPost) {
+          if (hasCollectedPost) {
             publicTemplates[i].data = copy[i].data;
             publicTemplates[i].allowList = copy[i].allowList;
             break;
