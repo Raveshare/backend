@@ -3,14 +3,14 @@ const axios = require("axios");
 const ETHEREUM_URL = "https://api.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
-const getEthNFT = async (user_id,address) => {
+const getEthNFT = async (user_id,evm_address) => {
   let nfts = [];
 
   let continuation = "";
   while (true) {
     let { data } = await axios.get(
       ETHEREUM_URL +
-        address +
+      evm_address +
         "/tokens/v7?limit=200" +
         (continuation ? "&continuation=" + continuation : ""),
       {
@@ -32,8 +32,6 @@ const getEthNFT = async (user_id,address) => {
 
     if (!continuation) break;
   }
-
-  console.log(nfts.length);
 
   let formattedNFTs = [];
 
@@ -59,16 +57,19 @@ const getEthNFT = async (user_id,address) => {
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
       title: nfts[i].name,
-      description: nfts[i].description,
+      description: nfts[i].description || "",
       openseaLink: `https://opensea.io/assets/ethereum/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
       imageLink: nfts[i].image,
       chainId: 1,
+      ownerAddress: evm_address,
+      creators: nfts[i].collection.royalties,
       ownerId: user_id,
     });
 
   }
+
 
   return formattedNFTs;
 };

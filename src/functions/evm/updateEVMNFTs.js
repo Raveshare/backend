@@ -45,12 +45,13 @@ async function updateEVMNFTs(user_id, evm_address) {
   let polNFTs = await getPolygonNFT(user_id,evm_address);
   let baseNFTs = await getBaseNFT(user_id,evm_address);
 
-  let latestNFTs = []
+  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
+  let finalNFTs = [];
 
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
-    if (await checkIfNFTExists(nft)) continue;
+    // if (await checkIfNFTExists(nft)) continue;
 
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
@@ -61,26 +62,16 @@ async function updateEVMNFTs(user_id, evm_address) {
       console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
 
-    if (nft.originalContent.uri.startsWith("data:image/svg+xml")) {
-      let png = await convertToPng(nft.originalContent.uri);
+    // if (nft.permaLink.startsWith("data:image/svg+xml")) {
+    //   let png = await convertToPng(nft.permaLink);
 
-      nft.originalContent.uri = png;
-    }
+    //   nft.originalContent.uri = png;
+    // }
 
-    let nftData = {
-      tokenId: nft.tokenId,
-      title: nft.name,
-      description: nft.description,
-      openseaLink: `https://opensea.io/assets/${nft.contractAddress}/${nft.tokenId}`,
-      permaLink: nft.originalContent.uri,
-      address: nft.contractAddress,
-      ownerAddress: evm_address,
-      chainId: nft.chainId,
-      ownerId: user_id,
-    };
-
-    finalNFTs.push(nftData);
+    finalNFTs.push(nft);
   }
+
+  console.log(finalNFTs.length);
 
   return finalNFTs;
 }

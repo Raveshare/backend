@@ -3,14 +3,14 @@ const axios = require("axios");
 const POLYGON_URL = "https://api-polygon.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
-const getPolygonNFTs = async (user_id, address) => {
+const getPolygonNFTs = async (user_id, evm_address) => {
   let nfts = [];
 
   let continuation = "";
   while (true) {
     let { data } = await axios.get(
       POLYGON_URL +
-        address +
+      evm_address +
         "/tokens/v7?limit=200" +
         (continuation ? "&continuation=" + continuation : ""),
       {
@@ -59,12 +59,14 @@ const getPolygonNFTs = async (user_id, address) => {
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
       title: nfts[i].name,
-      description: nfts[i].description,
+      description: nfts[i].description || "",
       openseaLink: `https://opensea.io/assets/matic/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
       imageLink: nfts[i].image,
       chainId: 137,
+      ownerAddress: evm_address,
+      creators: nfts[i].collection.royalties,
       ownerId: user_id,
     });
   }

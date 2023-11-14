@@ -3,14 +3,14 @@ const axios = require("axios");
 const BASE_URL = "https://api-base.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
-const getBaseNFT = async (user_id, address) => {
+const getBaseNFT = async (user_id, evm_address) => {
   let nfts = [];
 
   let continuation = "";
   while (true) {
     let { data } = await axios.get(
       BASE_URL +
-        address +
+      evm_address +
         "/tokens/v7?limit=200" +
         (continuation ? "&continuation=" + continuation : ""),
       {
@@ -59,12 +59,14 @@ const getBaseNFT = async (user_id, address) => {
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
       title: nfts[i].name,
-      description: nfts[i].description,
+      description: nfts[i].description || "",
       openseaLink: `https://opensea.io/assets/base/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
       imageLink: nfts[i].image,
       chainId: 8453,
+      ownerAddress: evm_address,
+      creators: nfts[i].collection.royalties,
       ownerId: user_id,
     });
   }
