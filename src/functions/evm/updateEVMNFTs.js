@@ -1,11 +1,9 @@
 const getBaseNFT = require("../reservoir/getBaseNFT");
 const getEthNFT = require("../reservoir/getEthNFT");
 const getPolygonNFT = require("../reservoir/getPolygonNFT");
-
 const { isEmpty } = require("lodash");
+
 const prisma = require("../../prisma");
-const convertToPng = require("../helper/convertToPng");
-const NODE_ENV = process.env.NODE_ENV;
 
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
@@ -24,9 +22,9 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData);
+    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData ? "true" : "false");
 
-    return nftData;
+    return nftData === "true";
   } else {
     return nftData === "true";
   }

@@ -8,7 +8,6 @@ const sendError = require("../../functions/webhook/sendError.webhook");
 const {
   getCache,
   setCache,
-  deleteCache,
   deleteCacheMatchPattern
 } = require("../../functions/cache/handleCache");
 

@@ -13,7 +13,7 @@ const {
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`);
-
+ 
   if (!nftData) {
     const nftData = isEmpty(
       await prisma.nftData.findMany({
@@ -24,11 +24,11 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`, JSON.stringify(nftData));
+    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`, nftData ? "true" : "false");
 
-    return nftData;
+    return nftData === "true";
   } else {
-    return nftData
+    return nftData === "true";
   }
 }
 
