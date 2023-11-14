@@ -1,21 +1,17 @@
-const getBaseNFT  = require("../reservoir/getBaseNFT")
-const getEthNFT = require("../reservoir/getEthNFT")
-const getPolygonNFT = require("../reservoir/getPolygonNFT")
+const getBaseNFT = require("../reservoir/getBaseNFT");
+const getEthNFT = require("../reservoir/getEthNFT");
+const getPolygonNFT = require("../reservoir/getPolygonNFT");
 
 const { isEmpty } = require("lodash");
 const prisma = require("../../prisma");
 const convertToPng = require("../helper/convertToPng");
 const NODE_ENV = process.env.NODE_ENV;
 
-const {
-  getCache,
-  setCache,
-} = require("../../functions/cache/handleCache");
-
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(
-    `nft_${nft.tokenId}_${nft.collectionAddress}_${nft.chainId}`
+    `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
   );
 
   if (!nftData) {
@@ -28,22 +24,18 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(
-      `nft_${nft.tokenId}_${nft.collectionAddress}_${nft.chainId}`,
-      JSON.stringify(nftData)
-    );
+    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData);
 
     return nftData;
   } else {
-    return nftData;
+    return nftData === "true";
   }
 }
 
 async function updateEVMNFTs(user_id, evm_address) {
-
-  let ethNFTs = await getEthNFT(user_id,evm_address);
-  let polNFTs = await getPolygonNFT(user_id,evm_address);
-  let baseNFTs = await getBaseNFT(user_id,evm_address);
+  let ethNFTs = await getEthNFT(user_id, evm_address);
+  let polNFTs = await getPolygonNFT(user_id, evm_address);
+  let baseNFTs = await getBaseNFT(user_id, evm_address);
 
   let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
   let finalNFTs = [];
@@ -51,7 +43,7 @@ async function updateEVMNFTs(user_id, evm_address) {
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
-    // if (await checkIfNFTExists(nft)) continue;
+    if (await checkIfNFTExists(nft)) continue;
 
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
@@ -61,12 +53,6 @@ async function updateEVMNFTs(user_id, evm_address) {
     } else {
       console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
-
-    // if (nft.permaLink.startsWith("data:image/svg+xml")) {
-    //   let png = await convertToPng(nft.permaLink);
-
-    //   nft.originalContent.uri = png;
-    // }
 
     finalNFTs.push(nft);
   }

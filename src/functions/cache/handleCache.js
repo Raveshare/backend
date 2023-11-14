@@ -35,7 +35,7 @@ const deleteCache = async (key) => {
 const deleteCacheMatchPattern = async (key) => {
   let keys = await redis.keys('*');
   for (let i = 0; i < keys.length; i++) {
-    keys[i].includes(key) && (await redis.del(keys[i]) && console.log("Cache Deleted"));
+    keys[i].includes(key) && (await redis.del(keys[i]));
   }
 };
 
