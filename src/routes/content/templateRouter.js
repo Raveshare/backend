@@ -60,19 +60,22 @@ templateRouter.get("/user", async (req, res) => {
   offset = limit * (page - 1);
 
   let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
-  if(!publicTemplates){
+  if (!publicTemplates) {
     publicTemplates = await prisma.public_canvas_templates.findMany({
       where: {
         isPublic: true,
       },
       orderBy: {
-        "updatedAt": "desc",
+        updatedAt: "desc",
       },
       skip: offset,
       take: limit,
     });
-    await setCache(`public_templates_${page}_${limit}`, JSON.stringify(publicTemplates));
-  }else{
+    await setCache(
+      `public_templates_${page}_${limit}`,
+      JSON.stringify(publicTemplates)
+    );
+  } else {
     publicTemplates = JSON.parse(publicTemplates);
   }
 
@@ -95,8 +98,10 @@ templateRouter.get("/user", async (req, res) => {
   for (let i = 0; i < publicTemplates.length; i++) {
     if (publicTemplates[i].gatedWith) {
       publicTemplates[i].gatedWith.forEach((gated) => {
-        gatedWith.push(gated);
-        templateIds.push(publicTemplates[i].id);
+        if (gated.length < 20) {
+          gatedWith.push(gated);
+          templateIds.push(publicTemplates[i].id);
+        }
       });
     } else {
       gatedWith.push(null);
