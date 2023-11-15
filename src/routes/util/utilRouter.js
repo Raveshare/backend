@@ -1,12 +1,34 @@
 const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
-const checkProfileManager  = require("../../lens/api-v2").checkProfileManager;
+const checkProfileManager = require("../../lens/api-v2").checkProfileManager;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
 const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
+const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");
 
 const { getCache, setCache } = require("../../functions/cache/handleCache");
+
+const projectId = process.env.IPFS_PROJECT_ID;
+const projectSecret = process.env.IPFS_PROJECT_SECRET;
+const ipfs_auth =
+"Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+const { v4: uuid } = require("uuid");
+
+const getIpfsClient = async () => {
+  const { create } = await import("ipfs-http-client");
+
+  const ipfsClient = create({
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+    headers: {
+      authorization: ipfs_auth,
+    },
+  });
+
+  return ipfsClient;
+};
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -124,6 +146,50 @@ utilRouter.get("/whitelisted", async (req, res) => {
       status: "success",
       message: isWhitelistedCache,
     });
+  }
+});
+
+utilRouter.post("/upload-image-ipfs", auth, async (req, res) => {
+  let user_id = req.user.user_id;
+  let { image } = req.body;
+
+  if (!image) return res.status(404).send({ error: "No image provided" });
+
+  try {
+    let imageBuffer = Buffer.from(image, "base64");
+
+    let result = await uploadMediaToIpfs(imageBuffer);
+
+    res.send({
+      message: result,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    return res.status(503).send({ error: "Error uploading image" });
+  }
+});
+
+utilRouter.post("/upload-json-ipfs", auth, async (req, res) => {
+  let user_id = req.user.user_id;
+  let { json } = req.body;
+
+  const ipfsClient = await getIpfsClient();
+
+  if (!json) return res.status(404).send({ error: "No image provided" });
+
+  try {
+    json = JSON.stringify(json);
+
+    const { path } = await ipfsClient.add((json));
+
+    res.send({
+      message: path,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    return res.status(503).send({ error: "Error uploading image" });
   }
 });
 
