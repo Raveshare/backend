@@ -39,9 +39,9 @@ const getEthNFT = async (user_id,evm_address) => {
     nfts[i] = nfts[i].token;
     if (!nfts[i].image) continue;
     if (
-      nfts[i].name.includes("USDC") ||
-      nfts[i].name.includes("USDT") ||
-      nfts[i].name.toLowerCase().includes("voucher")
+      nfts[i].name?.includes("USDC") ||
+      nfts[i].name?.includes("USDT") ||
+      nfts[i].name?.toLowerCase().includes("voucher")
     )
       continue;
     if (
@@ -56,8 +56,8 @@ const getEthNFT = async (user_id,evm_address) => {
 
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
-      title: nfts[i].name,
-      description: nfts[i].description || "",
+      title: nfts[i].name || "",
+      description: nfts[i].description?.substring(0,100) || "",
       openseaLink: `https://opensea.io/assets/ethereum/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
@@ -70,6 +70,7 @@ const getEthNFT = async (user_id,evm_address) => {
 
   }
 
+  console.log(`ETH NFTs: ${formattedNFTs.length}`)
 
   return formattedNFTs;
 };

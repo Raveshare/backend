@@ -12,6 +12,8 @@ async function checkIfNFTExists(nft) {
     `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
   );
 
+  nftData = nftData === "true" ? true : false;
+
   if (!nftData) {
     const nftData = isEmpty(
       await prisma.nftData.findMany({
@@ -22,9 +24,9 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData ? "true" : "false");
+    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData ? "false" : "true");
 
-    return nftData === "true";
+    return !nftData;
   } else {
     return nftData === "true";
   }
@@ -52,10 +54,9 @@ async function updateEVMNFTs(user_id, evm_address) {
       console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
 
+
     finalNFTs.push(nft);
   }
-
-  console.log(finalNFTs.length);
 
   return finalNFTs;
 }

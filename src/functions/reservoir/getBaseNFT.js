@@ -33,17 +33,15 @@ const getBaseNFT = async (user_id, evm_address) => {
     if (!continuation) break;
   }
 
-  console.log(nfts.length);
-
   let formattedNFTs = [];
 
   for (let i = 0; i < nfts.length; i++) {
     nfts[i] = nfts[i].token;
     if (!nfts[i].image) continue;
     if (
-      nfts[i].name.includes("USDC") ||
-      nfts[i].name.includes("USDT") ||
-      nfts[i].name.toLowerCase().includes("voucher")
+      nfts[i].name?.includes("USDC") ||
+      nfts[i].name?.includes("USDT") ||
+      nfts[i].name?.toLowerCase().includes("voucher")
     )
       continue;
     if (
@@ -58,8 +56,8 @@ const getBaseNFT = async (user_id, evm_address) => {
 
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
-      title: nfts[i].name,
-      description: nfts[i].description || "",
+      title: nfts[i].name || "",
+      description: nfts[i].description?.substring(0,100) || "",
       openseaLink: `https://opensea.io/assets/base/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
@@ -71,7 +69,7 @@ const getBaseNFT = async (user_id, evm_address) => {
     });
   }
 
-  console.log(formattedNFTs);
+  console.log(`Base NFTs: ${formattedNFTs.length}`)
 
   return formattedNFTs;
 };
