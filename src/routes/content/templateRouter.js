@@ -59,7 +59,9 @@ templateRouter.get("/user", async (req, res) => {
 
   offset = limit * (page - 1);
 
-  let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
+  let publicTemplates = await getCache(
+    `public_templates_${user_id}_${page}_${limit}`
+  );
   if (!publicTemplates) {
     publicTemplates = await prisma.public_canvas_templates.findMany({
       where: {
@@ -72,7 +74,7 @@ templateRouter.get("/user", async (req, res) => {
       take: limit,
     });
     await setCache(
-      `public_templates_${page}_${limit}`,
+      `public_templates_${user_id}_${page}_${limit}`,
       JSON.stringify(publicTemplates)
     );
   } else {
