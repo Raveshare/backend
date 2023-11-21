@@ -12,7 +12,7 @@ const { getCache, setCache } = require("../../functions/cache/handleCache");
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
 const ipfs_auth =
-"Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+  "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 const { v4: uuid } = require("uuid");
 
 const getIpfsClient = async () => {
@@ -127,7 +127,7 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
 utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
   let isWhitelistedCache = await getCache(`isWhitelisted_${wallet}`);
-  isWhitelistedCache = isWhitelistedCache === "true" ? true : false;
+  isWhitelistedCache = (isWhitelistedCache === "true") ? true : false;
 
   if (!isWhitelistedCache) {
     let isWhitelisted = await getIsWhitelisted(wallet);
@@ -136,11 +136,11 @@ utilRouter.get("/whitelisted", async (req, res) => {
       message: isWhitelisted,
     });
 
-    await setCacheWithExpire(
-      `isWhitelisted_${wallet}`,
-      String(isWhitelisted || false),
-      60 * 60 * 24
-    );
+    await setCache(`isWhitelisted_${wallet}`, isWhitelisted ? "true" : "false");
+    res.send({
+      status: "success",
+      message: isWhitelisted,
+    });
   } else {
     res.send({
       status: "success",
@@ -181,7 +181,7 @@ utilRouter.post("/upload-json-ipfs", auth, async (req, res) => {
   try {
     json = JSON.stringify(json);
 
-    const { path } = await ipfsClient.add((json));
+    const { path } = await ipfsClient.add(json);
 
     res.send({
       message: path,
