@@ -19,6 +19,7 @@ async function updateNFTsForOwner(owner) {
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
 
+
     let updatedNFT = nfts.map((item) => {
       const { imageLink , ...rest } = item; // Use object destructuring to remove 'ownership' property
       return rest;

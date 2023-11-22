@@ -7,6 +7,11 @@ const prisma = require("../../prisma");
 
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
+/**
+ * 
+ * @param {*} nft 
+ * @returns Returns 
+ */
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(
     `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
@@ -28,7 +33,7 @@ async function checkIfNFTExists(nft) {
 
     return !nftData;
   } else {
-    return nftData === "true";
+    return nftData
   }
 }
 
@@ -37,14 +42,13 @@ async function updateEVMNFTs(user_id, evm_address) {
   let polNFTs = await getPolygonNFT(user_id, evm_address);
   let baseNFTs = await getBaseNFT(user_id, evm_address);
 
-  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
+  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs)
   let finalNFTs = [];
-
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
     if (await checkIfNFTExists(nft)) continue;
-
+  
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
         "ipfs://",
@@ -57,7 +61,6 @@ async function updateEVMNFTs(user_id, evm_address) {
 
     finalNFTs.push(nft);
   }
-
   return finalNFTs;
 }
 

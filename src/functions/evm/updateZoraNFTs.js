@@ -12,9 +12,21 @@ const {
 } = require("../../functions/cache/handleCache");
 
 async function checkIfNFTExists(nft) {
-  let nftData = await getCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`);
- 
+  let nftData = await getCache(
+    `nft_${nft.tokenId}_${nft.collectionAddress}_${7777777}`
+  );
+
+  nftData = nftData === "true" ? true : false;
+
   if (!nftData) {
+    let data =   await prisma.nftData.findMany({
+      where: {
+        tokenId: nft.tokenId,
+        address: nft.collectionAddress,
+        chainId: 7777777,
+      },
+    })
+
     const nftData = isEmpty(
       await prisma.nftData.findMany({
         where: {
@@ -24,13 +36,14 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_7777777`, nftData ? "true" : "false");
+    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_${7777777}`, nftData ? "false" : "true");
 
-    return nftData === "true";
+    return !nftData;
   } else {
-    return nftData === "true";
+    return nftData
   }
 }
+
 
 const getZoraNFTsQuery = gql`
   query OwnedNFTs($owner: [String!], $after: String!) {
