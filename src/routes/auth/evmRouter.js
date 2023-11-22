@@ -117,7 +117,8 @@ evmRouter.post("/", async (req, res) => {
         sendLogin(
           ownerData.id,
           ownerData.evm_address,
-          ownerData.solana_address
+          ownerData.solana_address,
+          ownerData.username
         );
 
       res.status(200).send({
@@ -133,6 +134,7 @@ evmRouter.post("/", async (req, res) => {
           ? ownerData.lens_handle
           : "",
         jwt,
+        username: ownerData.username || ""
       });
     }
   } catch (error) {
