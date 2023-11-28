@@ -127,7 +127,7 @@ utilRouter.get("/check-dispatcher", auth, async (req, res) => {
 utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
   let isWhitelistedCache = await getCache(`isWhitelisted_${wallet}`);
-  isWhitelistedCache = (isWhitelistedCache === "true") ? true : false;
+  isWhitelistedCache = isWhitelistedCache === "true" ? true : false;
 
   if (!isWhitelistedCache) {
     let isWhitelisted = await getIsWhitelisted(wallet);
@@ -190,6 +190,44 @@ utilRouter.post("/upload-json-ipfs", auth, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(503).send({ error: "Error uploading image" });
+  }
+});
+
+utilRouter.get("/check-coinvise/:wallet", async (req, res) => {
+  
+  let { wallet } = req.params;
+
+  let owner = await prisma.owners.findUnique({
+    where: {
+      evm_address: wallet,
+    },
+  });
+
+  if (!owner) {
+    res.send({
+      status: "success",
+      message: false,
+    });
+    return;
+  }
+
+  let hasCreatedPublicTemplate = await prisma.canvases.findFirst({
+    where: {
+      isPublic: true,
+      ownerId: owner.id,
+    },
+  });
+
+  if (hasCreatedPublicTemplate) {
+    res.send({
+      status: "success",
+      message: true,
+    });
+  } else {
+    res.send({
+      status: "success",
+      message: false,
+    });
   }
 });
 
