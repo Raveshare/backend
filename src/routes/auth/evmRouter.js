@@ -17,6 +17,8 @@ const {
   deleteCache,
 } = require("../../functions/cache/handleCache");
 
+
+
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
 
@@ -58,7 +60,7 @@ evmRouter.post("/", async (req, res) => {
     }
 
     let isVerified = verifyEthSignature(evm_address, signature, message);
-    isVerified = true;
+    // isVerified = true;
 
     if (!isVerified) {
       res.status(401).send({
@@ -134,7 +136,7 @@ evmRouter.post("/", async (req, res) => {
           ? ownerData.lens_handle
           : "",
         jwt,
-        username: ownerData.username || ""
+        username: ownerData.username || "",
       });
     }
   } catch (error) {
