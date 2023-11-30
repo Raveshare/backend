@@ -19,11 +19,13 @@ async function updateNFTsForOwner(owner) {
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
 
+    console.log(nfts.length);
+
     let updatedNFT = nfts.map((item) => {
-      const { imageLink , ...rest } = item; // Use object destructuring to remove 'ownership' property
+      const { imageLink, ...rest } = item; // Use object destructuring to remove 'ownership' property
+      rest.description = rest.description?.replace(/[^\x00-\x7F]+/g, "");
       return rest;
     });
-
     try {
       let res = await prisma.nftData.createMany({
         data: updatedNFT,
@@ -31,9 +33,10 @@ async function updateNFTsForOwner(owner) {
       });
       console.log(res.count)
     } catch (e) {
+      console.log(updatedNFT[i]);
       console.error(e);
       console.log(`Error saving nfts for ${owner.user_id}`);
-      return;
+      // return;
     }
 
     for (let i = 0; i < nfts.length; i++) {
@@ -46,8 +49,8 @@ async function updateNFTsForOwner(owner) {
           ? "sol/"
           : nft.chainId == 7777777
           ? "zora/"
-          : nft.chainId == 8453 
-          ? "base" 
+          : nft.chainId == 8453
+          ? "base"
           : nft.chainId == 137
           ? "matic/"
           : "eth/") +
@@ -78,8 +81,6 @@ async function updateNFTsForOwner(owner) {
         console.log(nft.tokenId, nft.address);
       }
     }
-
-
 
     return true;
   } catch (e) {

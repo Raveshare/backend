@@ -131,10 +131,6 @@ utilRouter.get("/whitelisted", async (req, res) => {
 
   if (!isWhitelistedCache) {
     let isWhitelisted = await getIsWhitelisted(wallet);
-    res.send({
-      status: "success",
-      message: isWhitelisted,
-    });
 
     await setCache(`isWhitelisted_${wallet}`, isWhitelisted ? "true" : "false");
     res.send({
@@ -194,7 +190,6 @@ utilRouter.post("/upload-json-ipfs", auth, async (req, res) => {
 });
 
 utilRouter.get("/check-coinvise/:wallet", async (req, res) => {
-  
   let { wallet } = req.params;
 
   let owner = await prisma.owners.findUnique({
