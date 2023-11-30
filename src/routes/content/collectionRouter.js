@@ -13,8 +13,10 @@ collectionRouter.get("/:collection/", async (req, res) => {
 
   let limit = req.query.limit || 50;
 
-  let offset = (page - 1) * limit;
+  let offset = limit * (page - 1);
 
+  console.log("====================================");
+  console.log(page, limit, offset);
   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
 
   let collectionsCache = await getCache(
@@ -40,22 +42,23 @@ collectionRouter.get("/:collection/", async (req, res) => {
   }
 
   // We can cache the contents too as they are not changing frequently
-  let contentsCache = await getCache(`collectionContent_${collections.id}`);
+  let contentsCache = await getCache(`collectionContent_${collections.id}_${page}_${limit}`);
   let contents;
 
-  if (!contentsCache) {
+  if (!contentsCache ) {
+
     contents = await prisma.contents.findMany({
-      take: limit,
-      skip: offset,
-      orderBy: {
-        createdAt: "desc",
-      },
       where: {
         collectionId: collections.id,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: offset,
+      take: limit,
     });
     await setCache(
-      `collectionContent_${collections.id}`,
+      `collectionContent_${collections.id}_${page}_${limit}`,
       JSON.stringify(contents)
     );
   } else {
@@ -69,11 +72,13 @@ collectionRouter.get("/:collection/", async (req, res) => {
   });
 
   let totalPage = Math.ceil(totalAssets / limit);
+  console.log("====================================");
+  console.log(contents[0]);
 
   res.send({
     assets: contents,
     totalPage: totalPage,
-    nextPage: page + 1 > totalPage ? null : page + 1,
+    nextPage: page >= totalPage ? null : page + 1,
   });
 });
 
