@@ -15,8 +15,8 @@ collectionRouter.get("/:collection/", async (req, res) => {
 
   let offset = limit * (page - 1);
 
-  console.log("====================================");
-  console.log(page, limit, offset);
+  // console.log("====================================");
+  // console.log(page, limit, offset);
   // this query can be cached again, as the collections are not changing frequently - so we can remove the cache middleware and cache till the asset are not updated
 
   let collectionsCache = await getCache(
@@ -72,8 +72,8 @@ collectionRouter.get("/:collection/", async (req, res) => {
   });
 
   let totalPage = Math.ceil(totalAssets / limit);
-  console.log("====================================");
-  console.log(contents[0]);
+  // console.log("====================================");
+  // console.log(contents[0]);
 
   res.send({
     assets: contents,
