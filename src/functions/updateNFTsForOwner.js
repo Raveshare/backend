@@ -18,9 +18,6 @@ async function updateNFTsForOwner(owner) {
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
-
-    console.log(nfts.length);
-
     let updatedNFT = nfts.map((item) => {
       const { imageLink, ...rest } = item; // Use object destructuring to remove 'ownership' property
       rest.description = rest.description?.replace(/[^\x00-\x7F]+/g, "");
@@ -33,10 +30,8 @@ async function updateNFTsForOwner(owner) {
       });
       console.log(res.count)
     } catch (e) {
-      console.log(updatedNFT[i]);
       console.error(e);
       console.log(`Error saving nfts for ${owner.user_id}`);
-      // return;
     }
 
     for (let i = 0; i < nfts.length; i++) {

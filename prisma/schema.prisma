@@ -81,8 +81,8 @@ model nftData {
   tokenId      String   @db.VarChar(255)
   title        String   @db.VarChar(255)
   description  String
-  openseaLink  String   @db.VarChar(255)
-  imageURL     String?
+  openseaLink  String   @db.VarChar(510)
+  imageURL     String?  @db.VarChar(510)
   permaLink    String?  @db.VarChar(510)
   isPublic     Boolean  @default(false)
   address      String   @db.VarChar(255)

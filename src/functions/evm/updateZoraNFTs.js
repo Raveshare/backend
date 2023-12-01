@@ -40,7 +40,7 @@ async function checkIfNFTExists(nft) {
 
     return !nftData;
   } else {
-    return nftData
+    return nftData === "true" ? true : false;
   }
 }
 
@@ -136,6 +136,7 @@ async function updateZoraNFTs(user_id, evm_address) {
         openseaLink: `https://opensea.io/assets/zora/${nft.collectionAddress}/${nft.tokenId}`,
         address: nft.collectionAddress,
         chainId: 7777777,
+        creators : [],
         ownerAddress: evm_address,
         ownerId: user_id,
       });
@@ -148,6 +149,7 @@ async function updateZoraNFTs(user_id, evm_address) {
         openseaLink: `https://opensea.io/assets/zora/${nft.collectionAddress}/${nft.tokenId}`,
         address: nft.collectionAddress,
         chainId: 7777777,
+        creators : [],
         ownerAddress: evm_address,
         ownerId: user_id,
       });

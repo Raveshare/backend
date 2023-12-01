@@ -10,7 +10,7 @@ const getPolygonNFTs = async (user_id, evm_address) => {
   while (true) {
     let { data } = await axios.get(
       POLYGON_URL +
-      evm_address +
+        evm_address +
         "/tokens/v7?limit=200" +
         (continuation ? "&continuation=" + continuation : ""),
       {
@@ -54,22 +54,29 @@ const getPolygonNFTs = async (user_id, evm_address) => {
     )
       continue;
 
+    if (
+      (nfts[i].metadata?.imageOriginal || nfts[i].image).startsWith(
+        "data:image/svg+xml"
+      )
+    )
+      continue;
+
     formattedNFTs.push({
       tokenId: nfts[i].tokenId,
       title: nfts[i].name || "",
-      description: nfts[i].description?.substring(0,100) || "",
+      description: nfts[i].description?.substring(0, 100) || "",
       openseaLink: `https://opensea.io/assets/matic/${nfts[i].collection.id}/${nfts[i].tokenId}`,
       address: nfts[i].collection.id,
       permaLink: nfts[i].metadata?.imageOriginal || nfts[i].image,
       imageLink: nfts[i].image,
       chainId: 137,
       ownerAddress: evm_address,
-      creators: nfts[i].collection.royalties,
+      creators: nfts[i].collection.royalties || [],
       ownerId: user_id,
     });
   }
 
-  console.log(`Polygon NFTs: ${formattedNFTs.length}`)
+  console.log(`Polygon NFTs: ${formattedNFTs.length}`);
 
   return formattedNFTs;
 };
