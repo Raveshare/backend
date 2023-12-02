@@ -6,6 +6,7 @@ const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");
+const sharp = require("sharp");
 
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 
@@ -142,6 +143,24 @@ utilRouter.get("/whitelisted", async (req, res) => {
       status: "success",
       message: isWhitelistedCache,
     });
+  }
+});
+
+utilRouter.get("/check-meta", auth, async (req, res) => {
+  let { image } = req.body;
+
+  if (!image) return res.send({ error: "No image provided" });
+
+  try {
+    let buffer = Buffer.from(image, "base64");
+    let metadata = await sharp(buffer).metadata();
+    res.send({
+      metadata: metadata,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    return res.send({ error: "Error checking image" });
   }
 });
 
