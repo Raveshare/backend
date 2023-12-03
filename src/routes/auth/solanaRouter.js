@@ -4,15 +4,7 @@ const nacl = require("tweetnacl");
 const bs58 = require("bs58");
 const prisma = require("../../prisma");
 const generateJwt = require("../../utils/auth/generateJwt");
-
-const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
-
-const {
-  getCache,
-  setCache,
-  deleteCache,
-} = require("../../functions/cache/handleCache");
 const jsonwebtoken = require("jsonwebtoken");
 
 solanaRouter.post("/", async (req, res) => {
@@ -132,7 +124,8 @@ solanaRouter.post("/", async (req, res) => {
           ? ownerData.lens_handle
           : "",
         jwt,
-        username: ownerData.username || ""
+        userId: ownerData.id,
+        username: ownerData.username || "",
       });
     }
   } catch (error) {

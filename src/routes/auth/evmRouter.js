@@ -1,23 +1,11 @@
 const evmRouter = require("express").Router();
 const lensRouter = require("./lensRouter");
-
 const { verifyEthSignature } = require("../../utils/auth/verifySignature");
 const generateJwt = require("../../utils/auth/generateJwt");
 const auth = require("../../middleware/auth/auth");
-
 const jsonwebtoken = require("jsonwebtoken");
-
 const prisma = require("../../prisma");
-
-const userLogin = require("../../functions/events/userLogin.event");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
-const {
-  getCache,
-  setCache,
-  deleteCache,
-} = require("../../functions/cache/handleCache");
-
-
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
@@ -136,6 +124,7 @@ evmRouter.post("/", async (req, res) => {
           ? ownerData.lens_handle
           : "",
         jwt,
+        userId: ownerData.id,
         username: ownerData.username || "",
       });
     }

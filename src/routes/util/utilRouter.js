@@ -6,8 +6,11 @@ const getIsWhitelisted = require("../../functions/getIsWhitelisted");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");
-
 const { getCache, setCache } = require("../../functions/cache/handleCache");
+const {
+  canUseRemoveBG,
+  usedRemoveBG,
+} = require("../../functions/points/removeBG");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
@@ -35,9 +38,18 @@ utilRouter.get("/", async (req, res) => {
 });
 
 utilRouter.post("/remove-bg", auth, async (req, res) => {
+  let user_id = req.user.user_id;
   let { image, id } = req.query;
 
   if (!image) return res.send({ error: "No image provided" });
+
+  let canUse = await canUseRemoveBG(user_id);
+
+  if (!canUse) {
+    return res.send({
+      error: "Not enough points :(",
+    });
+  }
 
   try {
     removebg = await removeBackgroundFromImageUrl({
@@ -48,6 +60,8 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
     let imageBuffer = Buffer.from(removebg.base64img, "base64");
 
     let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
+
+    await usedRemoveBG(user_id);
 
     res.send({
       id: id,
