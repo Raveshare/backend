@@ -105,4 +105,4 @@ const getIsWhitelisted = async (walletAddress) => {
   }
 };
 
-module.exports = getIsWhitelisted;
+module.exports = {getIsWhitelisted , redis};
