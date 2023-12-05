@@ -107,6 +107,7 @@ model owners {
   uploadeds               uploadeds[]
   points_history          points_history[]
   socials                 socials[]
+  referral                referral[]
 }
 
 model socials {
@@ -186,6 +187,19 @@ view public_canvas_templates {
   assetsRecipientElementData Json[]   @default([])
   ownerId                    Int
   owner                      owners   @relation(fields: [ownerId], references: [id])
+}
+
+model referral {
+  id Int @id @default(autoincrement())
+
+  ownerId      Int
+  referralCode String  @unique
+  referred     String? @db.VarChar(255)
+  hasClaimed   Boolean @default(false)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  owner     owners   @relation(fields: [ownerId], references: [id])
 }
 
 view template_view {

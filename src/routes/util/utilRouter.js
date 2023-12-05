@@ -2,7 +2,8 @@ const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
 const checkProfileManager = require("../../lens/api-v2").checkProfileManager;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
-const getIsWhitelisted = require("../../functions/getIsWhitelisted");
+const { getIsWhitelisted } = require("../../functions/getIsWhitelisted");
+const addToWhitelist = require("../../functions/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");
@@ -238,6 +239,47 @@ utilRouter.get("/check-coinvise/:wallet", async (req, res) => {
       message: false,
     });
   }
+});
+
+utilRouter.post("/redeem-code", async (req, res) => {
+  let { code, address } = req.body;
+
+  if (!code) {
+    return res.send({
+      status: "error",
+      message: "No code provided",
+    });
+  }
+
+  let referralCode = await prisma.referral.findUnique({
+    where: {
+      referralCode: code,
+    },
+  });
+
+  if (referralCode.hasClaimed) {
+    return res.send({
+      status: "error",
+      message: "Code already claimed",
+    });
+  }
+
+  await prisma.referral.update({
+    where: {
+      referralCode: code,
+    },
+    data: {
+      hasClaimed: true,
+      referred: address,
+    },
+  });
+
+  await addToWhitelist(address);
+
+  res.send({
+    status: "success",
+    message: "Code successfully claimed",
+  });
 });
 
 module.exports = utilRouter;
