@@ -1,15 +1,15 @@
 const { request, gql } = require("graphql-request");
 const ZORA_API_URL = process.env.ZORA_API_URL;
-const prisma = require("../../prisma");
-const convertToPng = require("../helper/convertToPng");
+const prisma = require("../../../prisma");
+const convertToPng = require("../../image/convertToPng");
 const fs = require("fs");
-const uploadImageToS3 = require("../helper/uploadImageToS3");
+const uploadImageToS3 = require("../../image/uploadImageToS3");
 const isEmpty = require("lodash/isEmpty");
 
 const {
   getCache,
   setCache,
-} = require("../../functions/cache/handleCache");
+} = require("../../cache/handleCache");
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(

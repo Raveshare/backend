@@ -1,5 +1,5 @@
 const { toBigNumber } = require("@metaplex-foundation/js");
-const metaplex = require("../../../utils/metaplex");
+const metaplex = require("../../../../utils/metaplex");
 const { Keypair, PublicKey } = require("@solana/web3.js");
 const bs58 = require("bs58");
 const web3js = require("@solana/web3.js");

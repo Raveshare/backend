@@ -1,9 +1,9 @@
 const utilRouter = require("express").Router();
-const uploadImageToS3 = require("../../functions/helper/uploadImageToS3");
+const uploadImageToS3 = require("../../functions/image/uploadImageToS3");
 const checkProfileManager = require("../../lens/api-v2").checkProfileManager;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
-const { getIsWhitelisted } = require("../../functions/getIsWhitelisted");
-const addToWhitelist = require("../../functions/addToWhitelist");
+const { getIsWhitelisted } = require("../../functions/whitelist/getIsWhitelisted");
+const addToWhitelist = require("../../functions/whitelist/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
 const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");

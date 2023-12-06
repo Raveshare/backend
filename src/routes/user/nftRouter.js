@@ -1,7 +1,7 @@
 const nftRouter = require("express").Router();
 const prisma = require("../../prisma");
 
-const updateNFTsForOwner = require("../../functions/updateNFTsForOwner");
+const updateNFTsForOwner = require("../../functions/nfts/updateNFTsForOwner");
 const cache = require("../../middleware/cache");
 const sendError = require("../../functions/webhook/sendError.webhook");
 

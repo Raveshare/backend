@@ -25,8 +25,6 @@ app.use(function (req, res, next) {
   next();
 });
 
-//
-
 const collectionRouter = require("./routes/content/collectionRouter");
 const userRouter = require("./routes/user/userRouter");
 const utilRouter = require("./routes/util/utilRouter");

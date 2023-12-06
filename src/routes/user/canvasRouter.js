@@ -2,9 +2,9 @@ const canvasRouter = require("express").Router();
 
 const prisma = require("../../prisma");
 
-const uploadToLens = require("../../functions/uploadToLens");
-const uploadToSolana = require("../../functions/uploadToSolana");
-const updateImagePreview = require("../../functions/updateImagePreview");
+const uploadToLens = require("../../functions/share/uploadToLens");
+const uploadToSolana = require("../../functions/share/uploadToSolana");
+const updateImagePreview = require("../../functions/image/updateImagePreview");
 const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
 const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForPublication");
 

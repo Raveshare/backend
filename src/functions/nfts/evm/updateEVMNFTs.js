@@ -3,9 +3,9 @@ const getEthNFT = require("../reservoir/getEthNFT");
 const getPolygonNFT = require("../reservoir/getPolygonNFT");
 const { isEmpty } = require("lodash");
 
-const prisma = require("../../prisma");
+const prisma = require("../../../prisma");
 
-const { getCache, setCache } = require("../../functions/cache/handleCache");
+const { getCache, setCache } = require("../../cache/handleCache");
 
 /**
  * 

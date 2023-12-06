@@ -1,7 +1,7 @@
-const postOnChain = require("../lens/api-v2").postOnChain;
-const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
+const postOnChain = require("../../lens/api-v2").postOnChain;
+const uploadMetadataToIpfs = require("../uploadToIPFS").uploaddMetadataToIpfs;
 const getProfileAddressFromHandle =
-  require("../lens/api-v2").getProfileAddressFromHandle;
+  require("../../lens/api-v2").getProfileAddressFromHandle;
 
 const uploadToLens = async (postMetadata, ownerData, params) => {
   try {

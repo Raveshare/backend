@@ -1,8 +1,8 @@
 const updateEVMNFTs = require("./evm/updateEVMNFTs");
 const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
 const updateZoraNFTs = require("./evm/updateZoraNFTs");
-const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
-const prisma = require("../../src/prisma");
+const uploadImageFromLinkToS3 = require("../image/uploadImageFromLinkToS3");
+const prisma = require("../../prisma");
 
 async function updateNFTsForOwner(owner) {
   try {

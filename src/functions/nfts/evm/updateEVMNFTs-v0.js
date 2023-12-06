@@ -1,15 +1,15 @@
 const { isEmpty } = require("lodash");
-const prisma = require("../../prisma");
-const convertToPng = require("../helper/convertToPng");
+const prisma = require("../../../prisma");
+const convertToPng = require("../../helper/convertToPng");
 const NODE_ENV = process.env.NODE_ENV;
 
 const {
   getCache,
   setCache,
-} = require("../../functions/cache/handleCache");
+} = require("../../cache/handleCache");
 
 const { Alchemy, Network } = require("alchemy-sdk");
-const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
+const uploadImageFromLinkToS3 = require("../../image/uploadImageFromLinkToS3");
 
 // Configures the Alchemy SDK
 const eth_config = {

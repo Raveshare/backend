@@ -1,5 +1,5 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const checkIfFollow = require("../lens/api-v2").checkIfFollow;
+const checkIfFollow = require("../../lens/api-v2").checkIfFollow;
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
