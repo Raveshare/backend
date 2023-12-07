@@ -12,7 +12,6 @@
     "@metaplex-foundation/js": "^0.19.5",
     "@prisma/client": "^5.2.0",
     "@prisma/instrumentation": "^5.2.0",
-    "@railway/cli": "^3.3.1",
     "@solana/web3.js": "^1.87.1",
     "alchemy-sdk": "^2.8.1",
     "apicache": "^1.6.3",
