@@ -149,6 +149,7 @@ model user_collected_posts {
 
 model tasks {
   id             Int              @id @default(autoincrement())
+  name          String           @db.VarChar(255)
   description    String           @db.VarChar(255)
   amount         Int              @default(0)
   campaign       String?          @db.VarChar(255)

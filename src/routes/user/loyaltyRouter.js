@@ -29,6 +29,7 @@ router.get("/tasks", async (req, res) => {
     },
     select : {
       id: true,
+      name: true,
       description: true,
       amount: true,
       campaign: true,
