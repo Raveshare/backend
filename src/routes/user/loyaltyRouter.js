@@ -35,8 +35,32 @@ router.get("/tasks", async (req, res) => {
     }
   });
 
+  let taskStatus = []
+
+  for(let i=0 ; i<tasks.length; i++){
+    let history = await prisma.points_history.findMany({
+      where: {
+        ownerId: req.user.user_id,
+        taskId: tasks[i].id,
+      }
+    })
+
+    if(history.length > 0){
+      taskStatus.push({
+        ...tasks[i],
+        completed: true,
+      })
+    } else {
+      taskStatus.push({
+        ...tasks[i],
+        completed: false,
+      })
+    }
+  }
+
+
   res.send({
-    message: tasks,
+    message: taskStatus,
   });
 });
 
