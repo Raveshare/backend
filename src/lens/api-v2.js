@@ -470,6 +470,57 @@ async function hasCollected(
   return hasCollected;
 }
 
+const InviteProfileMutation = gql`
+  mutation InviteProfile($request: InviteRequest!) {
+    inviteProfile(request: $request)
+  }
+`;
+
+async function inviteProfile(
+  accessToken,
+  refreshAccessToken,
+  evmAddress,
+  user_id,
+  invitedAddress,
+) {
+  const variables = {
+    request: {
+      invites: [invitedAddress],
+    },
+  };
+
+  let isAccessTokenValid = await checkAccessToken(accessToken);
+
+  if (!isAccessTokenValid) {
+    const tokens = await refreshToken(refreshAccessToken);
+    accessToken = tokens.accessToken;
+    refreshAccessToken = tokens.refreshToken;
+
+    const lens_auth_token = {
+      accessToken: accessToken,
+      refreshToken: refreshAccessToken,
+    };
+
+    await prisma.owners.update({
+      where: {
+        evm_address: evmAddress,
+      },
+      data: {
+        lens_auth_token: lens_auth_token,
+      },
+    });
+
+    await deleteCache(`user_${user_id}`);
+  }
+
+  await request(LENS_API_URL, InviteProfileMutation, variables, {
+    Authorization: `Bearer ${accessToken}`,
+    Origin: "https://app.lenspost.xyz",
+  });
+
+  return
+}
+
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
@@ -484,4 +535,5 @@ module.exports = {
   broadcastTx,
   postOnChain,
   hasCollected,
+  inviteProfile,
 };

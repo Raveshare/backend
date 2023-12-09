@@ -6,7 +6,7 @@ const { getIsWhitelisted } = require("../../functions/whitelist/getIsWhitelisted
 const addToWhitelist = require("../../functions/whitelist/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
-const { uploadMediaToIpfs } = require("../../functions/uploadToIPFS");
+const { uploadMediaToIpfs} = require("../../functions/uploadToLighthouse");
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 const {
   canUseRemoveBG,

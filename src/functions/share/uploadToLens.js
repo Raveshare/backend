@@ -1,5 +1,5 @@
 const postOnChain = require("../../lens/api-v2").postOnChain;
-const uploadMetadataToIpfs = require("../uploadToIPFS").uploaddMetadataToIpfs;
+const {uploadMetadataToIpfs} = require("../uploadToLighthouse")
 const getProfileAddressFromHandle =
   require("../../lens/api-v2").getProfileAddressFromHandle;
 const { encodeAbiParameters } = require("viem");
