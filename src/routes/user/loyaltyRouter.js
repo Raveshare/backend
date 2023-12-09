@@ -127,4 +127,58 @@ router.get("/reward-history", async (req, res) => {
   });
 });
 
+router.post('/claim-reward', async (req, res) => {
+  let { taskId } = req.body;
+  let user_id = req.user.user_id;
+
+  let task = await prisma.tasks.findUnique({
+    where: {
+      id: taskId,
+    },
+  });
+
+  if (!task) {
+    return res.send({
+      message: "Invalid task",
+    });
+  }
+
+  let history = await prisma.points_history.findMany({
+    where: {
+      ownerId: user_id,
+      taskId: taskId,
+    },
+  });
+
+  if (history.length > 0) {
+    return res.send({
+      message: "Task already completed",
+    });
+  }
+
+  await prisma.owners.update({
+    where: {
+      id: user_id,
+    },
+    data: {
+      points: {
+        increment: task.amount,
+      },
+    },
+  });
+
+  await prisma.points_history.create({
+    data: {
+      ownerId: user_id,
+      taskId: taskId,
+      reason: task.name,
+      amount: task.amount,
+    },
+  });
+
+  res.send({
+    message: "Points claimed",
+  });
+});
+
 module.exports = router;
