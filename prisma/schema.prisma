@@ -154,6 +154,7 @@ model tasks {
   amount         Int              @default(0)
   campaign       String?          @db.VarChar(255)
   locked         Boolean?         @default(true)
+  tag           String?          @db.VarChar(255)
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
   points_history points_history[]
