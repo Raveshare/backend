@@ -13,11 +13,12 @@ const { getCache, setCache } = require("../../cache/handleCache");
  * @returns Returns 
  */
 async function checkIfNFTExists(nft) {
+  // returns true if nft exists
   let nftData = await getCache(
     `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
   );
 
-  nftData = nftData === "true" ? true : false;
+  nftData = ((nftData === "true") ? true : false);
 
   if (!nftData) {
     const nftData = isEmpty(
@@ -29,11 +30,13 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
+    // sets cache to true if nft exists
     await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData ? "false" : "true");
 
+    // returns true if nft exists
     return !nftData;
   } else {
-    return nftData === "true" ? true : false;
+    return nftData;
   }
 }
 
@@ -47,7 +50,8 @@ async function updateEVMNFTs(user_id, evm_address) {
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
-    if (await checkIfNFTExists(nft)) continue;
+    let doesExist = await checkIfNFTExists(nft);
+    if (doesExist) continue;
   
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
