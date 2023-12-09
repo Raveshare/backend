@@ -1,5 +1,7 @@
 const router = require("express").Router();
 const prisma = require("../../prisma");
+const referral = require("voucher-code-generator");
+const { canInvite, usedInvite } = require("../../functions/points/inviteUser");
 
 router.get("/invite-code", async (req, res) => {
   let user_id = req.user.user_id;
@@ -21,45 +23,73 @@ router.get("/invite-code", async (req, res) => {
   });
 });
 
-router.get("/tasks", async (req, res) => {
+router.post("/generate-code", async (req, res) => {
+  let user_id = req.user.user_id;
 
+  let canInviteUser = await canInvite(user_id);
+
+  if (!canInviteUser) {
+    return res.send({
+      message: "Not enough points :(",
+    });
+  }
+
+  let ref = referral.generate({
+    length: 1,
+    count: 256,
+  });
+
+  await prisma.referral.create({
+    data: {
+      ownerId: user_id,
+      referralCode: ref[0],
+    },
+  });
+
+  await usedInvite(user_id);
+
+  res.send({
+    message: ref[0],
+  });
+});
+
+router.get("/tasks", async (req, res) => {
   let tasks = await prisma.tasks.findMany({
-    where : {
+    where: {
       locked: false,
     },
-    select : {
+    select: {
       id: true,
       name: true,
       tags: true,
       description: true,
       amount: true,
       campaign: true,
-    }
+    },
   });
 
-  let taskStatus = []
+  let taskStatus = [];
 
-  for(let i=0 ; i<tasks.length; i++){
+  for (let i = 0; i < tasks.length; i++) {
     let history = await prisma.points_history.findMany({
       where: {
         ownerId: req.user.user_id,
         taskId: tasks[i].id,
-      }
-    })
+      },
+    });
 
-    if(history.length > 0){
+    if (history.length > 0) {
       taskStatus.push({
         ...tasks[i],
         completed: true,
-      })
+      });
     } else {
       taskStatus.push({
         ...tasks[i],
         completed: false,
-      })
+      });
     }
   }
-
 
   res.send({
     message: taskStatus,
@@ -67,7 +97,6 @@ router.get("/tasks", async (req, res) => {
 });
 
 router.get("/reward-history", async (req, res) => {
-
   let user_id = req.user.user_id;
 
   let owner = await prisma.owners.findUnique({
@@ -91,7 +120,7 @@ router.get("/reward-history", async (req, res) => {
     },
   });
 
-  let response = [{"user_points":owner.points},...reward_history]
+  let response = [{ user_points: owner.points }, ...reward_history];
 
   res.send({
     message: response,

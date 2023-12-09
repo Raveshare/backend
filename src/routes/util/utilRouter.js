@@ -12,6 +12,7 @@ const {
   canUseRemoveBG,
   usedRemoveBG,
 } = require("../../functions/points/removeBG");
+const {invitedUser} = require("../../functions/points/inviteUser");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
@@ -263,6 +264,8 @@ utilRouter.post("/redeem-code", async (req, res) => {
       message: "Code already claimed",
     });
   }
+
+  await invitedUser(referralCode.ownerId);
 
   await prisma.referral.update({
     where: {
