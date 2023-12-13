@@ -1,66 +1,30 @@
-const farcasterRouter = require("express").Router;
+const farcasterRouter = require("express").Router();
+const { NeynarAPIClient } = require("@neynar/nodejs-sdk");
+const jsonwebtoken = require("jsonwebtoken");
 
-const ed = require("ed25519-supercop");
-import { getHubRpcClient, Message } from "@farcaster/js";
+// Initializing Neynar Client via Neynar API Key
+const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY);
 
-farcasterRouter.post("/connect", async (req, res) => {
-  let address = req.user.address;
-
-  const privateKey = ed.utils.randomPrivateKey();
-  const publicKey = await ed.getPublicKey(privateKey);
-
-  let token, deepLinkUrl;
-
+farcasterRouter.post("/", async (req, res) => {
   try {
-    const response = await axios.post(
-      "https://api.warpcast.com/v2/signer-requests",
-      {
-        publicKey,
-      }
-    );
+    token = req.headers.authorization.split(" ")[1];
+    decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
+    req.user = decoded;
+    const user = (await client.lookupUserByVerification(req.user.evm_address))
+      .result.user;
+    // console.log(user.result.user)
+    // user = user.result.user;
 
-    const result = response.data.result;
-    token = result.token;
-    deepLinkUrl = result.deepLinkUrl;
-  } catch (error) {
-    throw new Error(`Error initiating Signer Request: ${error.message}`);
-  }
-
-  try {
-    const response = await axios.get(
-      "https://api.warpcast.com/v2/signer-request",
-      {
-        params: { token },
-      }
-    );
-
-    const signerRequest = response.data.result.signerRequest;
-
-    if (signerRequest.base64SignedMessage) {
-      console.log("Signer is approved with fid:", signerRequest.fid);
-      res.status(200).send({
-        message: "Signer is approved",
-        base64SignedMessage: signerRequest.base64SignedMessage,
-      });
-    }
-  } catch (error) {
-    console.error("Error polling for Signer Request:", error.message);
-  }
-});
-
-farcasterRouter.post("/submit", async (req, res) => {
-  try {
-    const base64SignedMessage = req.body.base64SignedMessage;
-
-    const client = await getHubRpcClient("<your-hub-url>");
-    const message = Message.decode(Buffer.from(base64SignedMessage, "base64"));
-    client.submitMessage(message);
     res.status(200).send({
-      message: "Message submitted",
+      user,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).send(error.message);
+    res.status(400).send({
+      status: "failed",
+      message: error.message,
+    });
   }
 });
+
 module.exports = farcasterRouter;
