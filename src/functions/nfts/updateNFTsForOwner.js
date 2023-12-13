@@ -1,8 +1,8 @@
 const updateEVMNFTs = require("./evm/updateEVMNFTs");
 const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
 const updateZoraNFTs = require("./evm/updateZoraNFTs");
-const uploadImageFromLinkToS3 = require("./uploadImageFromLinkToS3");
-const prisma = require("../../src/prisma");
+const uploadImageFromLinkToS3 = require("../image/uploadImageFromLinkToS3");
+const prisma = require("../../prisma");
 
 async function updateNFTsForOwner(owner) {
   try {
@@ -18,6 +18,7 @@ async function updateNFTsForOwner(owner) {
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
+
     let updatedNFT = nfts.map((item) => {
       const { imageLink, ...rest } = item; // Use object destructuring to remove 'ownership' property
       rest.description = rest.description?.replace(/[^\x00-\x7F]+/g, "");

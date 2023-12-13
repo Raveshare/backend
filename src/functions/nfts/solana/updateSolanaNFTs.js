@@ -1,4 +1,4 @@
-const prisma = require("../../prisma");
+const prisma = require("../../../prisma");
 const { isEmpty } = require("lodash");
 
 async function checkIfNFTExists(nft) {

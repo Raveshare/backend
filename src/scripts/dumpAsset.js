@@ -3,18 +3,17 @@ const fs = require("fs");
 const prisma = require("../prisma");
 
 async function dumpAsset(name) {
-    let assets = fs.readFileSync('./src/dumpdata/assets/' + name);
-    assets = JSON.parse(assets);
-    // await assetSchema.bulkCreate(assets);
-    await prisma.assets.createMany({
-        data: assets,
-        skipDuplicates: true
-    });
-
+//   name = "" + ".json";
+//   let assets = fs.readFileSync("./src/dumpdata/assets/" + name);
+//   assets = JSON.parse(assets);
+//   // await assetSchema.bulkCreate(assets);
+//   await prisma.assets.createMany({
+//     data: assets,
+//     skipDuplicates: true,
+//   });
 }
 
 // async function dumpAsset(author,campaign) {
-
 //     await prisma.assets.updateMany({
 //         where: {
 //             // "createdAt" : {

@@ -1,15 +1,15 @@
 const { request, gql } = require("graphql-request");
 const ZORA_API_URL = process.env.ZORA_API_URL;
-const prisma = require("../../prisma");
-const convertToPng = require("../helper/convertToPng");
+const prisma = require("../../../prisma");
+const convertToPng = require("../../image/convertToPng");
 const fs = require("fs");
-const uploadImageToS3 = require("../helper/uploadImageToS3");
+const uploadImageToS3 = require("../../image/uploadImageToS3");
 const isEmpty = require("lodash/isEmpty");
 
 const {
   getCache,
   setCache,
-} = require("../../functions/cache/handleCache");
+} = require("../../cache/handleCache");
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(
@@ -19,13 +19,6 @@ async function checkIfNFTExists(nft) {
   nftData = nftData === "true" ? true : false;
 
   if (!nftData) {
-    let data =   await prisma.nftData.findMany({
-      where: {
-        tokenId: nft.tokenId,
-        address: nft.collectionAddress,
-        chainId: 7777777,
-      },
-    })
 
     const nftData = isEmpty(
       await prisma.nftData.findMany({
@@ -40,7 +33,7 @@ async function checkIfNFTExists(nft) {
 
     return !nftData;
   } else {
-    return nftData === "true" ? true : false;
+    return nftData;
   }
 }
 
@@ -118,7 +111,8 @@ async function updateZoraNFTs(user_id, evm_address) {
       image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     }
 
-    if (await checkIfNFTExists(nft)) continue;
+    let doesExist = await checkIfNFTExists(nft);
+    if (doesExist) continue;
 
     if (image.startsWith("data:image/svg+xml")) {
       let png = await convertToPng(image);
@@ -155,6 +149,8 @@ async function updateZoraNFTs(user_id, evm_address) {
       });
     }
   }
+
+  console.log(finalNFTs.length)
 
   return finalNFTs;
 }

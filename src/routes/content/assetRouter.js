@@ -63,7 +63,7 @@ assetRouter.get("/", async (req, res) => {
 
   page = page < 1 ? 1 : page;
 
-  let limit = req.query.limit || 50;
+  let limit = req.query.limit || 20;
 
   let offset = (page - 1) * limit;
 

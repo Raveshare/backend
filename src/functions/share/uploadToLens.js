@@ -1,7 +1,8 @@
-const postOnChain = require("../lens/api-v2").postOnChain;
-const uploadMetadataToIpfs = require("./uploadToIPFS").uploaddMetadataToIpfs;
+const postOnChain = require("../../lens/api-v2").postOnChain;
+const {uploadMetadataToIpfs} = require("../uploadToLighthouse")
 const getProfileAddressFromHandle =
-  require("../lens/api-v2").getProfileAddressFromHandle;
+  require("../../lens/api-v2").getProfileAddressFromHandle;
+const { encodeAbiParameters } = require("viem");
 
 const uploadToLens = async (postMetadata, ownerData, params) => {
   try {
@@ -79,9 +80,33 @@ const getLensParam = async (params) => {
     followerOnly,
     referralFee,
     recipients,
+    openAction,
+    zoraMintAddress,
   } = params;
 
+  let unknownOpenAction = {};
   let collectModule = {};
+
+  if (openAction == "mintToZora") {
+    zoraMintAddress = encodeAbiParameters(
+      [
+        {
+          type: "address",
+        },
+      ],
+      [zoraMintAddress]
+    );
+    (unknownOpenAction.address = process.env.MUMBAI_MINT_TO_ZORA_OA),
+      (unknownOpenAction.data = zoraMintAddress);
+
+    return {
+      openActionModules: [
+        {
+          unknownOpenAction: unknownOpenAction,
+        },
+      ],
+    };
+  }
 
   if (charge) {
     let multirecipientCollectOpenAction = {};
