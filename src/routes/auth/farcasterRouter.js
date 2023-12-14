@@ -58,12 +58,6 @@ const generate_signature = async function (public_key) {
 farcasterRouter.post("/", async (req, res) => {
   try {
     let evm_address = req.user.evm_address;
-    // const user = (await client.lookupUserByVerification(evm_address)).result
-    //   .user;
-
-    // const signer = await client.createSigner();
-
-    // let regSign = await client.createSigner();
 
     try {
       const createSignerResponse = await client.createSigner();
@@ -71,7 +65,13 @@ farcasterRouter.post("/", async (req, res) => {
       const { deadline, signature } = await generate_signature(
         createSignerResponse.public_key
       );
+      // console.log(signature);
+
+      console.log(createSignerResponse.signer_uuid);
+      console.log(FARCASTER_DEVELOPER_FID);
+      console.log(deadline);
       console.log(signature);
+
 
       const signedKeyResponse = await client.registerSignedKey({
         signer_uuid: createSignerResponse.signer_uuid,
@@ -82,7 +82,7 @@ farcasterRouter.post("/", async (req, res) => {
 
       res.status(200).json({ message: signedKeyResponse.data });
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       res.status(401).send({
         message: error.message,
       });
