@@ -7,21 +7,15 @@ const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY);
 
 farcasterRouter.post("/", async (req, res) => {
   try {
-    token = req.headers.authorization.split(" ")[1];
-    decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET_KEY);
-    req.user = decoded;
-    const user = (await client.lookupUserByVerification(req.user.evm_address))
-      .result.user;
-    // console.log(user.result.user)
-    // user = user.result.user;
+    let evm_address = req.user.evm_address;
+    const user = (await client.lookupUserByVerification(evm_address)).result
+      .user;
 
     res.status(200).send({
-      user,
+      message: user,
     });
   } catch (error) {
-    console.log(error);
     res.status(400).send({
-      status: "failed",
       message: error.message,
     });
   }
