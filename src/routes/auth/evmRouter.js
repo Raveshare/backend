@@ -85,7 +85,8 @@ evmRouter.post("/", async (req, res) => {
       let jwt = generateJwt(
         evm_address,
         ownerData.solana_address ? ownerData.solana_address : "",
-        ownerData.id
+        ownerData.id,
+        ownerData.farcaster_id
       );
 
       // to check for lens_handle if lens_auth_token are present.
