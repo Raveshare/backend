@@ -89,6 +89,7 @@ model nftData {
 
 model owners {
   mail                    String?                   @db.VarChar(255)
+  farcaster_signer_uuid    String?                 @db.VarChar(255)
   lens_auth_token         Json?
   twitter_auth_token      Json?
   lens_handle             String?                   @db.VarChar(255)
