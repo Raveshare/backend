@@ -2,27 +2,22 @@ const { default: axios } = require("axios");
 const prisma = require("../../prisma");
 
 const uploadToFarcaster = async (postMetadata, ownerData) => {
-  let signer_uuid;
+  console.log(ownerData)
+  let { image, content } = postMetadata;
+  // [] --> [{url: "https://example.com/image.png"}]
+  let embeds = image.map((url) => ({ url }));
 
-  const { msgText } = req.body;
-  const { user_id } = ownerData;
-  text = data.text;
-  let { image } = postMetadata;
-  let imageArray = image.map((uid) => ({ uid }));
+  console.log("embeds", embeds);
 
-  try {
-    let ownerData = await prisma.owners.findUnique({
-      where: {
-        id: user_id,
-      },
-    });
-    // console.log(ownerData);
-    signer_uuid = ownerData.farcaster_signer_uuid;
-    if (!signer_uuid) {
-      return "No signer found with this user_id, please register one";
-    }
-  } catch (error) {
-    return "No owner found with this user_id";
+  let signer_uuid = ownerData.farcaster_signer_uuid;
+
+  console.log("signer_uuid", signer_uuid);
+
+  if (!signer_uuid) {
+    return {
+      error: "No signer_uuid found",
+      status: 500,
+    };
   }
   try {
     const response = await axios({
@@ -35,14 +30,21 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
       },
       data: {
         signer_uuid,
-        text: msgText,
-        embeds: imageArray,
+        text: content,
+        embeds,
       },
     });
 
-    return response.data;
+    return {
+      status: response.status === 200 ? 200 : 500,
+      txHash: response.data?.cast?.hash,
+      error : response.data?.message
+    }
   } catch (error) {
-    return error.message;
+    return {
+      error: error,
+      status: 500,
+    }
   }
 };
 
