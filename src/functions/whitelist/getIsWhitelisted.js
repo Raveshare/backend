@@ -8,8 +8,8 @@ const eth_config = {
 
 const poly_config = {
   apiKey: process.env.ALCHEMY_API_KEY,
-  network: Network.MATIC_MAINNET
-}
+  network: Network.MATIC_MAINNET,
+};
 
 const { createClient } = require("redis");
 
@@ -32,11 +32,11 @@ const poly_alchemy = new Alchemy(poly_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
-     let follow = await checkIfFollow(walletAddress);
+    let follow = await checkIfFollow(walletAddress);
 
-     if (follow) {
-       return true;
-     } 
+    if (follow) {
+      return true;
+    }
     let walletAddressU = walletAddress.toUpperCase();
 
     let wallets = [
@@ -90,6 +90,24 @@ const getIsWhitelisted = async (walletAddress) => {
       "0x346E10476162CDF5A89188D7cbD2Ea3fbDc71396",
     ]);
 
+    let res2 = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
+      "0x13015585932752A8e6Dc24bE6c07c420381AF53d",
+    ]);
+
+    let res3 = await eth_alchemy.core.getTokenBalances(walletAddress, [
+      "0x41C21693e60FC1a5dBb7c50e54E7A6016aA44C99",
+    ]);
+
+    let tokenBalance = res3.tokenBalances[0].tokenBalance;
+    tokenBalance = parseInt(tokenBalance);
+    if(tokenBalance > 0) {
+      console.log("token balance > 0");
+      return true;
+    } else {
+      console.log("token balance <= 0");
+    }
+
+    res = { ...res, ...res2 };
     res = Object.values(res);
 
     for (let i = 0; i < res.length; i++) {
@@ -101,8 +119,8 @@ const getIsWhitelisted = async (walletAddress) => {
     return false;
   } catch (err) {
     console.log(err);
-    return false
+    return false;
   }
 };
 
-module.exports = {getIsWhitelisted , redis};
+module.exports = { getIsWhitelisted, redis };
