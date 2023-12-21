@@ -85,11 +85,7 @@ const getIsWhitelisted = async (walletAddress) => {
     if (walletWhitelisted.includes(walletAddressU)) {
       return true;
     }
-
-    let res = await poly_alchemy.nft.verifyNftOwnership(walletAddress, [
-      "0x346E10476162CDF5A89188D7cbD2Ea3fbDc71396",
-    ]);
-
+    
     let res2 = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
       "0x13015585932752A8e6Dc24bE6c07c420381AF53d",
     ]);
