@@ -72,8 +72,62 @@ assetRouter.get("/", async (req, res) => {
       message: "Type is required",
     });
   }
+  if (author && campaign) {
+    let assets = await getCache(
+      `assets-${author}-${campaign}-${type}-${page}-${limit}`
+    );
 
-  if (author) {
+    if (!assets) {
+      assets = await prisma.assets.findMany({
+        where: {
+          author: author,
+          campaign: campaign,
+          type: type,
+        },
+        take: limit,
+        skip: offset,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      await setCache(
+        `assets-${author}-${campaign}-${type}-${page}-${limit}`,
+        JSON.stringify(assets)
+      );
+    } else {
+      assets = JSON.parse(assets);
+    }
+
+    let totalAssets = await getCache(
+      `assets-${author}-${campaign}-${type}-total`
+    );
+
+    if (!totalAssets) {
+      totalAssets = await prisma.assets.count({
+        where: {
+          author: author,
+          type: type,
+        },
+      });
+
+      setCache(
+        `assets-${author}-${campaign}-${type}-total`,
+        JSON.stringify(totalAssets)
+      );
+    } else {
+      totalAssets = JSON.parse(totalAssets);
+    }
+
+    let totalPage = Math.ceil(totalAssets / limit);
+
+    res.send({
+      assets: assets,
+      totalPage: totalPage,
+      nextPage: page + 1 > totalPage ? null : page + 1,
+    });
+    return;
+  } else if (author) {
     let assets = await getCache(`assets-${author}-${type}-${page}-${limit}`);
 
     if (!assets) {
@@ -106,6 +160,10 @@ assetRouter.get("/", async (req, res) => {
           type: type,
         },
       });
+
+      setCache(`assets-${author}-${type}-total`, JSON.stringify(totalAssets));
+    } else {
+      totalAssets = JSON.parse(totalAssets);
     }
 
     let totalPage = Math.ceil(totalAssets / limit);
@@ -149,6 +207,10 @@ assetRouter.get("/", async (req, res) => {
           type: type,
         },
       });
+
+      setCache(`assets-${campaign}-${type}-total`, JSON.stringify(totalAssets));
+    } else {
+      totalAssets = JSON.parse(totalAssets);
     }
 
     let totalPage = Math.ceil(totalAssets / limit);
