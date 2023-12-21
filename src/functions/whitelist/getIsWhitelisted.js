@@ -103,7 +103,7 @@ const getIsWhitelisted = async (walletAddress) => {
       console.log("token balance <= 0");
     }
 
-    res = { ...res, ...res2 };
+    res = res2 
     res = Object.values(res);
 
     for (let i = 0; i < res.length; i++) {
