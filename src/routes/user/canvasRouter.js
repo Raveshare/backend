@@ -82,22 +82,62 @@ canvasRouter.get("/", async (req, res) => {
   });
 });
 
+canvasRouter.get("/searchPublic", async (req, res) => {
+  try {
+    let searchString = req.query.tag;
+    const tagCache = await getCache(`tags_public_${searchString}`);
+    let canvasesMatchingTags;
+    if (!tagCache) {
+      canvasesMatchingTags = await prisma.canvases.findMany({
+        where: {
+          isPublic: true,
+          tags: {
+            hasSome: [searchString],
+          },
+        },
+      });
+
+      await setCache(
+        `tags_public_${searchString}`,
+        JSON.stringify(canvasesMatchingTags)
+      );
+    } else {
+      canvasesMatchingTags = JSON.parse(tagCache);
+    }
+    res.send({
+      assets: canvasesMatchingTags,
+    });
+  } catch (error) {
+    res.send(error.message);
+  }
+});
+
 canvasRouter.get("/search", async (req, res) => {
   try {
-    let searchString = "test";
-
-    const canvasesMatchingTags = await prisma.canvases.findMany({
-      where: {
-        tags: {
-          hasSome: [searchString],
+    let ownerId = req.user.user_id;
+    let searchString = req.query.tag;
+    // console.log(ownerId, searchString);
+    const tagCache = await getCache(`tags_${ownerId}_${searchString}`);
+    let canvasesMatchingTags;
+    if (!tagCache) {
+      canvasesMatchingTags = await prisma.canvases.findMany({
+        where: {
+          ownerId,
+          tags: {
+            hasSome: [searchString],
+          },
         },
-      },
+      });
+
+      await setCache(`tags_${ownerId}_${searchString}`, JSON.stringify(canvasesMatchingTags));
+    } else {
+      canvasesMatchingTags = JSON.parse(tagCache);
+    }
+    res.send({
+      assets: canvasesMatchingTags,
     });
-
-    console.log(canvasesMatchingTags);
-
-    res.send(canvasesMatchingTags);
   } catch (error) {
+    console.log(error);
     res.send(error.message);
   }
 });
