@@ -82,6 +82,26 @@ canvasRouter.get("/", async (req, res) => {
   });
 });
 
+canvasRouter.get("/search", async (req, res) => {
+  try {
+    let searchString = "test";
+
+    const canvasesMatchingTags = await prisma.canvases.findMany({
+      where: {
+        tags: {
+          hasSome: [searchString],
+        },
+      },
+    });
+
+    console.log(canvasesMatchingTags);
+
+    res.send(canvasesMatchingTags);
+  } catch (error) {
+    res.send(error.message);
+  }
+});
+
 canvasRouter.post("/create", async (req, res) => {
   let user_id = req.user.user_id;
   let canvasData = req.body.canvasData;
