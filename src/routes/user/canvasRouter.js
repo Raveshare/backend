@@ -151,6 +151,8 @@ canvasRouter.put("/update", async (req, res) => {
     });
 
     let canvas;
+
+    console.log(canvasData.tags);
     try {
       canvas = await prisma.canvases.update({
         where: {
@@ -159,6 +161,7 @@ canvasRouter.put("/update", async (req, res) => {
         },
         data: {
           data: canvasData.data,
+          tags: canvasData.tags,
           referredFrom: canvasData.referredFrom,
           assetsRecipientElementData: canvasData.assetsRecipientElementData,
         },
