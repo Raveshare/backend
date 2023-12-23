@@ -9,12 +9,13 @@ const jsonwebtoken = require("jsonwebtoken");
  */
 
 // if JWT is generated successfully, then cache the JWT for a day.
-function generateJwt(evm_address, solana_address, user_id) {
+function generateJwt(evm_address, solana_address, user_id, fid) {
   return jsonwebtoken.sign(
     {
       evm_address,
       solana_address,
       user_id,
+      fid,
     },
     process.env.JWT_SECRET_KEY,
     {
