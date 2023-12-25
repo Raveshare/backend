@@ -1,5 +1,6 @@
 const evmRouter = require("express").Router();
 const lensRouter = require("./lensRouter");
+const farcasterRouter = require("./farcasterRouter");
 const { verifyEthSignature } = require("../../utils/auth/verifySignature");
 const generateJwt = require("../../utils/auth/generateJwt");
 const auth = require("../../middleware/auth/auth");
@@ -84,7 +85,8 @@ evmRouter.post("/", async (req, res) => {
       let jwt = generateJwt(
         evm_address,
         ownerData.solana_address ? ownerData.solana_address : "",
-        ownerData.id
+        ownerData.id,
+        ownerData.farcaster_id
       );
 
       // to check for lens_handle if lens_auth_token are present.
@@ -138,5 +140,6 @@ evmRouter.post("/", async (req, res) => {
 });
 
 evmRouter.use("/lens", auth, lensRouter);
+evmRouter.use("/farcaster", auth, farcasterRouter);
 
 module.exports = evmRouter;

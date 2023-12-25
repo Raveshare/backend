@@ -4,6 +4,7 @@ const prisma = require("../../prisma");
 
 const uploadToLens = require("../../functions/share/uploadToLens");
 const uploadToSolana = require("../../functions/share/uploadToSolana");
+const uploadToFarcaster = require("../../functions/share/uploadToFarcaster");
 const updateImagePreview = require("../../functions/image/updateImagePreview");
 const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
 const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForPublication");
@@ -316,8 +317,9 @@ canvasRouter.post("/publish", async (req, res) => {
   }
 
   if (canvas.ownerId != user_id) {
-    res.status(401).send("Unauthorized");
-    return;
+    return res.status(401).send({
+      message: "Unauthorized",
+    });
   }
 
   let url = canvas.ipfsLink;
@@ -374,6 +376,21 @@ canvasRouter.post("/publish", async (req, res) => {
       });
       return;
     }
+  } else if (platform == "farcaster") {
+    let postMetadata = {
+      name: name,
+      content: content,
+      image: url,
+    };
+
+    resp = await uploadToFarcaster(postMetadata, owner);
+
+    if (resp.status == 500) {
+      res.status(500).send({
+        message: resp.error,
+      });
+      return;
+    }
   }
 
   res.send(resp);
@@ -400,7 +417,9 @@ canvasRouter.delete("/delete/:id", async (req, res) => {
   }
 
   if (canvas?.ownerId != user_id) {
-    res.status(401).send("Unauthorized");
+    res.status(401).send({
+      message: "Unauthorized",
+    });
     return;
   }
 
