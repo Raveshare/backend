@@ -53,6 +53,8 @@ const getPolygonNFTs = async (user_id, evm_address) => {
     )
       continue;
 
+    if (!(nfts[i].metadata?.imageOriginal || nfts[i].image)) continue;
+
     if (
       (nfts[i].metadata?.imageOriginal || nfts[i].image).startsWith(
         "data:image/svg+xml"
