@@ -37,7 +37,6 @@ const getBaseNFT = async (user_id, evm_address) => {
 
   for (let i = 0; i < nfts.length; i++) {
     nfts[i] = nfts[i].token;
-    if (!nfts[i].image) continue;
     if (
       nfts[i].name?.includes("USDC") ||
       nfts[i].name?.includes("USDT") ||
