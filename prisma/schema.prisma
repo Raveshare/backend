@@ -157,7 +157,7 @@ model tasks {
   campaign       String?          @db.VarChar(255)
   locked         Boolean?         @default(true)
   tag            String?          @db.VarChar(255)
-  group          String?          @db.VarChar(255)
+  groupId          String?          @db.VarChar(255)
   taskIdInGroup  Int?             @default(0)
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
