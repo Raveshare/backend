@@ -1,6 +1,11 @@
 const farcasterRouter = require("express").Router();
 const axios = require("axios");
 const prisma = require("../../prisma");
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
 
 // checks if user has registered farcaster
 farcasterRouter.get("/check", async (req, res) => {
@@ -43,9 +48,16 @@ farcasterRouter.get("/check", async (req, res) => {
       },
     });
 
+    const ownerCache = JSON.parse(await getCache(`user_${user_id}`));
+    // console.log("ownerCache", ownerCache)
+    ownerCache?.farcaster_signer_uuid
+      ? ""
+      : await deleteCache(`user_${user_id}`);
+
     if (response.data?.status === "approved") {
       res.status(200).json({ message: true });
     } else {
+      await deleteCache(`user_${user_id}`);
       res.status(404).json({ message: false });
     }
   } catch (error) {
@@ -70,6 +82,7 @@ farcasterRouter.post("/register", async (req, res) => {
     return;
   }
   try {
+    const ownerCache = await getCache(`user_${user_id}`);
     await prisma.owners.update({
       where: {
         id: user_id,
@@ -79,13 +92,17 @@ farcasterRouter.post("/register", async (req, res) => {
         farcaster_id,
       },
     });
+    if (ownerCache) {
+      await deleteCache(`user_${user_id}`);
+      await setCache(`user_${user_id}`, JSON.stringify(ownerCache));
+    }
 
     res.status(200).send({
       message: "Successfully registered",
     });
   } catch (error) {
     res.status(500).send({
-      message: error
+      message: error,
     });
   }
 });
