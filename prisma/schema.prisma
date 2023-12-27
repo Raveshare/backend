@@ -37,6 +37,7 @@ model canvases {
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   assetsRecipientElementData Json[]   @default([])
+  tags                       String[] @default([]) @db.VarChar(255)
   ownerId                    Int
   owner                      owners   @relation(fields: [ownerId], references: [id])
 }
@@ -130,6 +131,7 @@ model templates {
   data      Json     @db.Json
   name      String   @db.VarChar(255)
   image     String   @db.VarChar(255)
+  tags      String[] @default([]) @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
@@ -191,6 +193,7 @@ view public_canvas_templates {
   allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   assetsRecipientElementData Json[]   @default([])
+  tags                       String[] @default([]) @db.VarChar(255)
   ownerId                    Int
   owner                      owners   @relation(fields: [ownerId], references: [id])
 }
@@ -213,6 +216,7 @@ view template_view {
   data      Json?     @db.Json
   name      String?   @db.VarChar(255)
   image     String?   @db.VarChar(255)
+  tags      String[]  @default([]) @db.VarChar(255)
   createdAt DateTime? @db.Timestamptz(6)
   updatedAt DateTime? @db.Timestamptz(6)
 }
