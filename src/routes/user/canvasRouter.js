@@ -82,6 +82,66 @@ canvasRouter.get("/", async (req, res) => {
   });
 });
 
+canvasRouter.get("/searchPublic", async (req, res) => {
+  try {
+    let searchString = req.query.tag;
+    const tagCache = await getCache(`tags_public_${searchString}`);
+    let canvasesMatchingTags;
+    if (!tagCache) {
+      canvasesMatchingTags = await prisma.canvases.findMany({
+        where: {
+          isPublic: true,
+          tags: {
+            hasSome: [searchString],
+          },
+        },
+      });
+
+      await setCache(
+        `tags_public_${searchString}`,
+        JSON.stringify(canvasesMatchingTags)
+      );
+    } else {
+      canvasesMatchingTags = JSON.parse(tagCache);
+    }
+    res.send({
+      assets: canvasesMatchingTags,
+    });
+  } catch (error) {
+    res.send(error.message);
+  }
+});
+
+canvasRouter.get("/search", async (req, res) => {
+  try {
+    let ownerId = req.user.user_id;
+    let searchString = req.query.tag;
+    // console.log(ownerId, searchString);
+    const tagCache = await getCache(`tags_${ownerId}_${searchString}`);
+    let canvasesMatchingTags;
+    if (!tagCache) {
+      canvasesMatchingTags = await prisma.canvases.findMany({
+        where: {
+          ownerId,
+          tags: {
+            hasSome: [searchString],
+          },
+        },
+      });
+
+      await setCache(`tags_${ownerId}_${searchString}`, JSON.stringify(canvasesMatchingTags));
+    } else {
+      canvasesMatchingTags = JSON.parse(tagCache);
+    }
+    res.send({
+      assets: canvasesMatchingTags,
+    });
+  } catch (error) {
+    console.log(error);
+    res.send(error.message);
+  }
+});
+
 canvasRouter.post("/create", async (req, res) => {
   let user_id = req.user.user_id;
   let canvasData = req.body.canvasData;
@@ -151,6 +211,8 @@ canvasRouter.put("/update", async (req, res) => {
     });
 
     let canvas;
+
+    console.log(canvasData.tags);
     try {
       canvas = await prisma.canvases.update({
         where: {
@@ -159,6 +221,7 @@ canvasRouter.put("/update", async (req, res) => {
         },
         data: {
           data: canvasData.data,
+          tags: canvasData.tags,
           referredFrom: canvasData.referredFrom,
           assetsRecipientElementData: canvasData.assetsRecipientElementData,
         },
