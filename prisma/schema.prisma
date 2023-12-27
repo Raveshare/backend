@@ -89,7 +89,7 @@ model nftData {
 
 model owners {
   mail                    String?                   @db.VarChar(255)
-  farcaster_signer_uuid    String?                 @db.VarChar(255)
+  farcaster_signer_uuid   String?                   @db.VarChar(255)
   farcaster_id            String?                   @db.VarChar(255)
   lens_auth_token         Json?
   twitter_auth_token      Json?
@@ -151,12 +151,14 @@ model user_collected_posts {
 
 model tasks {
   id             Int              @id @default(autoincrement())
-  name          String           @db.VarChar(255)
+  name           String           @db.VarChar(255)
   description    String           @db.VarChar(255)
   amount         Int              @default(0)
   campaign       String?          @db.VarChar(255)
   locked         Boolean?         @default(true)
-  tag           String?          @db.VarChar(255)
+  tag            String?          @db.VarChar(255)
+  group          String?          @db.VarChar(255)
+  taskIdInGroup  Int?             @default(0)
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
   points_history points_history[]
