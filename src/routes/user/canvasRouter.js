@@ -381,7 +381,7 @@ canvasRouter.post("/publish", async (req, res) => {
     let postMetadata = {
       name: name,
       content: content,
-      image: zoraMintLink ? url : canvas.imageLink,
+      image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
     };
 
     // console.log("TEST", url, canvas.imageLink)

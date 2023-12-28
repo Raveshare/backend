@@ -35,6 +35,12 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
       },
     });
 
+    console.log("data:", {
+      signer_uuid,
+      text: content,
+      embeds,
+    });
+
     return {
       status: response.status === 200 ? 200 : 500,
       txHash: response.data?.cast?.hash,
