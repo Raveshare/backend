@@ -2,16 +2,12 @@ const { default: axios } = require("axios");
 const prisma = require("../../prisma");
 
 const uploadToFarcaster = async (postMetadata, ownerData) => {
-  console.log(ownerData)
+  console.log(ownerData);
   let { image, content } = postMetadata;
   // [] --> [{url: "https://example.com/image.png"}]
   let embeds = image.map((url) => ({ url }));
 
-  console.log("embeds", embeds);
-
   let signer_uuid = ownerData.farcaster_signer_uuid;
-
-  console.log("signer_uuid", signer_uuid);
 
   if (!signer_uuid) {
     return {
@@ -38,13 +34,13 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
     return {
       status: response.status === 200 ? 200 : 500,
       txHash: response.data?.cast?.hash,
-      error : response.data?.message
-    }
+      error: response.data?.message,
+    };
   } catch (error) {
     return {
       error: error,
       status: 500,
-    }
+    };
   }
 };
 
