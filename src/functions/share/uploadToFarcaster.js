@@ -5,16 +5,11 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
   console.log(ownerData);
   let { image, content } = postMetadata;
   // [] --> [{url: "https://example.com/image.png"}]
-  let embeds = null;
-  image ? (embeds = image.map((url) => ({ url }))) : null;
+  let embeds = image.map((url) => ({ url }));
+
+  console.log("embeds", embeds);
 
   let signer_uuid = ownerData.farcaster_signer_uuid;
-  let data;
-  if (embeds) {
-    data = { signer_uuid, text: content, embeds };
-  } else {
-    data = { signer_uuid, text: content };
-  }
 
   console.log("signer_uuid", signer_uuid);
 
@@ -24,8 +19,6 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
       status: 500,
     };
   }
-  console.log("data", data);
-
   try {
     const response = await axios({
       method: "POST",
@@ -35,7 +28,11 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
         api_key: process.env.NEYNAR_API_KEY,
         "content-type": "application/json",
       },
-      data,
+      data: {
+        signer_uuid,
+        text: content,
+        embeds,
+      },
     });
 
     return {

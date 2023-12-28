@@ -381,8 +381,10 @@ canvasRouter.post("/publish", async (req, res) => {
     let postMetadata = {
       name: name,
       content: content,
-      image: zoraMintLink ? url : null,
+      image: zoraMintLink ? url : canvas.imageLink,
     };
+
+    // console.log("TEST", url, canvas.imageLink)
 
     resp = await uploadToFarcaster(postMetadata, owner);
 
