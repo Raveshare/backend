@@ -7,11 +7,7 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
   // [] --> [{url: "https://example.com/image.png"}]
   let embeds = image.map((url) => ({ url }));
 
-  console.log("embeds", embeds);
-
   let signer_uuid = ownerData.farcaster_signer_uuid;
-
-  console.log("signer_uuid", signer_uuid);
 
   if (!signer_uuid) {
     return {
@@ -33,12 +29,6 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
         text: content,
         embeds,
       },
-    });
-
-    console.log("data:", {
-      signer_uuid,
-      text: content,
-      embeds,
     });
 
     return {

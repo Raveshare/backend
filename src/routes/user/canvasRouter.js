@@ -384,8 +384,6 @@ canvasRouter.post("/publish", async (req, res) => {
       image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
     };
 
-    // console.log("TEST", url, canvas.imageLink)
-
     resp = await uploadToFarcaster(postMetadata, owner);
 
     if (resp.status == 500) {
