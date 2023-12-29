@@ -58,7 +58,7 @@ farcasterRouter.get("/check", async (req, res) => {
       res.status(200).json({ message: true });
     } else {
       await deleteCache(`user_${user_id}`);
-      res.status(404).json({ message: false });
+      res.status(200).json({ message: false });
     }
   } catch (error) {
     return res.status(500).send({
