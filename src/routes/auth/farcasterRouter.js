@@ -24,14 +24,14 @@ farcasterRouter.get("/check", async (req, res) => {
     });
 
     if (!ownerData)
-      return res.status(404).send({
+      return res.status(200).send({
         message: "Unauthorized",
       });
 
     signer_uuid = ownerData.farcaster_signer_uuid;
 
     if (!signer_uuid) {
-      return res.status(404).send({
+      return res.status(200).send({
         message: false,
       });
     }
