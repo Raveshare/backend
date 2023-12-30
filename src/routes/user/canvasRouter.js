@@ -440,11 +440,13 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
   } else if (platform == "farcaster") {
-    const zoraMintLink = canvasParams?.zoraMintLink;
+    let zoraMintLink = canvasParams?.zoraMintLink;
+    let channelId = canvasParams?.channelId; 
     let postMetadata = {
       name: name,
       content: content,
       image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
+      channelId: channelId,
     };
 
     resp = await uploadToFarcaster(postMetadata, owner);

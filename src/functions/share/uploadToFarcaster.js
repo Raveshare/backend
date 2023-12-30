@@ -31,6 +31,7 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
         signer_uuid,
         text: content,
         embeds,
+        channel_id : postMetadata.channelId
       },
     });
 
