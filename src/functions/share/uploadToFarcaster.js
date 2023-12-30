@@ -1,10 +1,11 @@
 const { default: axios } = require("axios");
 const prisma = require("../../prisma");
+const canvasPosted = require("../events/canvasPosted.event");
 
 const uploadToFarcaster = async (postMetadata, ownerData) => {
   console.log(ownerData);
   let { image, content } = postMetadata;
-  // [] --> [{url: "https://example.com/image.png"}]
+
   let embeds = image.map((url) => ({ url }));
 
   let signer_uuid = ownerData.farcaster_signer_uuid;
@@ -16,8 +17,7 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
     };
   }
   try {
-
-    content = content + "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspost  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤"
+    content = content + "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspost  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤";
 
     const response = await axios({
       method: "POST",
@@ -31,9 +31,21 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
         signer_uuid,
         text: content,
         embeds,
-        channel_id : postMetadata.channelId
+        channel_id: postMetadata.channelId,
       },
     });
+
+    if (response.status === 200) {
+      await canvasPosted(
+        postMetadata.canvasId,
+        ownerData.id,
+        "farcaster",
+        postMetadata.scheduledAt || new Date(Date.now()),
+        response.data?.cast?.hash,
+        postMetadata
+      );
+
+    }
 
     return {
       status: response.status === 200 ? 200 : 500,

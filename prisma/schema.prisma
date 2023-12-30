@@ -23,23 +23,24 @@ model assets {
 }
 
 model canvases {
-  id                         Int      @id @default(autoincrement())
+  id                         Int                       @id @default(autoincrement())
   data                       Json
   params                     Json?
-  isPublic                   Boolean  @default(false)
-  ipfsLink                   String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  imageLink                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  createdAt                  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
-  ownerAddress               String?  @db.VarChar(255)
-  referredFrom               String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  isGated                    Boolean? @default(false)
-  allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  assetsRecipientElementData Json[]   @default([])
-  tags                       String[] @default([]) @db.VarChar(255)
+  isPublic                   Boolean                   @default(false)
+  ipfsLink                   String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  imageLink                  String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  createdAt                  DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime                  @updatedAt @db.Timestamptz(6)
+  ownerAddress               String?                   @db.VarChar(255)
+  referredFrom               String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  isGated                    Boolean?                  @default(false)
+  allowList                  String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  gatedWith                  String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  assetsRecipientElementData Json[]                    @default([])
+  tags                       String[]                  @default([]) @db.VarChar(255)
   ownerId                    Int
-  owner                      owners   @relation(fields: [ownerId], references: [id])
+  owner                      owners                    @relation(fields: [ownerId], references: [id])
+  user_published_canvases    user_published_canvases[]
 }
 
 model collections {
@@ -111,6 +112,7 @@ model owners {
   points_history          points_history[]
   socials                 socials[]
   referral                referral[]
+  user_published_canvases user_published_canvases[]
 }
 
 model socials {
@@ -159,7 +161,7 @@ model tasks {
   campaign       String?          @db.VarChar(255)
   locked         Boolean?         @default(true)
   tag            String?          @db.VarChar(255)
-  groupId          String?          @db.VarChar(255)
+  groupId        String?          @db.VarChar(255)
   taskIdInGroup  Int?             @default(0)
   createdAt      DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
@@ -209,6 +211,20 @@ model referral {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
   owner     owners   @relation(fields: [ownerId], references: [id])
+}
+
+model user_published_canvases {
+  id          Int       @id @default(autoincrement())
+  canvasId    Int?
+  ownerId     Int?
+  platform    String    @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  scheduledAt DateTime? @db.Timestamptz(6)
+  txHash      String?   @db.VarChar(255)
+  metadata    Json?     @db.Json
+
+  owner  owners?   @relation(fields: [ownerId], references: [id])
+  canvas canvases? @relation(fields: [canvasId], references: [id])
 }
 
 view template_view {

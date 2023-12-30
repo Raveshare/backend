@@ -1,8 +1,9 @@
 const postOnChain = require("../../lens/api-v2").postOnChain;
-const {uploadMetadataToIpfs} = require("../uploadToLighthouse")
+const { uploadMetadataToIpfs } = require("../uploadToLighthouse");
 const getProfileAddressFromHandle =
   require("../../lens/api-v2").getProfileAddressFromHandle;
 const { encodeAbiParameters } = require("viem");
+const canvasPosted = require("../events/canvasPosted.event");
 
 const uploadToLens = async (postMetadata, ownerData, params) => {
   try {
@@ -48,6 +49,15 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
       refreshToken,
       ownerData.evm_address,
       ownerData.id
+    );
+
+    await canvasPosted(
+      postMetadata.canvasId,
+      ownerData.id,
+      "lens",
+      postMetadata.scheduledAt || Date.now(),
+      result.txHash,
+      postMetadata
     );
 
     return result;

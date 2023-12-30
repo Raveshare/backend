@@ -6,14 +6,15 @@ const uploadToLens = require("../../functions/share/uploadToLens");
 const uploadToSolana = require("../../functions/share/uploadToSolana");
 const uploadToFarcaster = require("../../functions/share/uploadToFarcaster");
 const updateImagePreview = require("../../functions/image/updateImagePreview");
-const updateCollectsForPublication = require("../../functions/updateCollectsForPublication");
 const updateNFTOwnerForPublication = require("../../functions/updateNFTOwnerForPublication");
 
 const _ = require("lodash");
 
+// events for canvas
 const canvasCreated = require("../../functions/events/canvasCreated.event");
 const canvasPostedToLens = require("../../functions/events/canvasPostedToLens.event");
 const canvasMadePublic = require("../../functions/events/canvasMadePublic.event");
+const canvasPostedToFarcaster = require("../../functions/events/canvasPostedToFarcaster.event");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
@@ -183,8 +184,8 @@ canvasRouter.post("/create", async (req, res) => {
       message: "Canvas Created",
       id: canvas.id,
     });
-    // We are already using user_id here for canvasCreated
-    canvasCreated(canvas.id, user_id);
+
+    await canvasCreated(canvas.id, user_id);
   } catch (error) {
     res.status(500).send(`Error: ${error}`);
     sendError(`${error} - ${user_id} - /create`);
@@ -312,8 +313,7 @@ canvasRouter.put("/visibility", async (req, res) => {
     },
   });
 
-  // Changed to user_id here from req.user.address
-  canvasMadePublic(canvasId, user_id);
+  await canvasMadePublic(canvasId, user_id);
   await deleteCacheMatchPattern(`canvases_${user_id}`);
   await deleteCacheMatchPattern(`public_templates`);
 
@@ -407,8 +407,7 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
 
-    // Already using user_id here
-    canvasPostedToLens(canvasId, user_id);
+    await canvasPostedToLens(canvasId, user_id);
   } else if (platform == "solana-cnft") {
     let postMetadata = {
       name: name,
@@ -447,9 +446,11 @@ canvasRouter.post("/publish", async (req, res) => {
       content: content,
       image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
       channelId: channelId,
+      canvasId : canvasId
     };
 
     resp = await uploadToFarcaster(postMetadata, owner);
+    await canvasPostedToFarcaster(canvasId, user_id);
 
     if (resp.status == 500) {
       res.status(500).send({

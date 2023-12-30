@@ -8,6 +8,7 @@ const LENSPOST_WALLET = process.env.LENSPOST_SOLANA_WALLET;
 const wallet = Keypair.fromSecretKey(bs58.decode(LENSPOST_WALLET));
 
 async function mintMasterEdition(masterEditionSettings, payer) {
+  payer = "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs";
   const candyMachineSettings = {
     itemsAvailable: toBigNumber(masterEditionSettings.itemsAvailable), // Collection Size: 3
     sellerFeeBasisPoints: masterEditionSettings.sellerFeeBasisPoints, // 10% Royalties on Collection
@@ -32,6 +33,9 @@ async function mintMasterEdition(masterEditionSettings, payer) {
 
   let tx = txBuilder.toTransaction(blockhashWithExpiryBlockHeight);
   tx.feePayer = new PublicKey(payer);
+  tx.partialSign(wallet);
+
+  console.log(tx);
 
   return {
     tx: tx
