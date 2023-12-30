@@ -440,7 +440,7 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
   } else if (platform == "farcaster") {
-    const zoraMintLink = canvasParams.zoraMintLink;
+    const zoraMintLink = canvasParams?.zoraMintLink;
     let postMetadata = {
       name: name,
       content: content,

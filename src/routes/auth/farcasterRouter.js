@@ -24,14 +24,14 @@ farcasterRouter.get("/check", async (req, res) => {
     });
 
     if (!ownerData)
-      return res.status(404).send({
+      return res.status(200).send({
         message: "Unauthorized",
       });
 
     signer_uuid = ownerData.farcaster_signer_uuid;
 
     if (!signer_uuid) {
-      return res.status(404).send({
+      return res.status(200).send({
         message: false,
       });
     }
@@ -58,7 +58,7 @@ farcasterRouter.get("/check", async (req, res) => {
       res.status(200).json({ message: true });
     } else {
       await deleteCache(`user_${user_id}`);
-      res.status(404).json({ message: false });
+      res.status(200).json({ message: false });
     }
   } catch (error) {
     return res.status(500).send({
