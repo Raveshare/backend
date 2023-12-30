@@ -2,23 +2,26 @@ const utilRouter = require("express").Router();
 const uploadImageToS3 = require("../../functions/image/uploadImageToS3");
 const checkProfileManager = require("../../lens/api-v2").checkProfileManager;
 const { removeBackgroundFromImageUrl } = require("remove.bg");
-const { getIsWhitelisted } = require("../../functions/whitelist/getIsWhitelisted");
+const {
+  getIsWhitelisted,
+} = require("../../functions/whitelist/getIsWhitelisted");
 const addToWhitelist = require("../../functions/whitelist/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
-const { uploadMediaToIpfs} = require("../../functions/uploadToLighthouse");
+const { uploadMediaToIpfs } = require("../../functions/uploadToLighthouse");
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 const {
   canUseRemoveBG,
   usedRemoveBG,
 } = require("../../functions/points/removeBG");
-const {invitedUser} = require("../../functions/points/inviteUser");
+const { invitedUser } = require("../../functions/points/inviteUser");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
 const ipfs_auth =
   "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 const { v4: uuid } = require("uuid");
+const axios = require("axios");
 
 const getIpfsClient = async () => {
   const { create } = await import("ipfs-http-client");
@@ -74,6 +77,23 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
     console.log(err);
     return res.send({ error: "Error uploading image" });
   }
+});
+
+utilRouter.get("/search-channel", async (req, res) => {
+  let { channel } = req.query;
+
+  const response = await axios({
+    method: "get",
+    url: "https://api.neynar.com/v2/farcaster/channel/search?q=" + channel,
+    headers: {
+      accept: "application/json",
+      api_key: process.env.NEYNAR_API_KEY,
+    },
+  });
+
+  res.send({
+    message: response.data?.channels || [],
+  });
 });
 
 utilRouter.post("/upload-image", auth, async (req, res) => {
@@ -147,7 +167,6 @@ utilRouter.get("/whitelisted", async (req, res) => {
 
   if (!isWhitelistedCache) {
     let isWhitelisted = await getIsWhitelisted(wallet);
-
     await setCache(`isWhitelisted_${wallet}`, isWhitelisted ? "true" : "false");
     res.send({
       status: "success",
