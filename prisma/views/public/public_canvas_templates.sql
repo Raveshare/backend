@@ -11,7 +11,10 @@ SELECT
   canvases."referredFrom",
   canvases."isGated",
   canvases."allowList",
-  canvases."gatedWith"
+  canvases."gatedWith",
+  canvases."tags",
+  canvases."assetsRecipientElementData"
+  canvases."ownerId"
 FROM
   canvases
 WHERE

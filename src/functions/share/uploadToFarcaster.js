@@ -16,6 +16,9 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
     };
   }
   try {
+
+    content = content + "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspost  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤"
+
     const response = await axios({
       method: "POST",
       url: "https://api.neynar.com/v2/farcaster/cast",
