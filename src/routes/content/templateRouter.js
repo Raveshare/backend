@@ -48,109 +48,116 @@ templateRouter.get("/", async (req, res) => {
 });
 
 templateRouter.get("/user", async (req, res) => {
-  let evm_address = req.user.evm_address;
-  let user_id = req.user.user_id;
-  let page = req.query.page;
-  page = parseInt(page);
+  try {
+    console.log(req.user);
+    // let evm_address = req.user.evm_address;
+    let user_id = req.user.user_id;
+    let page = req.query.page;
+    page = parseInt(page);
 
-  let limit = req.query.limit || 10;
+    let limit = req.query.limit || 10;
 
-  if (!page) page = 1;
+    if (!page) page = 1;
 
-  offset = limit * (page - 1);
+    offset = limit * (page - 1);
 
-  let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
-  if (!publicTemplates) {
-    publicTemplates = await prisma.public_canvas_templates.findMany({
+    let publicTemplates = await getCache(`public_templates_${page}_${limit}`);
+    if (!publicTemplates) {
+      publicTemplates = await prisma.public_canvas_templates.findMany({
+        where: {
+          isPublic: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        skip: offset,
+        take: limit,
+      });
+      await setCache(
+        `public_templates_${page}_${limit}`,
+        JSON.stringify(publicTemplates)
+      );
+    } else {
+      publicTemplates = JSON.parse(publicTemplates);
+    }
+
+    let copy = publicTemplates;
+
+    let totalAssets = await prisma.public_canvas_templates.count({
       where: {
         isPublic: true,
       },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      skip: offset,
-      take: limit,
     });
-    await setCache(
-      `public_templates_${page}_${limit}`,
-      JSON.stringify(publicTemplates)
-    );
-  } else {
-    publicTemplates = JSON.parse(publicTemplates);
-  }
 
-  let copy = publicTemplates;
+    let totalPage = Math.ceil(totalAssets / limit);
 
-  let totalAssets = await prisma.public_canvas_templates.count({
-    where: {
-      isPublic: true,
-    },
-  });
+    let nextPage = page + 1 > totalPage ? null : page + 1;
 
-  let totalPage = Math.ceil(totalAssets / limit);
+    let gatedWith = [];
+    let templateIds = [];
+    let canvasIds = [];
 
-  let nextPage = page + 1 > totalPage ? null : page + 1;
-
-  let gatedWith = [];
-  let templateIds = [];
-  let canvasIds = [];
-
-  for (let i = 0; i < publicTemplates.length; i++) {
-    if (publicTemplates[i].gatedWith) {
-      publicTemplates[i].gatedWith.forEach((gated) => {
-        if (gated.length < 20) {
-          gatedWith.push(gated);
-          templateIds.push(publicTemplates[i].id);
-        }
-      });
-    } else {
-      gatedWith.push(null);
-      templateIds.push(publicTemplates[i].id);
-    }
-  }
-
-  let owner = await prisma.owners.findUnique({
-    where: {
-      id: user_id,
-    },
-  });
-
-  let hasCollectedPost = [];
-
-  if (!owner.lens_auth_token) {
-    hasCollectedPost = Array(publicTemplates.length).fill(false);
-  } else {
-    hasCollectedPost = await hasCollected(
-      user_id,
-      gatedWith,
-      owner.lens_auth_token.accessToken,
-      owner.lens_auth_token.refreshToken
-    );
-  }
-  for (let i = 0; i < publicTemplates.length; i++) {
-    if (templateIds.includes(publicTemplates[i].id)) {
-      for (let j = 0; j < templateIds.length; j++) {
-        if (publicTemplates[i].id === templateIds[j]) {
-          if (!hasCollectedPost[j]) {
-            publicTemplates[i].data = {};
-            publicTemplates[i].allowList = [];
-            // hasActed = true;
+    for (let i = 0; i < publicTemplates.length; i++) {
+      if (publicTemplates[i].gatedWith) {
+        publicTemplates[i].gatedWith.forEach((gated) => {
+          if (gated.length < 20) {
+            gatedWith.push(gated);
+            templateIds.push(publicTemplates[i].id);
           }
-          if (hasCollectedPost) {
-            publicTemplates[i].data = copy[i].data;
-            publicTemplates[i].allowList = copy[i].allowList;
-            break;
+        });
+      } else {
+        gatedWith.push(null);
+        templateIds.push(publicTemplates[i].id);
+      }
+    }
+
+    let owner = await prisma.owners.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
+
+    let hasCollectedPost = [];
+
+    if (!owner.lens_auth_token) {
+      hasCollectedPost = Array(publicTemplates.length).fill(false);
+    } else {
+      hasCollectedPost = await hasCollected(
+        user_id,
+        gatedWith,
+        owner.lens_auth_token.accessToken,
+        owner.lens_auth_token.refreshToken
+      );
+    }
+    for (let i = 0; i < publicTemplates.length; i++) {
+      if (templateIds.includes(publicTemplates[i].id)) {
+        for (let j = 0; j < templateIds.length; j++) {
+          if (publicTemplates[i].id === templateIds[j]) {
+            if (!hasCollectedPost[j]) {
+              publicTemplates[i].data = {};
+              publicTemplates[i].allowList = [];
+              // hasActed = true;
+            }
+            if (hasCollectedPost) {
+              publicTemplates[i].data = copy[i].data;
+              publicTemplates[i].allowList = copy[i].allowList;
+              break;
+            }
           }
         }
       }
     }
-  }
 
-  res.status(200).json({
-    assets: publicTemplates,
-    totalPage,
-    nextPage,
-  });
+    res.status(200).json({
+      assets: publicTemplates,
+      totalPage,
+      nextPage,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: `Invalid Server Error: ${error.message}`,
+    });
+  }
 });
 
 module.exports = templateRouter;

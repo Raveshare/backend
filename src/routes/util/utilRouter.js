@@ -276,7 +276,12 @@ utilRouter.post("/redeem-code", async (req, res) => {
       referralCode: code,
     },
   });
-
+  if (!referralCode) {
+    return res.send({
+      status: "error",
+      message: "Invalid code",
+    });
+  }
   if (referralCode.hasClaimed) {
     return res.send({
       status: "error",

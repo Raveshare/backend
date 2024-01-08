@@ -5,7 +5,11 @@ const createProfileManager = require("../../lens/api-v2").createProfileManager;
 const broadcastTx = require("../../lens/api-v2").broadcastTx;
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
 const { refreshToken: refreshAccessToken } = require("../../lens/api-v2");
-const { getCache, setCache , deleteCache } = require("../../functions/cache/handleCache");
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
 const prisma = require("../../prisma");
 
 lensRouter.post("/", async (req, res) => {
@@ -103,38 +107,44 @@ lensRouter.get("/set-profile-manager", async (req, res) => {
     });
     return;
   }
+  try {
+    let { lens_auth_token } = ownerData;
 
-  let { lens_auth_token } = ownerData;
+    let { accessToken, refreshToken } = lens_auth_token;
 
-  let { accessToken, refreshToken } = lens_auth_token;
+    let isAccessTokenValid = await checkAccessToken(accessToken);
 
-  let isAccessTokenValid = await checkAccessToken(accessToken);
+    if (!isAccessTokenValid) {
+      const tokens = await refreshAccessToken(refreshToken);
+      accessToken = tokens.accessToken;
+      refreshToken = tokens.refreshToken;
 
-  if (!isAccessTokenValid) {
-    const tokens = await refreshAccessToken(refreshToken);
-    accessToken = tokens.accessToken;
-    refreshToken = tokens.refreshToken;
+      const lens_auth_token = {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      };
 
-    const lens_auth_token = {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    };
+      ownerData.lens_auth_token = lens_auth_token;
 
-    ownerData.lens_auth_token = lens_auth_token;
+      await prisma.owners.update({
+        where: {
+          evm_address,
+        },
+        data: ownerData,
+      });
 
-    await prisma.owners.update({
-      where: {
-        evm_address,
-      },
-      data: ownerData,
+      await deleteCache(`user_${user_id}`);
+    }
+
+    let profileManagerTypedData = await createProfileManager(accessToken);
+
+    res.status(200).send(profileManagerTypedData);
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).send({
+      message: `Invalid Server Error: ${error.message}`,
     });
-
-    await deleteCache(`user_${user_id}`)
   }
-
-  let profileManagerTypedData = await createProfileManager(accessToken);
-
-  res.status(200).send(profileManagerTypedData);
 });
 
 lensRouter.post("/broadcast-tx", async (req, res) => {
