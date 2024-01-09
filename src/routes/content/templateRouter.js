@@ -1,13 +1,8 @@
 const templateRouter = require("express").Router();
 const prisma = require("../../prisma");
-const cache = require("../../middleware/cache");
 const hasCollected = require("../../lens/api-v2").hasCollected;
-const jsonwebtoken = require("jsonwebtoken");
-
 const checkAccessToken = require("../../lens/api-v2").checkAccessToken;
-
 const { getCache, setCache } = require("../../functions/cache/handleCache");
-const { CostExplorer } = require("aws-sdk");
 
 templateRouter.get("/", async (req, res) => {
   try {
@@ -51,8 +46,6 @@ templateRouter.get("/", async (req, res) => {
 
 templateRouter.get("/user", async (req, res) => {
   try {
-    console.log("line 52", req.user);
-    // let evm_address = req.user.evm_address;
     let user_id = req.user.user_id;
     let page = req.query.page;
     page = parseInt(page);
@@ -127,7 +120,6 @@ templateRouter.get("/user", async (req, res) => {
     if (!owner.lens_auth_token || !isAccessTokenValid) {
       hasCollectedPost = Array(publicTemplates.length).fill(false);
     } else {
-      // console.log("TEST", isAccessTokenValid);
       hasCollectedPost = await hasCollected(
         user_id,
         gatedWith,
@@ -142,7 +134,6 @@ templateRouter.get("/user", async (req, res) => {
             if (!hasCollectedPost[j]) {
               publicTemplates[i].data = {};
               publicTemplates[i].allowList = [];
-              // hasActed = true;
             }
             if (hasCollectedPost) {
               publicTemplates[i].data = copy[i].data;
