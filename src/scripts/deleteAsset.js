@@ -26,7 +26,7 @@ async function updateCanvas() {
 async function deleteNFT() {
   await prisma.nftData.deleteMany({
     where: {
-      ownerId: null,
+      ownerId: 56,
     },
   });
 }

@@ -13,18 +13,24 @@ const deleteDuplicates = async () => {
     });
     
     // Loop through the distinct values and delete rows with duplicate values.
-    for (const { imageURL } of distinctValues) {
+    for (const { chainId, address, tokenId } of distinctValues) {
       const rowsToDelete = await prisma.nftData.findMany({
         where: {
-          imageURL, // Filter rows with the same field value.
+          chainId,
+          address,
+          tokenId
         },
       });
+
+      console.log(rowsToDelete.length);
       
       if (rowsToDelete.length > 1) {
         // Delete all but one row with the same field value.
         await prisma.nftData.deleteMany({
           where: {
-            imageURL,
+            chainId,
+            tokenId,
+            address,
             NOT: {
               id: {
                 equals: rowsToDelete[0].id,
@@ -33,6 +39,8 @@ const deleteDuplicates = async () => {
           },
         });
       }
+
+      console.log("Rows with duplicate field values have been deleted.");
     }
     
 
