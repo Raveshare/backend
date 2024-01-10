@@ -103,8 +103,11 @@ const getLensParam = async (params) => {
         {
           type: "address",
         },
+        {
+          type: "string",
+        }
       ],
-      [zoraMintAddress]
+      [zoraMintAddress, "zora"]
     );
     (unknownOpenAction.address = process.env.MINT_TO_ZORA_OA),
       (unknownOpenAction.data = zoraMintAddress);
