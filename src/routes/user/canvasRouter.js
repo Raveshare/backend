@@ -15,6 +15,8 @@ const canvasCreated = require("../../functions/events/canvasCreated.event");
 const canvasPostedToLens = require("../../functions/events/canvasPostedToLens.event");
 const canvasMadePublic = require("../../functions/events/canvasMadePublic.event");
 const canvasPostedToFarcaster = require("../../functions/events/canvasPostedToFarcaster.event");
+const canvasPosted = require("../../functions/events/canvasPosted.event");
+const canvasMintedToXChain = require("../../functions/events/canvasMintedToXChain.event");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
@@ -130,7 +132,10 @@ canvasRouter.get("/search", async (req, res) => {
         },
       });
 
-      await setCache(`tags_${ownerId}_${searchString}`, JSON.stringify(canvasesMatchingTags));
+      await setCache(
+        `tags_${ownerId}_${searchString}`,
+        JSON.stringify(canvasesMatchingTags)
+      );
     } else {
       canvasesMatchingTags = JSON.parse(tagCache);
     }
@@ -440,13 +445,13 @@ canvasRouter.post("/publish", async (req, res) => {
     }
   } else if (platform == "farcaster") {
     let zoraMintLink = canvasParams?.zoraMintLink;
-    let channelId = canvasParams?.channelId; 
+    let channelId = canvasParams?.channelId;
     let postMetadata = {
       name: name,
       content: content,
       image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
       channelId: channelId,
-      canvasId : canvasId
+      canvasId: canvasId,
     };
 
     resp = await uploadToFarcaster(postMetadata, owner);
@@ -579,6 +584,26 @@ canvasRouter.post("/gate/:id", async (req, res) => {
 
   res.send({
     message: "Canvas Gated Successfully",
+  });
+});
+
+canvasRouter.post("/minted", async (req, res) => {
+  let canvasId = req.body.canvasId;
+  let mintLink = req.body.mintLink;
+  let platform = req.body.platform;
+  let userId = req.user.user_id;
+
+  await canvasPosted(
+    canvasId,
+    userId,
+    platform,
+    new Date(Date.now()),
+    mintLink
+  );
+  canvasMintedToXChain(canvasId,userId, platform)
+
+  res.send({
+    message: "Record created",
   });
 });
 

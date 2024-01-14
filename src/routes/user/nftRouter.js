@@ -173,6 +173,7 @@ nftRouter.get("/", async (req, res) => {
 
     let queriedNFTs;
     let queriedNFTsCache = await getCache(`nfts_${user_id}_${chainId}_${page}`);
+    // console.log(queriedNFTsCache);
     // let queriedNFTsCache = null;
     if (!queriedNFTsCache) {
       console.log("nfts cache not found");
