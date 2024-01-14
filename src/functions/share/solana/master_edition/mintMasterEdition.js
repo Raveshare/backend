@@ -1,50 +1,46 @@
-const { toBigNumber } = require("@metaplex-foundation/js");
-const metaplex = require("../../../../utils/metaplex");
-const { Keypair, PublicKey } = require("@solana/web3.js");
-const bs58 = require("bs58");
-const web3js = require("@solana/web3.js");
+const { default: axios } = require("axios");
 
-const LENSPOST_WALLET = process.env.LENSPOST_SOLANA_WALLET;
-const wallet = Keypair.fromSecretKey(bs58.decode(LENSPOST_WALLET));
+async function mintMasterEdition(postMetadata,solanaAddress,masterEditionSettings) {
+  // payer = "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs";
 
-async function mintMasterEdition(masterEditionSettings, payer) {
-  payer = "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs";
-  const candyMachineSettings = {
-    itemsAvailable: toBigNumber(masterEditionSettings.itemsAvailable), // Collection Size: 3
-    sellerFeeBasisPoints: masterEditionSettings.sellerFeeBasisPoints, // 10% Royalties on Collection
+  let candyMachineSettings = JSON.stringify({
+    // network: "mainnet-beta",
+    network: "devnet",
+    wallet: "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs",
     symbol: masterEditionSettings.symbol,
-    maxEditionSupply: toBigNumber(masterEditionSettings.itemsAvailable), // 0 reproductions of each NFT allowed
-    isMutable: "false",
+    max_supply: masterEditionSettings.itemsAvailable,
+    royalty: masterEditionSettings.sellerFeeBasisPoints,
+    collection: "7KnYuwbcG3EDLBnpYTovGN1WjpB1WvvyNuMgjRezG33s",
+    items_available: masterEditionSettings.itemsAvailable,
+    amount: masterEditionSettings.amount,
     creators: masterEditionSettings.creators,
-    collection: {
-      address: new PublicKey("zahTJa64eLoisdEryax5PUq7jvaCZqAVh5D9zSQBuMT"), // Can replace with your own NFT or upload a new one
-      updateAuthority: wallet
+  });
+
+
+  console.log(candyMachineSettings);
+
+  // https://api.shyft.to/sol/v1/candy_machine/create
+
+  const url = "https://api.shyft.to/sol/v1/candy_machine/create";
+
+  try {
+  let res = await axios.post(url, candyMachineSettings, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.SHYFT_API_KEY,
     },
-  };
+  });
+  console.log(res.data);
+  return{
+    status: 200,
+    data: res.data.result.encoded_transaction,
+  }
+  } catch (err) {
+    // console.log(err);
+  }
 
-  const txBuilder = await metaplex
-    .candyMachines()
-    .builders()
-    .create(candyMachineSettings);
-
-  const blockhashWithExpiryBlockHeight = await metaplex
-    .rpc()
-    .getLatestBlockhash();
-
-  let tx = txBuilder.toTransaction(blockhashWithExpiryBlockHeight);
-  tx.feePayer = new PublicKey(payer);
-  tx.partialSign(wallet);
-
-  console.log(tx);
-
-  return {
-    tx: tx
-      .serialize({
-        requireAllSignatures: false,
-        verifySignatures: false,
-      })
-      .toString("base64"),
-  };
+  // console.log(res.data);
+  // console.log
 }
 
 module.exports = mintMasterEdition;
