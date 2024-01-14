@@ -1,7 +1,7 @@
 const url = process.env.HELIUS_RPC_URL;
 
 const mintCompressedNft = async (metadata, address, params) => {
-  
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -14,9 +14,9 @@ const mintCompressedNft = async (metadata, address, params) => {
       method: "mintCompressedNft",
       params: {
         name: metadata.name,
-        symbol: metadata.symbol || "",
+        symbol: metadata.symbol || "GM",
         owner: address,
-        collection: "CuFmd6yAt3LU9gfZyXcstSyPCFpvuDhiPTZKUJzZJhcj",
+        collection: "F8Bu1WqRQ9Dr8icggo9oDtEPdXazfYCbGnQjuA55t4yi",
         description: metadata.content
           ? metadata.content + " Made using @lenspost.xyz"
           : "This is created using @lenspostxyz",

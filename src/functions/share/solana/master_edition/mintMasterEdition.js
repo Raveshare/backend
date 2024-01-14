@@ -1,25 +1,18 @@
 const { default: axios } = require("axios");
 
 async function mintMasterEdition(postMetadata,solanaAddress,masterEditionSettings) {
-  // payer = "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs";
 
   let candyMachineSettings = JSON.stringify({
-    // network: "mainnet-beta",
-    network: "devnet",
-    wallet: "8aAi7EV7yyLuJEGtTNmfiZdPy6C5pZctf3D1P2b9P4Xs",
+    network: process.env.NODE_ENV === "production" ? "mainnet-beta" : "devnet",
+    wallet: solanaAddress,
     symbol: masterEditionSettings.symbol,
     max_supply: masterEditionSettings.itemsAvailable,
     royalty: masterEditionSettings.sellerFeeBasisPoints,
-    collection: "7KnYuwbcG3EDLBnpYTovGN1WjpB1WvvyNuMgjRezG33s",
+    collection: "F8Bu1WqRQ9Dr8icggo9oDtEPdXazfYCbGnQjuA55t4yi",
     items_available: masterEditionSettings.itemsAvailable,
     amount: masterEditionSettings.amount,
     creators: masterEditionSettings.creators,
   });
-
-
-  console.log(candyMachineSettings);
-
-  // https://api.shyft.to/sol/v1/candy_machine/create
 
   const url = "https://api.shyft.to/sol/v1/candy_machine/create";
 
@@ -36,11 +29,11 @@ async function mintMasterEdition(postMetadata,solanaAddress,masterEditionSetting
     data: res.data.result.encoded_transaction,
   }
   } catch (err) {
-    // console.log(err);
+    return{
+      status: 500,
+      data: err,
+    }
   }
-
-  // console.log(res.data);
-  // console.log
 }
 
 module.exports = mintMasterEdition;
