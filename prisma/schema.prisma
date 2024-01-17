@@ -218,6 +218,7 @@ model user_published_canvases {
   canvasId    Int?
   ownerId     Int?
   platform    String    @db.VarChar(255)
+  xChain String? @db.VarChar(255)
   createdAt   DateTime  @default(now()) @db.Timestamptz(6)
   scheduledAt DateTime? @db.Timestamptz(6)
   txHash      String?   @db.VarChar(255)

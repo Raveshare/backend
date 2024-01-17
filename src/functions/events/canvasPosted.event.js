@@ -4,6 +4,7 @@ const canvasPosted = async (
   canvasId,
   userId,
   platform,
+  xChain,
   scheduledAt,
   txHash,
   metadata
@@ -14,6 +15,7 @@ const canvasPosted = async (
         canvasId,
         ownerId: userId,
         platform,
+        xChain,
         scheduledAt,
         txHash,
         metadata,

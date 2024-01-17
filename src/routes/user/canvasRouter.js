@@ -591,16 +591,18 @@ canvasRouter.post("/minted", async (req, res) => {
   let canvasId = req.body.canvasId;
   let mintLink = req.body.mintLink;
   let platform = req.body.platform;
+  let xChain = req.body.chain;
   let userId = req.user.user_id;
 
   await canvasPosted(
     canvasId,
     userId,
     platform,
+    xChain,
     new Date(Date.now()),
     mintLink
   );
-  canvasMintedToXChain(canvasId,userId, platform)
+  canvasMintedToXChain(canvasId,userId, platform, xChain)
 
   res.send({
     message: "Record created",
