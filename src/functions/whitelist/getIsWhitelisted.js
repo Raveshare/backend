@@ -32,7 +32,9 @@ const poly_alchemy = new Alchemy(poly_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
-    let follow = await checkIfFollow(walletAddress);
+    let follow = false;
+    if (walletAddress.startsWith("0x"))
+      follow = await checkIfFollow(walletAddress);
 
     if (follow) {
       return true;
@@ -85,7 +87,7 @@ const getIsWhitelisted = async (walletAddress) => {
     if (walletWhitelisted.includes(walletAddressU)) {
       return true;
     }
-    
+
     let res2 = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
       "0x13015585932752A8e6Dc24bE6c07c420381AF53d",
     ]);
@@ -96,14 +98,14 @@ const getIsWhitelisted = async (walletAddress) => {
 
     let tokenBalance = res3.tokenBalances[0].tokenBalance;
     tokenBalance = parseInt(tokenBalance);
-    if(tokenBalance > 0) {
+    if (tokenBalance > 0) {
       console.log("token balance > 0");
       return true;
     } else {
       console.log("token balance <= 0");
     }
 
-    res = res2 
+    res = res2;
     res = Object.values(res);
 
     for (let i = 0; i < res.length; i++) {
