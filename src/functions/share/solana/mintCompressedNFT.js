@@ -16,7 +16,7 @@ const mintCompressedNft = async (metadata, address, params) => {
         name: metadata.name,
         symbol: metadata.symbol || "GM",
         owner: address,
-        collection: "F8Bu1WqRQ9Dr8icggo9oDtEPdXazfYCbGnQjuA55t4yi",
+        // collection: "F8Bu1WqRQ9Dr8icggo9oDtEPdXazfYCbGnQjuA55t4yi",
         description: metadata.content
           ? metadata.content + " Made using @lenspost.xyz"
           : "This is created using @lenspostxyz",
@@ -29,7 +29,7 @@ const mintCompressedNft = async (metadata, address, params) => {
         ],
         imageUrl: `https://gateway.pinata.cloud/ipfs/${metadata.image[0]}`,
         externalUrl: "https://www.lenspost.xyz",
-        sellerFeeBasisPoints: metadata.seller_fee_basis_points || 500,
+        sellerFeeBasisPoints: metadata.sellerFeeBasisPoints || 500,
       },
     }),
   });
