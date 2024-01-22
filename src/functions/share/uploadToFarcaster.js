@@ -40,11 +40,11 @@ const uploadToFarcaster = async (postMetadata, ownerData) => {
         postMetadata.canvasId,
         ownerData.id,
         "farcaster",
+        postMetadata.xChain || "",
         postMetadata.scheduledAt || new Date(Date.now()),
         response.data?.cast?.hash,
         postMetadata
       );
-
     }
 
     return {

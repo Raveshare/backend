@@ -400,6 +400,7 @@ canvasRouter.post("/publish", async (req, res) => {
       handle: owner.lens_handle,
       id: owner.id,
       image: url,
+      xChain : canvasParams?.xChain,
     };
 
     let referredFrom = canvas.referredFrom;
@@ -452,6 +453,7 @@ canvasRouter.post("/publish", async (req, res) => {
       image: zoraMintLink ? [zoraMintLink] : canvas.imageLink,
       channelId: channelId,
       canvasId: canvasId,
+      xChain : canvasParams?.xChain,
     };
 
     resp = await uploadToFarcaster(postMetadata, owner);

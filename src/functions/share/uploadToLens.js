@@ -55,6 +55,7 @@ const uploadToLens = async (postMetadata, ownerData, params) => {
       postMetadata.canvasId,
       ownerData.id,
       "lens",
+      postMetadata.xChain || "",
       postMetadata.scheduledAt || Date.now(),
       result.txHash,
       postMetadata
