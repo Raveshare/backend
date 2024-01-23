@@ -113,10 +113,12 @@ templateRouter.get("/user", async (req, res) => {
     });
 
     let hasCollectedPost = [];
-
-    let isAccessTokenValid = await checkAccessToken(
-      owner.lens_auth_token.accessToken
-    );
+    let isAccessTokenValid = false;
+    if (owner.lens_auth_token) {
+      isAccessTokenValid = await checkAccessToken(
+        owner.lens_auth_token.accessToken
+      );
+    }
     if (!owner.lens_auth_token || !isAccessTokenValid) {
       hasCollectedPost = Array(publicTemplates.length).fill(false);
     } else {
