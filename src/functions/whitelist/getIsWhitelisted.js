@@ -11,6 +11,11 @@ const poly_config = {
   network: Network.MATIC_MAINNET,
 };
 
+const base_config = {
+  apiKey: process.env.ALCHEMY_API_KEY,
+  network: Network.BASE_MAINNET,
+};
+
 const { createClient } = require("redis");
 
 const redis = createClient({
@@ -29,6 +34,7 @@ redis.connect();
 
 const eth_alchemy = new Alchemy(eth_config);
 const poly_alchemy = new Alchemy(poly_config);
+const base_alchemy = new Alchemy(base_config);
 
 const getIsWhitelisted = async (walletAddress) => {
   try {
@@ -96,6 +102,10 @@ const getIsWhitelisted = async (walletAddress) => {
       "0x41C21693e60FC1a5dBb7c50e54E7A6016aA44C99",
     ]);
 
+    let res4 = await base_alchemy.core.getTokenBalances(walletAddress, [
+      "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
+    ]);
+
     let tokenBalance = res3.tokenBalances[0].tokenBalance;
     tokenBalance = parseInt(tokenBalance);
     if (tokenBalance > 0) {
@@ -105,8 +115,16 @@ const getIsWhitelisted = async (walletAddress) => {
       console.log("token balance <= 0");
     }
 
-    res = res2;
-    res = Object.values(res);
+    tokenBalance = res4.tokenBalances[0].tokenBalance;
+    tokenBalance = parseInt(tokenBalance);
+    if (tokenBalance > 0) {
+      console.log("token balance > 0");
+      return true;
+    } else {
+      console.log("token balance <= 0");
+    }
+
+    let res = Object.values(res2);
 
     for (let i = 0; i < res.length; i++) {
       if (res[i]) {
