@@ -3,7 +3,7 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const { isEmpty } = require("lodash");
-const { deleteCache } = require("../functions/cache/handleCache");
+const { deleteCache } = require("../functions/cache/handleCache"); 
 
 const authenticateMutation = gql`
   mutation Authenticate($id: ChallengeId!, $signature: Signature!) {
@@ -521,6 +521,25 @@ async function inviteProfile(
   return
 }
 
+const inviteLeft = gql`
+  query Profile($profileRequest: ProfileRequest!) {
+    profile(request: $profileRequest) {
+      invitesLeft
+    }
+  }
+`;
+
+async function checkInviteLeft(handle) {
+  const variables = {
+    profileRequest: {
+      forHandle: handle,
+    },
+  };
+  let resp = await request(LENS_API_URL, inviteLeft, variables);
+
+  return resp.profile.invitesLeft;
+}
+
 module.exports = {
   getProfilesManagedByAddress,
   challenge,
@@ -536,4 +555,6 @@ module.exports = {
   postOnChain,
   hasCollected,
   inviteProfile,
+  checkInviteLeft,
 };
+

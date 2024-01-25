@@ -5,6 +5,7 @@ const dumpCanvas = require("../../scripts/dumpCanvas");
 const dumpAsset = require("../../scripts/dumpAsset");
 const {deleteNFT} = require("../../scripts/deleteAsset");
 const cleanCanvas = require("../../scripts/cleanCanvas");
+const sendInvite = require("../../scripts/sendInvite");
 const {updateCanvas} = require("../../scripts/deleteAsset");
 
 adminRouter.get("/deleteDuplicates", async (req, res) => {
@@ -34,6 +35,12 @@ adminRouter.post("/dumpAsset", async (req, res) => {
 adminRouter.delete("/deleteNFT", async (req, res) => {
   await updateCanvas();
   res.send("NFT deleted");
+});
+
+adminRouter.get("/sendInvite", async (req, res) => {
+  // console.log("hey");
+  const data = await sendInvite(req, res);
+  // res.send(data);
 });
 
 module.exports = adminRouter;
