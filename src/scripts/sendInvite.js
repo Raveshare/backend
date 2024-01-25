@@ -38,11 +38,6 @@ async function sendInvite(req, res) {
     });
     return;
   }
-
-  res.status(200).send({
-    status: "success",
-    data: data,
-  });
 }
 
 module.exports = sendInvite;

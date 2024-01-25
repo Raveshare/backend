@@ -3,7 +3,7 @@ const prisma = require("../prisma");
 const LENS_API_URL = process.env.LENS_API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const { isEmpty } = require("lodash");
-const { deleteCache } = require("../functions/cache/handleCache"); 
+const { deleteCache } = require("../functions/cache/handleCache");
 
 const authenticateMutation = gql`
   mutation Authenticate($id: ChallengeId!, $signature: Signature!) {
@@ -481,7 +481,7 @@ async function inviteProfile(
   refreshAccessToken,
   evmAddress,
   user_id,
-  invitedAddress,
+  invitedAddress
 ) {
   const variables = {
     request: {
@@ -518,7 +518,7 @@ async function inviteProfile(
     Origin: "https://app.lenspost.xyz",
   });
 
-  return
+  return;
 }
 
 const inviteLeft = gql`
