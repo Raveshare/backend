@@ -1,6 +1,8 @@
 const prisma = require("../prisma");
 const { request, gql } = require("graphql-request");
 const { init } = require("@airstack/node");
+
+const { getCache, setCacheWithExpire } = require("../functions/cache/handleCache");
 // const { getGlobalTrendingMints } = require("../../src/functions/airstack/getGlobalTrendingMints.js");
 
 init(process.env.AIRSTACK_API_KEY);
@@ -81,12 +83,12 @@ async function getGlobalTrendingMints() {
     };
 
     let resp = await request(
-     process.env.AIRSTACK_API_URL,
+      process.env.AIRSTACK_API_URL,
       globalTrendingMints,
       variables
     );
 
-    console.log(resp.TokenTransfers.TokenTransfer)
+    console.log(resp.TokenTransfers.TokenTransfer);
 
     return resp.TokenTransfers.TokenTransfer;
   } catch (err) {
@@ -96,15 +98,25 @@ async function getGlobalTrendingMints() {
 
 async function trendingMints(req, res) {
   try {
-    let data = await getGlobalTrendingMints();
+    let data = getCache("trendingMints");
+    if (!data) {
+      data = await getGlobalTrendingMints();
 
-    let response = await scoring(data);
-    response.sort((a, b) => b.score - a.score);
+      let response = await scoring(data);
+      response.sort((a, b) => b.score - a.score);
 
-    res.status(200).send({
-      status: "success",
-      data: response,
-    });
+      setCacheWithExpire("trendingMints", JSON.stringify(response), 3600);
+
+      res.status(200).send({
+        status: "success",
+        data: response,
+      });
+    } else {
+      res.status(200).send({
+        status: "success",
+        data: JSON.parse(data),
+      });
+    }
   } catch (error) {
     res.status(400).send({
       status: "error",

@@ -2,6 +2,10 @@ const prisma = require("../prisma");
 const { request, gql } = require("graphql-request");
 const { init } = require("@airstack/node");
 const { forEach } = require("lodash");
+const {
+  getCache,
+  setCacheWithExpire,
+} = require("../functions/cache/handleCache");
 // const { getGlobalTrendingMints } = require("../../src/functions/airstack/getGlobalTrendingMints.js");
 
 init(process.env.AIRSTACK_API_KEY);
@@ -144,11 +148,14 @@ async function getGlobalTrendingMints() {
 
 async function trendingMintsLenspost(req, res) {
   try {
-    let data = await getGlobalTrendingMints();
+    let data = getCache("trendingMintsLenspost");
+    if (!data) data = await getGlobalTrendingMints();
 
     let response = await scoring(data);
-    console.log(response)
+    console.log(response);
     response.sort((a, b) => b.score - a.score);
+
+    setCacheWithExpire("trendingMintsLenspost", JSON.stringify(response), 3600);
 
     res.status(200).send({
       status: "success",
