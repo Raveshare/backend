@@ -1,11 +1,12 @@
 const prisma = require("../prisma");
 const { request, gql } = require("graphql-request");
 const { init } = require("@airstack/node");
+const { forEach } = require("lodash");
 // const { getGlobalTrendingMints } = require("../../src/functions/airstack/getGlobalTrendingMints.js");
 
 init(process.env.AIRSTACK_API_KEY);
 
-async function wallets() {
+async function getWallets() {
   try {
     let data = [];
     let count = 1;
@@ -25,7 +26,7 @@ async function wallets() {
         data.push(wallet.evm_address);
         count++;
 
-        if (count >= 100) {
+        if (count >= 200) {
           break;
         }
       }
@@ -107,27 +108,35 @@ const globalTrendingMints = gql`
 async function getGlobalTrendingMints() {
   try {
     const date = new Date();
+    let data = [];
 
-    const Identidy = await wallets();
+    let wallets = await getWallets();
     // return Identidy;
-    const variables = {
-      startTime: new Date(
-        date.getTime() - 7 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      endTime: date.toISOString(),
-      tokenType: ["ERC20", "ERC721", "ERC1155"],
-      chain: "ethereum",
-      limit: 100,
-      lensPostusers: Identidy,
-    };
+    // wallets = "0xa6bcB89f21E0BF71E08dEd426C142757791e17df";
+    const count = 1;
+    for (let wallet of wallets) {
+      console.log(wallet);
+      const variables = {
+        startTime: new Date(
+          date.getTime() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        endTime: date.toISOString(),
+        tokenType: ["ERC20", "ERC721", "ERC1155"],
+        chain: "polygon",
+        limit: 100,
+        lensPostusers: [wallet],
+      };
+      let resp = await request(
+        process.env.AIRSTACK_API_URL,
+        globalTrendingMints,
+        variables
+      );
 
-    let resp = await request(
-      "https://api.airstack.xyz/gql",
-      globalTrendingMints,
-      variables
-    );
-
-    return resp.TokenTransfers.TokenTransfer;
+      if (resp.TokenTransfers.TokenTransfer !== null) {
+        data = [...data, ...resp.TokenTransfers.TokenTransfer];
+      }
+    }
+    return data;
   } catch (err) {
     console.log(err);
   }
@@ -138,6 +147,8 @@ async function trendingMintsLenspost(req, res) {
     let data = await getGlobalTrendingMints();
 
     let response = await scoring(data);
+    console.log(response)
+    response.sort((a, b) => b.score - a.score);
 
     res.status(200).send({
       status: "success",

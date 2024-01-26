@@ -81,10 +81,12 @@ async function getGlobalTrendingMints() {
     };
 
     let resp = await request(
-      "https://api.airstack.xyz/gql",
+     process.env.AIRSTACK_API_URL,
       globalTrendingMints,
       variables
     );
+
+    console.log(resp.TokenTransfers.TokenTransfer)
 
     return resp.TokenTransfers.TokenTransfer;
   } catch (err) {
@@ -97,10 +99,11 @@ async function trendingMints(req, res) {
     let data = await getGlobalTrendingMints();
 
     let response = await scoring(data);
+    response.sort((a, b) => b.score - a.score);
 
     res.status(200).send({
       status: "success",
-      data: data,
+      data: response,
     });
   } catch (error) {
     res.status(400).send({
