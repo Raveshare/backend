@@ -3,22 +3,20 @@ const fs = require("fs");
 const prisma = require("../prisma");
 
 async function dumpAsset(name) {
-  //   name = "" + ".json";
-  //   let assets = fs.readFileSync("./src/dumpdata/assets/" + name);
-  //   assets = JSON.parse(assets);
-  //   // await assetSchema.bulkCreate(assets);
-  //   await prisma.assets.createMany({
-  //     data: assets,
-  //     skipDuplicates: true,
-  //   });
-  await prisma.assets.updateMany({
+  // name = "degen" + ".json";
+  // let assets = fs.readFileSync("./src/dumpdata/assets/" + name);
+  // assets = JSON.parse(assets);
+  // // await assetSchema.bulkCreate(assets);
+  // await prisma.assets.createMany({
+  //   data: assets,
+  //   skipDuplicates: true,
+  // });
+  const data = await prisma.tasks.deleteMany({
     where: {
-      author: "GI Toadz",
-    },
-    data: {
-      campaign: "GI Toadz",
+      description: "Lenspost Admin Test",
     },
   });
+  console.log(data);
 }
 
 // await prisma.assets.deleteMany({

@@ -481,7 +481,7 @@ async function inviteProfile(
   refreshAccessToken,
   evmAddress,
   user_id,
-  invitedAddress,
+  invitedAddress
 ) {
   const variables = {
     request: {
@@ -518,7 +518,26 @@ async function inviteProfile(
     Origin: "https://app.lenspost.xyz",
   });
 
-  return
+  return;
+}
+
+const inviteLeft = gql`
+  query Profile($profileRequest: ProfileRequest!) {
+    profile(request: $profileRequest) {
+      invitesLeft
+    }
+  }
+`;
+
+async function checkInviteLeft(handle) {
+  const variables = {
+    profileRequest: {
+      forHandle: handle,
+    },
+  };
+  let resp = await request(LENS_API_URL, inviteLeft, variables);
+
+  return resp.profile.invitesLeft;
 }
 
 module.exports = {
@@ -536,4 +555,6 @@ module.exports = {
   postOnChain,
   hasCollected,
   inviteProfile,
+  checkInviteLeft,
 };
+
