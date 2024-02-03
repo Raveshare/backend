@@ -7,6 +7,7 @@ const auth = require("../../middleware/auth/auth");
 const jsonwebtoken = require("jsonwebtoken");
 const prisma = require("../../prisma");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
+const sendMail = require("../../functions/mail/sendMail");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
@@ -18,12 +19,14 @@ evmRouter.post("/", async (req, res) => {
   } catch {}
 
   let user_id = req.user?.user_id;
-  let signature, message, evm_address;
+  let signature, message, evm_address, username, mailId;
 
   try {
     signature = req.body.signature;
     message = req.body.message;
     evm_address = req.body.evm_address;
+    username = req.body.username;
+    mailId = req.body.mailId;
   } catch (error) {
     res.status(400).send({
       status: "failed",
@@ -69,6 +72,7 @@ evmRouter.post("/", async (req, res) => {
             evm_address,
           },
         });
+        username && mailId && sendMail(mailId, "Lenspost Login", username);
       } else {
         // if the user is already present, then update the user's data.
         await prisma.owners.update({
@@ -104,6 +108,8 @@ evmRouter.post("/", async (req, res) => {
           hasExpired = decodedToken?.payload.exp < Date.now() / 1000;
         }
       }
+
+      sendMail("aryan@lenspost.xyz", "Lenspost Login", "0xaryan")
 
       if (!user_id)
         sendLogin(

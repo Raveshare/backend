@@ -2,8 +2,6 @@ const prisma = require("../../prisma");
 
 // reduces the points of the user by 1
 const completedProfile = async (ownerId) => {
-
-
   let hasAlreadyCompleted = await prisma.points_history.findFirst({
     where: {
       ownerId: ownerId,
