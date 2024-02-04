@@ -309,4 +309,35 @@ utilRouter.post("/redeem-code", async (req, res) => {
   });
 });
 
+utilRouter.get('/get-image-canvas', async (req, res) => {
+  let { id } = req.query;
+
+  id = parseInt(id);
+
+  if (!id) {
+    return res.send({
+      status: "error",
+      message: "No id provided",
+    });
+  }
+
+  let canvas = await prisma.canvases.findUnique({
+    where: {
+      id: id
+    }
+  })
+
+  if (!canvas) {
+    return res.send({
+      status: "error",
+      message: "No canvas found"
+    })
+  }
+
+  res.send({
+    status: "success",
+    message: canvas.imageLink[0]
+  })
+})
+
 module.exports = utilRouter;
