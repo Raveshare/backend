@@ -113,6 +113,8 @@ model owners {
   socials                 socials[]
   referral                referral[]
   user_published_canvases user_published_canvases[]
+  room                    room[]
+  participants            room_participants[]
 }
 
 model socials {
@@ -180,6 +182,24 @@ model points_history {
   task      tasks?   @relation(fields: [taskId], references: [id])
 }
 
+model room {
+  id           Int                 @id @default(autoincrement())
+  name         String              @db.VarChar(255)
+  createdAt    DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
+  host         owners?             @relation(fields: [hostId], references: [id])
+  hostId       Int?
+  participants room_participants[]
+}
+
+model room_participants {
+  id            Int     @id @default(autoincrement())
+  participant   owners? @relation(fields: [participantId], references: [id])
+  roomId        Int?
+  participantId Int?
+  room          room?   @relation(fields: [roomId], references: [id])
+}
+
 view public_canvas_templates {
   id                         Int      @id @default(autoincrement())
   data                       Json
@@ -218,7 +238,7 @@ model user_published_canvases {
   canvasId    Int?
   ownerId     Int?
   platform    String    @db.VarChar(255)
-  xChain String? @db.VarChar(255)
+  xChain      String?   @db.VarChar(255)
   createdAt   DateTime  @default(now()) @db.Timestamptz(6)
   scheduledAt DateTime? @db.Timestamptz(6)
   txHash      String?   @db.VarChar(255)
