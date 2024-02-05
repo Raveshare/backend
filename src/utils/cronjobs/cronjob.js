@@ -10,7 +10,7 @@ const {
   setCacheWithExpire,
 } = require("../../../src/functions/cache/handleCache.js");
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("*/10 * * * *", async () => {
   const cache = await getCache("trendingMints");
   await deleteCache("trendingMints");
   const trendingMintsData = await trendingMints();
@@ -21,7 +21,7 @@ cron.schedule("0 * * * *", async () => {
   );
 });
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("*/10 * * * *", async () => {
   const cache = await getCache("trendingMintsLenspost");
   await deleteCache("trendingMintsLenspost");
   const trendingMintsData = await trendingMintsLenspost();
