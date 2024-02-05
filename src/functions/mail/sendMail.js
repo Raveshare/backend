@@ -443,7 +443,7 @@ const sendMail = async (email, subject, username) => {
                                                                     <p
                                                                         style="Margin:0;mso-line-height-rule:exactly;font-family:Imprima, Arial, sans-serif;line-height:27px;letter-spacing:0;color:#2D3142;font-size:18px">
                                                                         You're receiving this message because you
-                                                                        recently signed up for a account.
+                                                                        recently signed up for an account.
                                                                 </td>
                                                             </tr>
                                                         </table>

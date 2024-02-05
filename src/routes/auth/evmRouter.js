@@ -109,8 +109,6 @@ evmRouter.post("/", async (req, res) => {
         }
       }
 
-      sendMail("aryan@lenspost.xyz", "Lenspost Login", "0xaryan")
-
       if (!user_id)
         sendLogin(
           ownerData.id,
@@ -118,6 +116,10 @@ evmRouter.post("/", async (req, res) => {
           ownerData.solana_address,
           ownerData.username
         );
+
+      ownerData.mail &&
+        ownerData.username &&
+        sendMail(ownerData.mail, "Lenspost Login", ownerData.username);
 
       res.status(200).send({
         status: "success",
