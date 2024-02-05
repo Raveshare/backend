@@ -257,3 +257,15 @@ view template_view {
   createdAt DateTime? @db.Timestamptz(6)
   updatedAt DateTime? @db.Timestamptz(6)
 }
+
+model frames {
+  id            Int     @id @default(autoincrement())
+  frameId       Int    
+  imageUrl      String  @db.VarChar(255)
+  tokenUri      String  @db.VarChar(255)
+  minterAddress String  @db.VarChar(255)
+  txHash        String  @unique @db.VarChar(255)
+  isLike        Boolean @default(false)
+  isRecast      Boolean @default(false)
+  isFollow      Boolean @default(false)
+}

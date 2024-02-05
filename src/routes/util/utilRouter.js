@@ -309,7 +309,7 @@ utilRouter.post("/redeem-code", async (req, res) => {
   });
 });
 
-utilRouter.get('/get-image-canvas', async (req, res) => {
+utilRouter.get("/get-image-canvas", async (req, res) => {
   let { id } = req.query;
 
   id = parseInt(id);
@@ -323,21 +323,62 @@ utilRouter.get('/get-image-canvas', async (req, res) => {
 
   let canvas = await prisma.canvases.findUnique({
     where: {
-      id: id
-    }
-  })
+      id: id,
+    },
+  });
 
   if (!canvas) {
     return res.send({
       status: "error",
-      message: "No canvas found"
-    })
+      message: "No canvas found",
+    });
   }
 
   res.send({
     status: "success",
-    message: canvas.imageLink[0]
-  })
-})
+    message: canvas.imageLink[0],
+  });
+});
+
+utilRouter.post("/frame-upload-data", async (req, res) => {
+  let {
+    frameId,
+    imageUrl,
+    tokenUri,
+    minterAddress,
+    txHash,
+    isLike,
+    isRecast,
+    isFollow,
+  } = req.body;
+
+  const data = {
+    frameId,
+    imageUrl,
+    tokenUri,
+    minterAddress,
+    txHash,
+    isLike,
+    isRecast,
+    isFollow,
+  };
+
+  await prisma.frames.createMany({
+    data: data,
+  });
+
+  res.status(200).send({ status: "success" });
+});
+
+utilRouter.get("/get-frame-data", async (req, res) => {
+  let { frameId } = req.query;
+  frameId = parseInt(frameId);
+  const data = await prisma.frames.findMany({
+    where: {
+      frameId: frameId,
+    },
+  });
+  res.status(200).send({ status: "success", data });
+});
 
 module.exports = utilRouter;
