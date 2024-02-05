@@ -340,7 +340,26 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
   });
 });
 
-utilRouter.post("/frame-upload-data", async (req, res) => {
+utilRouter.post("/create-frame-data", async (req, res) => {
+  let { frameId, imageUrl, tokenUri, isLike, isRecast, isFollow } = req.body;
+
+  const data = {
+    frameId,
+    imageUrl,
+    tokenUri,
+    isLike,
+    isRecast,
+    isFollow,
+  };
+
+  await prisma.frames.createMany({
+    data: data,
+  });
+
+  res.status(200).send({ status: "success" });
+});
+
+utilRouter.post("/update-frame-data", async (req, res) => {
   let {
     frameId,
     imageUrl,
@@ -352,20 +371,44 @@ utilRouter.post("/frame-upload-data", async (req, res) => {
     isFollow,
   } = req.body;
 
-  const data = {
-    frameId,
-    imageUrl,
-    tokenUri,
-    minterAddress,
-    txHash,
-    isLike,
-    isRecast,
-    isFollow,
-  };
-
-  await prisma.frames.createMany({
-    data: data,
+  const frameData = await prisma.frames.findMany({
+    where: {
+      frameId: frameId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
+
+  if (frameData[0].txHash === null) {
+    await prisma.frames.update({
+      where: {
+        id: frameData[0].id,
+      },
+      data: {
+        imageUrl,
+        tokenUri,
+        minterAddress,
+        txHash,
+        isLike,
+        isRecast,
+        isFollow,
+      },
+    });
+  } else {
+    await prisma.frames.create({
+      data: {
+        frameId,
+        imageUrl,
+        tokenUri,
+        minterAddress,
+        txHash,
+        isLike,
+        isRecast,
+        isFollow,
+      },
+    });
+  }
 
   res.status(200).send({ status: "success" });
 });
