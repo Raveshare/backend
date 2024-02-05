@@ -27,7 +27,7 @@ cron.schedule("*/10 * * * *", async () => {
   const trendingMintsData = await trendingMintsLenspost();
   await setCacheWithExpire(
     "trendingMintsLenspost",
-    JSON.stringify(trendingMintsData),
+    JSON.stringify(trendingMintsData.data),
     3600
   );
 });

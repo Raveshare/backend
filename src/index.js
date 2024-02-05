@@ -32,6 +32,8 @@ const authRouter = require("./routes/auth/authRouter");
 const templateRouter = require("./routes/content/templateRouter");
 const assetRouter = require("./routes/content/assetRouter");
 const publicRouter = require("./routes/public/publicRouter");
+const trendingMintsLenspost = require("./scripts/trendingMintsLenspost");
+const trendingMints = require("./scripts/trendingMints");
 
 app.use(express.json({ limit: "30mb", extended: true }));
 
@@ -42,6 +44,13 @@ app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);
 app.use("/asset", auth, assetRouter);
 app.use("/public", publicRouter);
+app.get("/trendingMints", async (req, res) => {
+  await trendingMints(req, res);
+});
+app.get("/trendingMintsLenspost", async (req, res) => {
+  await trendingMintsLenspost(req, res);
+});
+
 
 if (NODE_ENV === "local") {
   const adminRouter = require("./routes/admin/adminRouter");
