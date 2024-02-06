@@ -380,6 +380,11 @@ utilRouter.post("/update-frame-data", async (req, res) => {
     },
   });
 
+  if (frameData.length === 0) {
+    res.send({ status: "error", message: "No frame found" });
+    return;
+  }
+
   if (frameData[0].txHash === null) {
     await prisma.frames.update({
       where: {
