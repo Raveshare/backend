@@ -348,11 +348,6 @@ utilRouter.post("/create-frame-data", async (req, res) => {
 
   let imageIpfsLink;
 
-  let metaData = {
-    ...metadata,
-    image: "https://lenspost.infura-ipfs.io/ipfs/" + imageIpfsLink,
-  };
-
   let canvas = await prisma.canvases.findUnique({
     where: {
       id: canvasId,
@@ -370,6 +365,12 @@ utilRouter.post("/create-frame-data", async (req, res) => {
   });
   let image_blob = Buffer.from(image_buffer.data, "binary");
   imageIpfsLink = await uploadMediaToIpfs(image_blob);
+
+  let metaData = {
+    ...metadata,
+    image: "https://lenspost.infura-ipfs.io/ipfs/" + imageIpfsLink,
+  };
+
   let tokenUri =
     "https://lenspost.infura-ipfs.io/ipfs/" +
     (await uploadJSONToIpfs(metaData));
@@ -381,7 +382,6 @@ utilRouter.post("/create-frame-data", async (req, res) => {
     isRecast,
     isFollow,
   };
-  console.log("data", data);
 
   let frame = await prisma.frames.create({
     data,
