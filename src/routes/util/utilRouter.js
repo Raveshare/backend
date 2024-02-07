@@ -8,7 +8,10 @@ const {
 const addToWhitelist = require("../../functions/whitelist/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
-const { uploadMediaToIpfs  ,uploadJSONToIpfs } = require("../../functions/uploadToIPFS");
+const {
+  uploadMediaToIpfs,
+  uploadJSONToIpfs,
+} = require("../../functions/uploadToIPFS");
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 const {
   canUseRemoveBG,
@@ -343,6 +346,13 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
 utilRouter.post("/create-frame-data", async (req, res) => {
   let { canvasId, metadata, isLike, isRecast, isFollow } = req.body;
 
+  let imageIpfsLink;
+
+  let metaData = {
+    ...metadata,
+    image: "https://lenspost.infura-ipfs.io/ipfs/" + imageIpfsLink,
+  };
+
   let canvas = await prisma.canvases.findUnique({
     where: {
       id: canvasId,
@@ -353,14 +363,16 @@ utilRouter.post("/create-frame-data", async (req, res) => {
   });
 
   // image url s3
-  let image = canvas.imageLink[0];
+  let imageUrl = canvas.imageLink[0];
 
-  let image_buffer = await axios.get(image, {
+  let image_buffer = await axios.get(imageUrl, {
     responseType: "arraybuffer",
   });
   let image_blob = Buffer.from(image_buffer.data, "binary");
-  let imageUrl = await uploadMediaToIpfs(image_blob);
-  let tokenUri = await uploadJSONToIpfs(metadata);
+  imageIpfsLink = await uploadMediaToIpfs(image_blob);
+  let tokenUri =
+    "https://lenspost.infura-ipfs.io/ipfs/" +
+    (await uploadJSONToIpfs(metaData));
 
   const data = {
     imageUrl,
@@ -369,6 +381,7 @@ utilRouter.post("/create-frame-data", async (req, res) => {
     isRecast,
     isFollow,
   };
+  console.log("data", data);
 
   let frame = await prisma.frames.create({
     data,
