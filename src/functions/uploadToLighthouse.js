@@ -6,9 +6,6 @@ const LIGHTHOUSE_API_KEY = process.env.LIGHTHOUSE_API_KEY;
 
 const uploadMediaToIpfs = async (blob, mimeType) => {
   const result = await lighthouse.uploadBuffer(blob, LIGHTHOUSE_API_KEY);
-
-  console.log(result.data);
-
   return result.data.Hash;
 };
 

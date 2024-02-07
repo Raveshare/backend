@@ -259,8 +259,7 @@ view template_view {
 }
 
 model frames {
-  id            Int      @id @default(autoincrement())
-  frameId       Int
+  id            Int      @id @default(autoincrement()) 
   imageUrl      String   @db.VarChar(255)
   tokenUri      String   @db.VarChar(255)
   minterAddress String?  @db.VarChar(255)

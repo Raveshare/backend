@@ -30,6 +30,12 @@ const uploadMediaToIpfs = async (blob, mimeType) => {
   return result.cid.toString();
 };
 
+const uploadJSONToIpfs = async (json) => {
+  const ipfsClient = await getIpfsClient();
+  const { path } = await ipfsClient.add(JSON.stringify(json));
+  return path;
+};
+
 const uploaddMetadataToIpfs = async (postData) => {
   try {
     const ipfsClient = await getIpfsClient();
@@ -46,7 +52,10 @@ const uploaddMetadataToIpfs = async (postData) => {
     }
 
     const metadata = {
-      description: postData.content ? postData.content + "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lens/lenspostxyz  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤" : "~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspostxyz - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤",
+      description: postData.content
+        ? postData.content +
+          "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lens/lenspostxyz  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤"
+        : "~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspostxyz - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤",
       external_url: `https://hey.xyz/u/${postData.handle}`,
       name: `Post by ${postData.handle}`,
       $schema: "https://json-schemas.lens.dev/publications/image/3.0.0.json",
@@ -62,7 +71,10 @@ const uploaddMetadataToIpfs = async (postData) => {
           type: "image/png",
         },
         title: `Post by ${postData.handle}`,
-        content: postData.content ? postData.content + "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lens/lenspostxyz  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤" : "~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspostxyz - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤",
+        content: postData.content
+          ? postData.content +
+            "\n\n ~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lens/lenspostxyz  - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤"
+          : "~ 𝙈𝙖𝙙𝙚 𝙤𝙣 @lenspostxyz - 𝙔𝙤𝙪𝙧 𝙒𝙚𝙗3 𝙎𝙤𝙘𝙞𝙖𝙡 𝙎𝙩𝙪𝙙𝙞𝙤",
         attachments: media,
       },
     };
@@ -90,4 +102,5 @@ const uploaddMetadataToIpfs = async (postData) => {
 module.exports = {
   uploadMediaToIpfs,
   uploaddMetadataToIpfs,
+  uploadJSONToIpfs
 };

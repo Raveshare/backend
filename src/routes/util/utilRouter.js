@@ -8,7 +8,7 @@ const {
 const addToWhitelist = require("../../functions/whitelist/addToWhitelist");
 const auth = require("../../middleware/auth/auth");
 const prisma = require("../../prisma");
-const { uploadMediaToIpfs } = require("../../functions/uploadToLighthouse");
+const { uploadMediaToIpfs  ,uploadJSONToIpfs } = require("../../functions/uploadToIPFS");
 const { getCache, setCache } = require("../../functions/cache/handleCache");
 const {
   canUseRemoveBG,
@@ -341,10 +341,28 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
 });
 
 utilRouter.post("/create-frame-data", async (req, res) => {
-  let { frameId, imageUrl, tokenUri, isLike, isRecast, isFollow } = req.body;
+  let { canvasId, metadata, isLike, isRecast, isFollow } = req.body;
+
+  let canvas = await prisma.canvases.findUnique({
+    where: {
+      id: canvasId,
+    },
+    select: {
+      imageLink: true,
+    },
+  });
+
+  // image url s3
+  let image = canvas.imageLink[0];
+
+  let image_buffer = await axios.get(image, {
+    responseType: "arraybuffer",
+  });
+  let image_blob = Buffer.from(image_buffer.data, "binary");
+  let imageUrl = await uploadMediaToIpfs(image_blob);
+  let tokenUri = await uploadJSONToIpfs(metadata);
 
   const data = {
-    frameId,
     imageUrl,
     tokenUri,
     isLike,
@@ -352,68 +370,25 @@ utilRouter.post("/create-frame-data", async (req, res) => {
     isFollow,
   };
 
-  await prisma.frames.createMany({
-    data: data,
+  let frame = await prisma.frames.create({
+    data,
   });
 
-  res.status(200).send({ status: "success" });
+  res.status(200).send({ status: "success", frameId: frame.id });
 });
 
 utilRouter.post("/update-frame-data", async (req, res) => {
-  let {
-    frameId,
-    imageUrl,
-    tokenUri,
-    minterAddress,
-    txHash,
-    isLike,
-    isRecast,
-    isFollow,
-  } = req.body;
+  let { frameId, minterAddress, txHash } = req.body;
 
-  const frameData = await prisma.frames.findMany({
+  await prisma.frames.update({
     where: {
-      frameId: frameId,
+      id: frameId,
     },
-    orderBy: {
-      createdAt: "desc",
+    data: {
+      minterAddress,
+      txHash,
     },
   });
-
-  if (frameData.length === 0) {
-    res.send({ status: "error", message: "No frame found" });
-    return;
-  }
-
-  if (frameData[0].txHash === null) {
-    await prisma.frames.update({
-      where: {
-        id: frameData[0].id,
-      },
-      data: {
-        imageUrl,
-        tokenUri,
-        minterAddress,
-        txHash,
-        isLike,
-        isRecast,
-        isFollow,
-      },
-    });
-  } else {
-    await prisma.frames.create({
-      data: {
-        frameId,
-        imageUrl,
-        tokenUri,
-        minterAddress,
-        txHash,
-        isLike,
-        isRecast,
-        isFollow,
-      },
-    });
-  }
 
   res.status(200).send({ status: "success" });
 });
@@ -421,9 +396,9 @@ utilRouter.post("/update-frame-data", async (req, res) => {
 utilRouter.get("/get-frame-data", async (req, res) => {
   let { frameId } = req.query;
   frameId = parseInt(frameId);
-  const data = await prisma.frames.findMany({
+  const data = await prisma.frames.findUnique({
     where: {
-      frameId: frameId,
+      id: frameId,
     },
   });
   res.status(200).send({ status: "success", data });
