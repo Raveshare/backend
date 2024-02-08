@@ -106,6 +106,14 @@ const getIsWhitelisted = async (walletAddress) => {
       "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
     ]);
 
+    let res5 = await base_alchemy.core.getTokenBalances(walletAddress, [
+      "0xEAB1fF15f26da850315b15AFebf12F0d42dE5421",
+    ]);
+
+    let res6 = await base_alchemy.core.getTokenBalances(walletAddress, [
+      "0x91F45aa2BdE7393e0AF1CC674FFE75d746b93567",
+    ]);
+
     let tokenBalance = res3.tokenBalances[0].tokenBalance;
     tokenBalance = parseInt(tokenBalance);
     if (tokenBalance > 0) {
@@ -116,6 +124,24 @@ const getIsWhitelisted = async (walletAddress) => {
     }
 
     tokenBalance = res4.tokenBalances[0].tokenBalance;
+    tokenBalance = parseInt(tokenBalance);
+    if (tokenBalance > 0) {
+      console.log("token balance > 0");
+      return true;
+    } else {
+      console.log("token balance <= 0");
+    }
+
+    tokenBalance = res5.tokenBalances[0].tokenBalance;
+    tokenBalance = parseInt(tokenBalance);
+    if (tokenBalance > 0) {
+      console.log("token balance > 0");
+      return true;
+    } else {
+      console.log("token balance <= 0");
+    }
+
+    tokenBalance = res6.tokenBalances[0].tokenBalance;
     tokenBalance = parseInt(tokenBalance);
     if (tokenBalance > 0) {
       console.log("token balance > 0");
