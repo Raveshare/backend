@@ -409,6 +409,11 @@ utilRouter.post("/update-frame-data", async (req, res) => {
 utilRouter.get("/get-frame-data", async (req, res) => {
   let { frameId } = req.query;
   frameId = parseInt(frameId);
+  if (!frameId) {
+    return res
+      .status(400)
+      .send({ status: "error", message: "No frameId provided" });
+  }
   const data = await prisma.frames.findUnique({
     where: {
       id: frameId,
