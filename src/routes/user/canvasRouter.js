@@ -671,6 +671,7 @@ canvasRouter.post("/generate-share-slug", async (req, res) => {
 
 canvasRouter.get("/get-shared-canvas", async (req, res) => {
   let slug = req.query.slug;
+  let user_id = req.user.user_id;
 
   let sharedCanvas = await prisma.shared_canvas.findUnique({
     where: {
