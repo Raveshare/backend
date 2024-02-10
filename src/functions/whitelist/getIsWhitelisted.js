@@ -1,5 +1,6 @@
 const { Alchemy, Network } = require("alchemy-sdk");
 const checkIfFollow = require("../../lens/api-v2").checkIfFollow;
+const axios = require("axios");
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
@@ -102,11 +103,43 @@ const getIsWhitelisted = async (walletAddress) => {
             registry.wallet,
           ]);
         }
-        let tokenBalance = response.tokenBalances[0].tokenBalance;
-        tokenBalance = parseInt(tokenBalance);
-        if (tokenBalance > 0) {
-          return true;
+        if (response?.tokenBalances[0]?.tokenBalance) {
+          let tokenBalance = response.tokenBalances[0].tokenBalance;
+          tokenBalance = parseInt(tokenBalance);
+          if (tokenBalance > 0) {
+            return true;
+          }
         }
+
+        if (registry.network === "SOL") {
+          const url = process.env.HELIUS_RPC_URL;
+          const response = await axios.post(
+            url,
+            {
+              jsonrpc: "2.0",
+              id: "my-id",
+              method: "searchAssets",
+              params: {
+                ownerAddress: "94TKABhKjHnXEokaVCxs4o8DWghCMZYuqVNeYqA44JpX",
+                compressed: true,
+              },
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          let { result } = response.data;
+
+          for (let i = 0; i < result.items.length; i++) {
+            item = result.items[i];
+          }
+          if (item.grouping[0]?.group_value === registry.wallet) return true;
+        }
+
+        return false;
       }
     }
 
