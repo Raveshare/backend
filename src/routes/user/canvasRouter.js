@@ -1,6 +1,7 @@
 const canvasRouter = require("express").Router();
 
 const prisma = require("../../prisma");
+const { v4: uuidv4 } = require("uuid");
 
 const uploadToLens = require("../../functions/share/uploadToLens");
 const uploadToSolana = require("../../functions/share/uploadToSolana");
@@ -17,6 +18,9 @@ const canvasMadePublic = require("../../functions/events/canvasMadePublic.event"
 const canvasPostedToFarcaster = require("../../functions/events/canvasPostedToFarcaster.event");
 const canvasPosted = require("../../functions/events/canvasPosted.event");
 const canvasMintedToXChain = require("../../functions/events/canvasMintedToXChain.event");
+
+const canvasShared = require("../../functions/events/canvasShared.event");
+const canvasSharedClicked = require("../../functions/events/canvasSharedClicked.event");
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
@@ -400,7 +404,7 @@ canvasRouter.post("/publish", async (req, res) => {
       handle: owner.lens_handle,
       id: owner.id,
       image: url,
-      xChain : canvasParams?.xChain,
+      xChain: canvasParams?.xChain,
     };
 
     let referredFrom = canvas.referredFrom;
@@ -451,10 +455,14 @@ canvasRouter.post("/publish", async (req, res) => {
     let postMetadata = {
       name: name,
       content: content,
-      image: zoraMintLink ? [zoraMintLink] : frameLink ? [frameLink] : canvas.imageLink,
+      image: zoraMintLink
+        ? [zoraMintLink]
+        : frameLink
+        ? [frameLink]
+        : canvas.imageLink,
       channelId: channelId,
       canvasId: canvasId,
-      xChain : canvasParams?.xChain,
+      xChain: canvasParams?.xChain,
     };
 
     resp = await uploadToFarcaster(postMetadata, owner);
@@ -605,10 +613,91 @@ canvasRouter.post("/minted", async (req, res) => {
     new Date(Date.now()),
     mintLink
   );
-  canvasMintedToXChain(canvasId,userId, platform, xChain)
+  canvasMintedToXChain(canvasId, userId, platform, xChain);
 
   res.send({
     message: "Record created",
+  });
+});
+
+canvasRouter.post("/generate-share-slug", async (req, res) => {
+  let user_id = req.user.user_id;
+  user_id = parseInt(user_id);
+  let { canvasId } = req.query;
+  canvasId = parseInt(canvasId);
+
+  if (!canvasId) {
+    res.send({
+      message: "field `canvasId` is missing",
+    });
+    return;
+  }
+
+  let canvas = await prisma.canvases.findUnique({
+    where: {
+      id: canvasId,
+    },
+    select: {
+      ownerId: true,
+      imageLink: true,
+    },
+  });
+
+  if (canvas?.ownerId != user_id) {
+    res.status(403).send({
+      message: "Forbidden",
+    });
+    return;
+  }
+
+  const uuid = uuidv4();
+
+  let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
+
+  await prisma.shared_canvas.create({
+    data: {
+      canvasId: canvasId,
+      slug: slug,
+    },
+  });
+
+  canvasShared(canvasId, user_id);
+
+  res.send({
+    message: slug,
+    image: canvas?.imageLink[0] || "",
+  });
+});
+
+canvasRouter.get("/get-shared-canvas", async (req, res) => {
+  let slug = req.query.slug;
+
+  let sharedCanvas = await prisma.shared_canvas.findUnique({
+    where: {
+      slug: slug,
+    },
+  });
+
+  if (!sharedCanvas) {
+    res.status(404).send({
+      message: "Canvas Not Found",
+    });
+    return;
+  }
+
+  let canvas = await prisma.canvases.findUnique({
+    where: {
+      id: sharedCanvas.canvasId,
+    },
+    select: {
+      data: true,
+    },
+  });
+
+  canvasSharedClicked(sharedCanvas.canvasId, user_id);
+
+  res.send({
+    data: canvas?.data || {},
   });
 });
 

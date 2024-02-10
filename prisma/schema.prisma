@@ -41,6 +41,7 @@ model canvases {
   ownerId                    Int
   owner                      owners                    @relation(fields: [ownerId], references: [id])
   user_published_canvases    user_published_canvases[]
+  shared_canvas              shared_canvas[]
 }
 
 model collections {
@@ -259,7 +260,7 @@ view template_view {
 }
 
 model frames {
-  id            Int      @id @default(autoincrement()) 
+  id            Int      @id @default(autoincrement())
   imageUrl      String   @db.VarChar(255)
   tokenUri      String   @db.VarChar(255)
   minterAddress String?  @db.VarChar(255)
@@ -269,4 +270,15 @@ model frames {
   isFollow      Boolean  @default(false)
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model shared_canvas {
+  id       Int     @id @default(autoincrement())
+  slug     String  @unique
+  canvasId Int
+  isPublic Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  canvas canvases @relation(fields: [canvasId], references: [id])
 }
