@@ -72,8 +72,6 @@ const getIsWhitelisted = async (walletAddress) => {
 
     walletWhitelistedRegistry = walletWhitelistedRegistry.items;
 
-    console.log(walletWhitelistedRegistry);
-
     for (let i = 0; i < walletWhitelistedRegistry.length; i++) {
       const registry = walletWhitelistedRegistry[i];
 
@@ -86,7 +84,6 @@ const getIsWhitelisted = async (walletAddress) => {
 
         for (let j = 0; j < res.length; j++) {
           if (res[j]) {
-            console.log("True 89");
             return true;
           }
         }
@@ -107,9 +104,7 @@ const getIsWhitelisted = async (walletAddress) => {
         }
         let tokenBalance = response.tokenBalances[0].tokenBalance;
         tokenBalance = parseInt(tokenBalance);
-        console.log(tokenBalance);
         if (tokenBalance > 0) {
-          console.log("True 112");
           return true;
         }
       }
