@@ -48,8 +48,6 @@ const arb_alchemy = new Alchemy(arb_config);
 const opt_alchemy = new Alchemy(opt_config);
 
 const getIsWhitelisted = async (walletAddress) => {
-  // const response =
-  // console.log("Drip Haus Assets: ", response.data.result);
   try {
     let follow = false;
     if (walletAddress.startsWith("0x"))
