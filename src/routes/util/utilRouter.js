@@ -167,7 +167,6 @@ utilRouter.get("/whitelisted", async (req, res) => {
   const { wallet } = req.query;
   let isWhitelistedCache = await getCache(`isWhitelisted_${wallet}`);
   isWhitelistedCache = isWhitelistedCache === "true" ? true : false;
-  isWhitelistedCache = false;
 
   if (!isWhitelistedCache) {
     let isWhitelisted = await getIsWhitelisted(wallet);
