@@ -48,6 +48,8 @@ const arb_alchemy = new Alchemy(arb_config);
 const opt_alchemy = new Alchemy(opt_config);
 
 const getIsWhitelisted = async (walletAddress) => {
+  // const response =
+  // console.log("Drip Haus Assets: ", response.data.result);
   try {
     let follow = false;
     if (walletAddress.startsWith("0x"))
@@ -76,7 +78,7 @@ const getIsWhitelisted = async (walletAddress) => {
     for (let i = 0; i < walletWhitelistedRegistry.length; i++) {
       const registry = walletWhitelistedRegistry[i];
 
-      if (registry.type === "NFT") {
+      if (registry.type === "NFT" && walletAddress.startsWith("0x")) {
         let response = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
           registry.wallet,
         ]);
@@ -88,7 +90,10 @@ const getIsWhitelisted = async (walletAddress) => {
             return true;
           }
         }
-      } else if (registry.type === "CONTRACT") {
+      } else if (
+        registry.type === "CONTRACT" &&
+        walletAddress.startsWith("0x")
+      ) {
         let response;
         if (registry.network === "ETH") {
           response = await eth_alchemy.core.getTokenBalances(walletAddress, [
@@ -110,36 +115,32 @@ const getIsWhitelisted = async (walletAddress) => {
             return true;
           }
         }
-
-        if (registry.network === "SOL") {
-          const url = process.env.HELIUS_RPC_URL;
-          const response = await axios.post(
-            url,
-            {
-              jsonrpc: "2.0",
-              id: "my-id",
-              method: "searchAssets",
-              params: {
-                ownerAddress: "94TKABhKjHnXEokaVCxs4o8DWghCMZYuqVNeYqA44JpX",
-                compressed: true,
-              },
+      } else if (registry.network === "SOL") {
+        const url = process.env.HELIUS_RPC_URL;
+        const response = await axios.post(
+          url,
+          {
+            jsonrpc: "2.0",
+            id: "my-id",
+            method: "searchAssets",
+            params: {
+              ownerAddress: walletAddress,
+              grouping: ["collection", registry.wallet],
+              page: 1,
+              limit: 1000,
             },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          let { result } = response.data;
-
-          for (let i = 0; i < result.items.length; i++) {
-            item = result.items[i];
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-          if (item.grouping[0]?.group_value === registry.wallet) return true;
-        }
+        );
 
-        return false;
+
+        if (response.data.result.total > 0) {
+          return true;
+        }
       }
     }
 
