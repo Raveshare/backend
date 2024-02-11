@@ -639,7 +639,6 @@ canvasRouter.post("/generate-share-slug", async (req, res) => {
     },
     select: {
       ownerId: true,
-      imageLink: true,
     },
   });
 
@@ -665,12 +664,12 @@ canvasRouter.post("/generate-share-slug", async (req, res) => {
 
   res.send({
     message: slug,
-    image: canvas?.imageLink[0] || "",
   });
 });
 
 canvasRouter.get("/get-shared-canvas", async (req, res) => {
   let slug = req.query.slug;
+  let user_id = req.user.user_id;
 
   let sharedCanvas = await prisma.shared_canvas.findUnique({
     where: {
@@ -691,6 +690,7 @@ canvasRouter.get("/get-shared-canvas", async (req, res) => {
     },
     select: {
       data: true,
+      imageLink: true,
     },
   });
 
@@ -698,6 +698,7 @@ canvasRouter.get("/get-shared-canvas", async (req, res) => {
 
   res.send({
     data: canvas?.data || {},
+    image : canvas?.imageLink[0] || ""
   });
 });
 
