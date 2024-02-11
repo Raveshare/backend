@@ -1,5 +1,6 @@
 const { Alchemy, Network } = require("alchemy-sdk");
 const checkIfFollow = require("../../lens/api-v2").checkIfFollow;
+const axios = require("axios");
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
@@ -75,7 +76,7 @@ const getIsWhitelisted = async (walletAddress) => {
     for (let i = 0; i < walletWhitelistedRegistry.length; i++) {
       const registry = walletWhitelistedRegistry[i];
 
-      if (registry.type === "NFT") {
+      if (registry.type === "NFT" && walletAddress.startsWith("0x")) {
         let response = await eth_alchemy.nft.verifyNftOwnership(walletAddress, [
           registry.wallet,
         ]);
@@ -87,7 +88,10 @@ const getIsWhitelisted = async (walletAddress) => {
             return true;
           }
         }
-      } else if (registry.type === "CONTRACT") {
+      } else if (
+        registry.type === "CONTRACT" &&
+        walletAddress.startsWith("0x")
+      ) {
         let response;
         if (registry.network === "ETH") {
           response = await eth_alchemy.core.getTokenBalances(walletAddress, [
@@ -102,9 +106,37 @@ const getIsWhitelisted = async (walletAddress) => {
             registry.wallet,
           ]);
         }
-        let tokenBalance = response.tokenBalances[0].tokenBalance;
-        tokenBalance = parseInt(tokenBalance);
-        if (tokenBalance > 0) {
+        if (response?.tokenBalances[0]?.tokenBalance) {
+          let tokenBalance = response.tokenBalances[0].tokenBalance;
+          tokenBalance = parseInt(tokenBalance);
+          if (tokenBalance > 0) {
+            return true;
+          }
+        }
+      } else if (registry.network === "SOL") {
+        const url = process.env.HELIUS_RPC_URL;
+        const response = await axios.post(
+          url,
+          {
+            jsonrpc: "2.0",
+            id: "my-id",
+            method: "searchAssets",
+            params: {
+              ownerAddress: walletAddress,
+              grouping: ["collection", registry.wallet],
+              page: 1,
+              limit: 1000,
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+
+        if (response.data.result.total > 0) {
           return true;
         }
       }
