@@ -344,90 +344,104 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
 });
 
 utilRouter.post("/create-frame-data", async (req, res) => {
-  let { canvasId, metadata, isLike, isRecast, isFollow } = req.body;
+  try {
+      let { canvasId, metadata, isLike, isRecast, isFollow } = req.body;
 
-  let imageIpfsLink;
+      let imageIpfsLink;
 
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: canvasId,
-    },
-    select: {
-      imageLink: true,
-    },
-  });
+      let canvas = await prisma.canvases.findUnique({
+        where: {
+          id: canvasId,
+        },
+        select: {
+          imageLink: true,
+        },
+      });
 
-  // image url s3
-  let imageUrl = canvas.imageLink[0];
+      // image url s3
+      let imageUrl = canvas.imageLink[0];
 
-  let image_buffer = await axios.get(imageUrl, {
-    responseType: "arraybuffer",
-  });
-  let image_blob = Buffer.from(image_buffer.data, "binary");
-  imageIpfsLink = await uploadMediaToIpfs(image_blob);
+      let image_buffer = await axios.get(imageUrl, {
+        responseType: "arraybuffer",
+      });
+      let image_blob = Buffer.from(image_buffer.data, "binary");
+      imageIpfsLink = await uploadMediaToIpfs(image_blob);
 
-  let metaData = {
-    ...metadata,
-    image: "https://lenspost.infura-ipfs.io/ipfs/" + imageIpfsLink,
-  };
+      let metaData = {
+        ...metadata,
+        image: "https://lenspost.infura-ipfs.io/ipfs/" + imageIpfsLink,
+      };
 
-  let tokenUri =
-    "https://lenspost.infura-ipfs.io/ipfs/" +
-    (await uploadJSONToIpfs(metaData));
+      let tokenUri =
+        "https://lenspost.infura-ipfs.io/ipfs/" +
+        (await uploadJSONToIpfs(metaData));
 
-  const data = {
-    imageUrl,
-    tokenUri,
-    isLike,
-    isRecast,
-    isFollow,
-  };
+      const data = {
+        imageUrl,
+        tokenUri,
+        isLike,
+        isRecast,
+        isFollow,
+      };
 
-  let frame = await prisma.frames.create({
-    data,
-  });
+      let frame = await prisma.frames.create({
+        data,
+      });
 
-  res.status(200).send({ status: "success", frameId: frame.id });
+      res.status(200).send({ status: "success", frameId: frame.id });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ status: "error", message: error.message });
+  }
 });
 
 utilRouter.post("/update-frame-data", async (req, res) => {
   let { frameId, minterAddress, txHash } = req.body;
   frameId = parseInt(frameId);
 
-  const frame = await prisma.frames.findUnique({
-    where: {
-      id: frameId,
-    },
-  });
+    const frame = await prisma.frames.findUnique({
+      where: {
+        id: frameId,
+      },
+    });
 
-  const minterData = [...frame.minters, { minterAddress, txHash }];
+    const minterData = [...frame.minters, { minterAddress, txHash }];
 
-  await prisma.frames.update({
-    where: {
-      id: frameId,
-    },
-    data: {
-      minters: minterData,
-    },
-  });
+    await prisma.frames.update({
+      where: {
+        id: frameId,
+      },
+      data: {
+        minters: minterData,
+      },
+    });
 
-  res.status(200).send({ status: "success" });
+    res.status(200).send({ status: "success" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ status: "error", message: error.message });
+  }
 });
 
 utilRouter.get("/get-frame-data", async (req, res) => {
-  let { frameId } = req.query;
-  frameId = parseInt(frameId);
-  if (!frameId) {
-    return res
-      .status(400)
-      .send({ status: "error", message: "No frameId provided" });
+  try {
+    let { frameId } = req.query;
+    frameId = parseInt(frameId);
+    if (!frameId) {
+      return res
+        .status(400)
+        .send({ status: "error", message: "No frameId provided" });
+    }
+    const data = await prisma.frames.findUnique({
+      where: {
+        id: frameId,
+      },
+    });
+    res.status(200).send({ status: "success", data });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ status: "error", message: error.message });
   }
-  const data = await prisma.frames.findUnique({
-    where: {
-      id: frameId,
-    },
-  });
-  res.status(200).send({ status: "success", data });
 });
 
 module.exports = utilRouter;
