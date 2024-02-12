@@ -94,7 +94,12 @@ farcasterRouter.post("/register", async (req, res) => {
     });
     if (ownerCache) {
       await deleteCache(`user_${user_id}`);
-      await setCache(`user_${user_id}`, JSON.stringify(ownerCache));
+      const data = prisma.owners.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
+      await setCache(`user_${user_id}`, JSON.stringify(data));
     }
 
     res.status(200).send({
