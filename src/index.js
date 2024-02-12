@@ -5,7 +5,6 @@ const app = express({
   logger: true,
 });
 
-
 const compression = require("compression");
 const logger = require("./middleware/log");
 
@@ -36,7 +35,7 @@ const publicRouter = require("./routes/public/publicRouter");
 app.use(express.json({ limit: "30mb", extended: true }));
 
 app.use("/collection", auth, collectionRouter);
-app.use("/user",auth, userRouter);
+app.use("/user", auth, userRouter);
 app.use("/auth", authRouter);
 app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);

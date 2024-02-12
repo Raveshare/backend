@@ -394,13 +394,20 @@ utilRouter.post("/create-frame-data", async (req, res) => {
 utilRouter.post("/update-frame-data", async (req, res) => {
   let { frameId, minterAddress, txHash } = req.body;
 
+  const frame = await prisma.frames.findUnique({
+    where: {
+      id: frameId,
+    },
+  });
+
+  const minterData = [...frame.minters, { minterAddress, txHash }];
+
   await prisma.frames.update({
     where: {
       id: frameId,
     },
     data: {
-      minterAddress,
-      txHash,
+      minters: minterData,
     },
   });
 
