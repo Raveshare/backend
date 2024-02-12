@@ -345,7 +345,16 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
 
 utilRouter.post("/create-frame-data", async (req, res) => {
   try {
-    let { canvasId, metadata, isLike, isRecast, isFollow } = req.body;
+    let {
+      canvasId,
+      metadata,
+      isLike,
+      isRecast,
+      isFollow,
+      owner,
+      isTopUp,
+      allowedMints,
+    } = req.body;
 
     let imageIpfsLink;
 
@@ -382,6 +391,9 @@ utilRouter.post("/create-frame-data", async (req, res) => {
       isLike,
       isRecast,
       isFollow,
+      owner,
+      isTopUp,
+      allowedMints,
     };
 
     let frame = await prisma.frames.create({

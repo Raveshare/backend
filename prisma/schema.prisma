@@ -260,15 +260,18 @@ view template_view {
 }
 
 model frames {
-  id            Int      @id @default(autoincrement())
-  imageUrl      String   @db.VarChar(255)
-  tokenUri      String   @db.VarChar(255)
-  minters       Json[]   @default([])
-  isLike        Boolean  @default(false)
-  isRecast      Boolean  @default(false)
-  isFollow      Boolean  @default(false)
-  createdAt     DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+  id           Int      @id @default(autoincrement())
+  imageUrl     String   @db.VarChar(255)
+  tokenUri     String   @db.VarChar(255)
+  minters      Json[]   @default([])
+  owner        String?  @db.VarChar(255)
+  isTopUp      Boolean  @default(false)
+  allowedMints Int      @default(0)
+  isLike       Boolean  @default(false)
+  isRecast     Boolean  @default(false)
+  isFollow     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model shared_canvas {
