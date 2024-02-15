@@ -6,10 +6,7 @@ const fs = require("fs");
 const uploadImageToS3 = require("../../image/uploadImageToS3");
 const isEmpty = require("lodash/isEmpty");
 
-const {
-  getCache,
-  setCache,
-} = require("../../cache/handleCache");
+const { getCache, setCache } = require("../../cache/handleCache");
 
 async function checkIfNFTExists(nft) {
   let nftData = await getCache(
@@ -19,7 +16,6 @@ async function checkIfNFTExists(nft) {
   nftData = nftData === "true" ? true : false;
 
   if (!nftData) {
-
     const nftData = isEmpty(
       await prisma.nftData.findMany({
         where: {
@@ -29,14 +25,16 @@ async function checkIfNFTExists(nft) {
         },
       })
     );
-    await setCache(`nft_${nft.tokenId}_${nft.collectionAddress}_${7777777}`, nftData ? "false" : "true");
+    await setCache(
+      `nft_${nft.tokenId}_${nft.collectionAddress}_${7777777}`,
+      nftData ? "false" : "true"
+    );
 
     return !nftData;
   } else {
     return nftData;
   }
 }
-
 
 const getZoraNFTsQuery = gql`
   query OwnedNFTs($owner: [String!], $after: String!) {
@@ -99,6 +97,11 @@ async function updateZoraNFTs(user_id, evm_address) {
 
   let finalNFTs = [];
 
+  const existChecks = nfts.map((nft) => checkIfNFTExists(nft));
+
+  // Wait for all promises to resolve
+  const existResults = await Promise.all(existChecks);
+
   for (let i = 0; i < nfts.length; i++) {
     let nft = nfts[i].token;
 
@@ -111,7 +114,7 @@ async function updateZoraNFTs(user_id, evm_address) {
       image = image.replace("ipfs://", "https://gateway.pinata.cloud/ipfs/");
     }
 
-    let doesExist = await checkIfNFTExists(nft);
+    let doesExist = existResults[i];
     if (doesExist) continue;
 
     if (image.startsWith("data:image/svg+xml")) {
@@ -130,7 +133,7 @@ async function updateZoraNFTs(user_id, evm_address) {
         openseaLink: `https://opensea.io/assets/zora/${nft.collectionAddress}/${nft.tokenId}`,
         address: nft.collectionAddress,
         chainId: 7777777,
-        creators : [],
+        creators: [],
         ownerAddress: evm_address,
         ownerId: user_id,
       });
@@ -143,14 +146,14 @@ async function updateZoraNFTs(user_id, evm_address) {
         openseaLink: `https://opensea.io/assets/zora/${nft.collectionAddress}/${nft.tokenId}`,
         address: nft.collectionAddress,
         chainId: 7777777,
-        creators : [],
+        creators: [],
         ownerAddress: evm_address,
         ownerId: user_id,
       });
     }
   }
 
-  console.log(finalNFTs.length)
+  console.log(finalNFTs.length);
 
   return finalNFTs;
 }

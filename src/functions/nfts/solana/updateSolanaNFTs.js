@@ -15,6 +15,7 @@ async function checkIfNFTExists(nft) {
 const HELIUS_RPC_URL = process.env.HELIUS_RPC_URL;
 
 const updateSolanaNFTs = async (user_id, solana_address, page = 1) => {
+  console.log("Fetching Solana NFTs", new Date().toISOString());
   const response = await fetch(HELIUS_RPC_URL, {
     method: "POST",
     headers: {
@@ -36,16 +37,19 @@ const updateSolanaNFTs = async (user_id, solana_address, page = 1) => {
 
   let latestNFTs = [];
 
+  const existChecks = items.map((item) =>
+    checkIfNFTExists({
+      tokenId: item.id,
+      address: item.grouping[0]?.group_value,
+    })
+  );
+
+  const existResults = await Promise.all(existChecks);
+
   for (let i = 0; i < items.length; i++) {
     let item = items[i];
 
-    if (
-      await checkIfNFTExists({
-        tokenId: item.id,
-        address: item.grouping[0]?.group_value,
-      })
-    )
-      continue;
+    if (existResults[i]) continue;
 
     if (!item.content.files.uri && !item.content.links.image) continue;
 
@@ -64,6 +68,8 @@ const updateSolanaNFTs = async (user_id, solana_address, page = 1) => {
 
     latestNFTs.push(nft);
   }
+
+  console.log("Solana NFTs are fetched", new Date().toISOString());
 
   return latestNFTs;
 };

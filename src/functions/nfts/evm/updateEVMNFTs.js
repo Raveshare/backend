@@ -8,9 +8,9 @@ const prisma = require("../../../prisma");
 const { getCache, setCache } = require("../../cache/handleCache");
 
 /**
- * 
- * @param {*} nft 
- * @returns Returns 
+ *
+ * @param {*} nft
+ * @returns Returns
  */
 async function checkIfNFTExists(nft) {
   // returns true if nft exists
@@ -18,7 +18,7 @@ async function checkIfNFTExists(nft) {
     `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
   );
 
-  nftData = ((nftData === "true") ? true : false);
+  nftData = nftData === "true" ? true : false;
 
   if (!nftData) {
     const nftData = isEmpty(
@@ -31,7 +31,10 @@ async function checkIfNFTExists(nft) {
       })
     );
     // sets cache to true if nft exists
-    await setCache(`nft_${nft.tokenId}_${nft.address}_${nft.chainId}`, nftData ? "false" : "true");
+    await setCache(
+      `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`,
+      nftData ? "false" : "true"
+    );
 
     // returns true if nft exists
     return !nftData;
@@ -44,15 +47,26 @@ async function updateEVMNFTs(user_id, evm_address) {
   let ethNFTs = await getEthNFT(user_id, evm_address);
   let polNFTs = await getPolygonNFT(user_id, evm_address);
   let baseNFTs = await getBaseNFT(user_id, evm_address);
+  console.log("Eth, Poly and Base NFTs are fetched");
 
-  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs)
+  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
   let finalNFTs = [];
+  
+  console.log("Exist checks start", new Date().toISOString());
+  const existChecks = latestNFTs.map((nft) => checkIfNFTExists(nft));
+  const existResults = await Promise.all(existChecks);
+  console.log("Exist checks are done", new Date().toISOString());
+
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
-    let doesExist = await checkIfNFTExists(nft);
+    let doesExist = existResults[i];
+    
     if (doesExist) continue;
-  
+
+    console.log(
+      `NFT ${nft.tokenId} ${nft.address} ${nft.chainId} doesn't exist. Adding to finalNFTs array`
+    );
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
         "ipfs://",
@@ -61,7 +75,6 @@ async function updateEVMNFTs(user_id, evm_address) {
     } else {
       console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
-
 
     finalNFTs.push(nft);
   }

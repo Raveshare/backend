@@ -6,6 +6,10 @@ const prisma = require("../../prisma");
 
 async function updateNFTsForOwner(owner) {
   try {
+    console.log(
+      `NFTs update starts for ${owner.user_id} at`,
+      new Date().toISOString()
+    );
     let user_id = owner.user_id;
     let evm_address = owner.evm_address;
     let solana_address = owner.solana_address;
@@ -16,6 +20,10 @@ async function updateNFTsForOwner(owner) {
       nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
     if (evm_address) {
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
+      console.log(
+        "EVM NFTs are fetched on updateNFTsForOwner",
+        new Date().toISOString()
+      );
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
 
@@ -29,7 +37,7 @@ async function updateNFTsForOwner(owner) {
         data: updatedNFT,
         skipDuplicates: true,
       });
-      console.log(res.count)
+      console.log(res.count);
     } catch (e) {
       console.error(e);
       console.log(`Error saving nfts for ${owner.user_id}`);
@@ -37,7 +45,7 @@ async function updateNFTsForOwner(owner) {
 
     for (let i = 0; i < nfts.length; i++) {
       let nft = nfts[i];
-
+      console.log("Started Upload", new Date().toISOString());
       let res = await uploadImageFromLinkToS3(
         nft.imageLink || nft.permaLink,
         user_id,
@@ -76,8 +84,12 @@ async function updateNFTsForOwner(owner) {
         console.log(e);
         console.log(nft.tokenId, nft.address);
       }
+      console.log("Finished uploading", new Date().toISOString());
     }
-
+    console.log(
+      `NFTs update ends for ${owner.user_id} at`,
+      new Date().toISOString()
+    );
     return true;
   } catch (e) {
     console.log(e);
