@@ -14,7 +14,13 @@ const addTask = async () => {
 
 // write a script that will add 1 point to every user in the database
 const addPoints = async () => {
-  const owners = await prisma.owners.findMany();
+  const owners = await prisma.owners.findMany({
+    where: {
+      id: {
+        gte: 256,
+      },
+    },
+  });
 
   await prisma.owners.updateMany({
     data: {
@@ -26,7 +32,7 @@ const addPoints = async () => {
     await prisma.points_history.create({
       data: {
         ownerId: owner.id,
-        taskId: 2,
+        taskId: 199,
         reason: "User logins to platform",
         amount: 10,
       },
@@ -44,16 +50,14 @@ let ref = referral.generate({
 let count = 0;
 const addReferralCode = async () => {
   const owners = await prisma.owners.findMany();
-  console.log(owners.length)
+  console.log(owners.length);
 
   let refOwner = [];
   for (let owner of owners) {
-    refOwner.push(
-      {
-        ownerId: owner.id,
-        referralCode: ref[count],
-      }
-    );
+    refOwner.push({
+      ownerId: owner.id,
+      referralCode: ref[count],
+    });
     count++;
   }
 
@@ -61,10 +65,6 @@ const addReferralCode = async () => {
     data: refOwner,
   });
 
-
   console.log("Added referral code to all users");
 };
 
-addReferralCode();
-// addPoints();
-// addTask();
