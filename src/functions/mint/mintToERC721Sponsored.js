@@ -26,6 +26,22 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
     },
   });
 
+  let owner = await prisma.owners.findUnique({
+    where: {
+      evm_address: frame.owner,
+    },
+  });
+
+  let userWalletPvtKey = await prisma.user_funds.findUnique({
+    where: {
+      userId: owner.id,
+    },
+    select: {
+      wallet_pvtKey: true,
+      sponsored: true,
+    },
+  });
+
   let contractWithSigner = contract.connect(wallet);
   try {
     const transaction = await contractWithSigner.mint(
@@ -33,6 +49,15 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
       frame.tokenUri
     );
     await transaction.wait();
+
+    await prisma.user_funds.update({
+      where: {
+        userId: owner.id,
+      },
+      data: {
+        sponsored: userWalletPvtKey.sponsored - 1,
+      },
+    });
 
     return transaction.hash;
   } catch (error) {

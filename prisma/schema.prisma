@@ -272,7 +272,6 @@ model frames {
   isLike        Boolean  @default(false)
   isRecast      Boolean  @default(false)
   isFollow      Boolean  @default(false)
-  sponsoredMint Int?     @default(10)
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 }
@@ -293,6 +292,7 @@ model user_funds {
   topup         Int     @default(0)
   wallet        String? @db.VarChar(255)
   wallet_pvtKey String? @db.VarChar(255)
+  sponsored     Int     @default(10)
   userId        Int    @unique
 
   owner owners @relation(fields: [userId], references: [id])

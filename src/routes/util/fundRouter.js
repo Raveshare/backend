@@ -29,31 +29,41 @@ router.post("/", async (req, res) => {
       id: frameId,
     },
     select: {
-      sponsoredMint: true,
-      contract_address: true,
       owner: true,
       id: true,
     },
   });
 
-  let sponsoredMint = frame.sponsoredMint || 0;
+  let user = await prisma.owners.findUnique({
+    where: {
+      evm_address: frame.owner,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  let sponsored = await prisma.user_funds.findUnique({
+    where: {
+      userId: user.id
+    },
+    select: {
+      sponsored: true,
+    },
+  });
+
+  let sponsoredMint = sponsored.sponsored || 0;
 
   if (sponsoredMint <= 0) {
     console.log("Minting to ERC721");
-    let tx = await mintToERC721(
-      frame.id,
-      recipientAddress,
-    );
+    let tx = await mintToERC721(frame.id, recipientAddress);
     res.send({
       message: "Minted successfully",
       tx: tx,
     });
   } else {
     console.log("Minting to ERC721 Sponsored");
-    let tx = await mintToERC721Sponsored(
-      frame.id,
-      recipientAddress
-    );
+    let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
     res.send({
       message: "Minted successfully",
       tx: tx,
@@ -61,16 +71,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/",auth, async (req, res) => {
-  
-
+router.get("/", auth, async (req, res) => {
   let userWallet = await getOrCreateWallet(req.user.user_id);
   let balance = await getUserBalance(userWallet.publicAddress);
   res.send({
     publicAddress: userWallet.publicAddress,
     balance: balance,
   });
-
 });
 
 module.exports = router;
