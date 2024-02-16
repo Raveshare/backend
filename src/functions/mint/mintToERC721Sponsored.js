@@ -34,9 +34,6 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
     );
     await transaction.wait();
 
-    console.log("Transaction hash:", transaction.hash);
-    console.log("Transaction completed.");
-
     return transaction.hash;
   } catch (error) {
     console.error("Error:", error);

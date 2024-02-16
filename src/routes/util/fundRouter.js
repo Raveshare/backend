@@ -41,9 +41,8 @@ router.post("/", async (req, res) => {
   if (sponsoredMint <= 0) {
     console.log("Minting to ERC721");
     let tx = await mintToERC721(
-      frame.contract_address,
+      frame.id,
       recipientAddress,
-      frame.owner
     );
     res.send({
       message: "Minted successfully",

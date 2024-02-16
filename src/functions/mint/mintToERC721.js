@@ -25,13 +25,15 @@ async function mintToERC721(frameId, recipientAddress) {
     },
   });
 
+  let owner = await prisma.owners.findUnique({
+    where: {
+      evm_address: frame.owner,
+    },
+  });
+
   let userWalletPvtKey = await prisma.user_funds.findUnique({
     where: {
-      owner: {
-        evm_address: {
-          contains: frame.owner,
-        },
-      },
+      userId: owner.id,
     },
     select: {
       wallet_pvtKey: true,
@@ -48,9 +50,6 @@ async function mintToERC721(frameId, recipientAddress) {
     );
 
     await transaction.wait();
-
-    console.log("Transaction hash:", transaction.hash);
-    console.log("Transaction completed.");
 
     return transaction.hash;
   } catch (error) {
