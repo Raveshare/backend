@@ -5,6 +5,7 @@ const mintToERC721Sponsored = require("../../functions/mint/mintToERC721Sponsore
 const getOrCreateWallet = require("../../functions/mint/getOrCreateWallet");
 const auth = require("../../middleware/auth/auth");
 const { ethers } = require("ethers");
+const getUserBalance = require("../../functions/mint/getUserBalance");
 
 router.post("/", async (req, res) => {
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
@@ -31,12 +32,14 @@ router.post("/", async (req, res) => {
       sponsoredMint: true,
       contract_address: true,
       owner: true,
+      id: true,
     },
   });
 
   let sponsoredMint = frame.sponsoredMint || 0;
 
   if (sponsoredMint <= 0) {
+    console.log("Minting to ERC721");
     let tx = await mintToERC721(
       frame.contract_address,
       recipientAddress,
@@ -47,8 +50,9 @@ router.post("/", async (req, res) => {
       tx: tx,
     });
   } else {
+    console.log("Minting to ERC721 Sponsored");
     let tx = await mintToERC721Sponsored(
-      frame.contract_address,
+      frame.id,
       recipientAddress
     );
     res.send({
@@ -59,9 +63,14 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/",auth, async (req, res) => {
+  
 
   let userWallet = await getOrCreateWallet(req.user.user_id);
-  res.send(userWallet);
+  let balance = await getUserBalance(userWallet.publicAddress);
+  res.send({
+    publicAddress: userWallet.publicAddress,
+    balance: balance,
+  });
 
 });
 

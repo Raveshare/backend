@@ -1,37 +1,38 @@
-const {
-  zoraNftCreatorV1Config,
-  erc721DropABI,
-} = require("@zoralabs/zora-721-contracts");
 const { ethers } = require("ethers");
+const prisma = require("../../prisma");
 const dotenv = require("dotenv");
-const { parseEther } = require("viem");
 dotenv.config();
 
-let abi = erc721DropABI;
-let provider = new ethers.JsonRpcProvider("https://rpc.zora.energy");
+let NODE_ENV = process.env.NODE_ENV;
 
-const mintFee = parseEther("0.000777");
-const quantity = 1;
-const value = mintFee * BigInt(quantity);
-const comment = "gm gm!, mint from raveshare";
-const mintReferralAddress = process.env.MINT_REFERRAL_ADDRESS;
+let rpc = NODE_ENV === "production" ? `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_BASE_API_KEY}` : "https://sepolia.base.org";
+
+let provider = new ethers.JsonRpcProvider(rpc);
+
+let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
+
 let wallet = new ethers.Wallet(process.env.SPONSOR_WALLET_KEY, provider);
 
-async function mintToERC721Sponsored(zoraContract, recipientAddress) {
-  let contract = new ethers.Contract(zoraContract, abi, wallet);
+async function mintToERC721Sponsored(frameId, recipientAddress) {
+  let contract = new ethers.Contract(BaseContractAddress, BaseAbi, wallet);
+
+  let frame = await prisma.frames.findUnique({
+    where: {
+      id: frameId,
+    },
+    select: {
+      tokenUri: true,
+      owner: true,
+    },
+  });
+
   let contractWithSigner = contract.connect(wallet);
   try {
-    const transaction = await contractWithSigner.mintWithRewards(
+    const transaction = await contractWithSigner.mint(
       recipientAddress,
-      BigInt(quantity),
-      comment,
-      mintReferralAddress,
-      {
-        value,
-      }
+      frame.tokenUri
     );
     await transaction.wait();
-
 
     console.log("Transaction hash:", transaction.hash);
     console.log("Transaction completed.");
