@@ -31,6 +31,7 @@ const authRouter = require("./routes/auth/authRouter");
 const templateRouter = require("./routes/content/templateRouter");
 const assetRouter = require("./routes/content/assetRouter");
 const publicRouter = require("./routes/public/publicRouter");
+const fundRouter = require("./routes/util/fundRouter");
 
 app.use(express.json({ limit: "30mb", extended: true }));
 
@@ -41,6 +42,7 @@ app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);
 app.use("/asset", auth, assetRouter);
 app.use("/public", publicRouter);
+app.use("/mint", fundRouter);
 
 if (NODE_ENV === "local") {
   const adminRouter = require("./routes/admin/adminRouter");

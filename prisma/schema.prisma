@@ -116,6 +116,7 @@ model owners {
   user_published_canvases user_published_canvases[]
   room                    room[]
   participants            room_participants[]
+  user_funds              user_funds[]
 }
 
 model socials {
@@ -260,18 +261,20 @@ view template_view {
 }
 
 model frames {
-  id           Int      @id @default(autoincrement())
-  imageUrl     String   @db.VarChar(255)
-  tokenUri     String   @db.VarChar(255)
-  minters      Json[]   @default([])
-  owner        String?  @db.VarChar(255)
-  isTopUp      Boolean  @default(false)
-  allowedMints Int      @default(0)
-  isLike       Boolean  @default(false)
-  isRecast     Boolean  @default(false)
-  isFollow     Boolean  @default(false)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  id            Int      @id @default(autoincrement())
+  imageUrl      String   @db.VarChar(255)
+  tokenUri      String   @db.VarChar(255)
+  contract_address String?   @db.VarChar(255)
+  minters       Json[]   @default([])
+  owner         String?  @db.VarChar(255)
+  isTopUp       Boolean  @default(false)
+  allowedMints  Int      @default(0)
+  isLike        Boolean  @default(false)
+  isRecast      Boolean  @default(false)
+  isFollow      Boolean  @default(false)
+  sponsoredMint Int?     @default(10)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model shared_canvas {
@@ -283,4 +286,14 @@ model shared_canvas {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   canvas canvases @relation(fields: [canvasId], references: [id])
+}
+
+model user_funds {
+  id            Int     @id @default(autoincrement())
+  topup         Int     @default(0)
+  wallet        String? @db.VarChar(255)
+  wallet_pvtKey String? @db.VarChar(255)
+  userId        Int    @unique
+
+  owner owners @relation(fields: [userId], references: [id])
 }
