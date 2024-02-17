@@ -17,12 +17,14 @@ router.post("/", async (req, res) => {
   let NODE_ENV = process.env.NODE_ENV;
 
   if (NODE_ENV === "production") {
-    if (host !== "frame.lenspost.xyz") {
+    if (host !== "frames.lenspost.xyz") {
       return res.status(400).json({ message: "Invalid host" });
     }
   }
 
   let { frameId, recipientAddress } = req.body;
+
+  frameId = parseInt(frameId);
 
   let frame = await prisma.frames.findUnique({
     where: {
