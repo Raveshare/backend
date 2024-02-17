@@ -48,7 +48,6 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
       recipientAddress,
       frame.tokenUri
     );
-    await transaction.wait();
 
     await prisma.user_funds.update({
       where: {

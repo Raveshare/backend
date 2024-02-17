@@ -48,9 +48,7 @@ async function mintToERC721(frameId, recipientAddress) {
       recipientAddress,
       frame.tokenUri
     );
-
-    await transaction.wait();
-
+    
     return transaction.hash;
   } catch (error) {
     console.error("Error:", error);
