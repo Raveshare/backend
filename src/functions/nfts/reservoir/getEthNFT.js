@@ -3,8 +3,10 @@ const axios = require("axios");
 const ETHEREUM_URL = "https://api.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
+
 const getEthNFT = async (user_id, evm_address) => {
   let nfts = [];
+  console.log("Eth NFTs API Calls start", new Date().toISOString());
 
   let continuation = "";
   while (true) {
@@ -32,6 +34,8 @@ const getEthNFT = async (user_id, evm_address) => {
 
     if (!continuation) break;
   }
+
+  console.log("Eth NFTs API Calls end", new Date().toISOString());
 
   let formattedNFTs = [];
 

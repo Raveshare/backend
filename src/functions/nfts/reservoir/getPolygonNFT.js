@@ -4,6 +4,8 @@ const POLYGON_URL = "https://api-polygon.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
 const getPolygonNFTs = async (user_id, evm_address) => {
+
+  console.log("Polygon NFTs API Calls end", new Date().toISOString());
   let nfts = [];
 
   let continuation = "";
@@ -32,6 +34,8 @@ const getPolygonNFTs = async (user_id, evm_address) => {
 
     if (!continuation) break;
   }
+
+  console.log("Polygon NFTs API Calls end", new Date().toISOString());
 
   let formattedNFTs = [];
 
