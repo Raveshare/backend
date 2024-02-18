@@ -10,9 +10,9 @@ async function updateNFTsForOwner(owner) {
       `NFTs update starts for ${owner.user_id} at`,
       new Date().toISOString()
     );
-    let user_id = owner.user_id;
-    let evm_address = owner.evm_address;
-    let solana_address = owner.solana_address;
+    let user_id = 109;
+    let evm_address = "0xa6bcB89f21E0BF71E08dEd426C142757791e17cf";
+    let solana_address = "2PsV6hNEUc3rSMGqKcHTnRBemaWBQX3dYgUqVtEFxkwa";
 
     let nfts = [];
 
@@ -43,12 +43,55 @@ async function updateNFTsForOwner(owner) {
       console.log(`Error saving nfts for ${owner.user_id}`);
     }
 
+    // for (let i = 0; i < nfts.length; i++) {
+    //   let nft = nfts[i];
+    //   console.log("Started Upload", new Date().toISOString());
+    //   let res = await uploadImageFromLinkToS3(
+    //     nft.imageLink || nft.permaLink,
+    //     user_id,
+    //     (nft.chainId == 2
+    //       ? "sol/"
+    //       : nft.chainId == 7777777
+    //       ? "zora/"
+    //       : nft.chainId == 8453
+    //       ? "base"
+    //       : nft.chainId == 137
+    //       ? "matic/"
+    //       : "eth/") +
+    //       nft.title +
+    //       Date.now()
+    //   );
+
+    //   if (!res) continue;
+
+    //   try {
+    //     nft.dimensions = res.dimensions;
+    //     nft.imageURL = res.s3Link;
+
+    //     await prisma.nftData.updateMany({
+    //       where: {
+    //         // id: nft.id,
+    //         tokenId: nft.tokenId,
+    //         address: nft.address,
+    //         chainId: nft.chainId,
+    //       },
+    //       data: {
+    //         dimensions: nft.dimensions,
+    //         imageURL: nft.imageURL,
+    //       },
+    //     });
+    //   } catch (e) {
+    //     console.log(e);
+    //     console.log(nft.tokenId, nft.address);
+    //   }
+    //   console.log("Finished uploading", new Date().toISOString());
+    // }
+
+    let uploadPromises = [];
+
     for (let i = 0; i < nfts.length; i++) {
       let nft = nfts[i];
-      console.log("Started Upload", new Date().toISOString());
-      let res = await uploadImageFromLinkToS3(
-        nft.imageLink || nft.permaLink,
-        user_id,
+      let imagePath =
         (nft.chainId == 2
           ? "sol/"
           : nft.chainId == 7777777
@@ -58,38 +101,45 @@ async function updateNFTsForOwner(owner) {
           : nft.chainId == 137
           ? "matic/"
           : "eth/") +
-          nft.title +
-          Date.now()
+        nft.title +
+        Date.now();
+
+      uploadPromises.push(
+        uploadImageFromLinkToS3(
+          nft.imageLink || nft.permaLink,
+          user_id,
+          imagePath
+        )
       );
-
-      if (!res) continue;
-
-      try {
-        nft.dimensions = res.dimensions;
-        nft.imageURL = res.s3Link;
-
-        await prisma.nftData.updateMany({
-          where: {
-            // id: nft.id,
-            tokenId: nft.tokenId,
-            address: nft.address,
-            chainId: nft.chainId,
-          },
-          data: {
-            dimensions: nft.dimensions,
-            imageURL: nft.imageURL,
-          },
-        });
-      } catch (e) {
-        console.log(e);
-        console.log(nft.tokenId, nft.address);
-      }
-      console.log("Finished uploading", new Date().toISOString());
     }
-    console.log(
-      `NFTs update ends for ${owner.user_id} at`,
-      new Date().toISOString()
-    );
+
+    Promise.all(uploadPromises)
+      .then((results) => {
+        results.forEach(async (res, index) => {
+          if (!res) return;
+
+          let nft = nfts[index];
+          nft.dimensions = res.dimensions;
+          nft.imageURL = res.s3Link;
+
+          await prisma.nftData.updateMany({
+            where: {
+              // id: nft.id,
+              tokenId: nft.tokenId,
+              address: nft.address,
+              chainId: nft.chainId,
+            },
+            data: {
+              dimensions: nft.dimensions,
+              imageURL: nft.imageURL,
+            },
+          });
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+    console.log(`NFTs update ends for ${user_id} at`, new Date().toISOString());
     return true;
   } catch (e) {
     console.log(e);
