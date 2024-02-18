@@ -9,7 +9,6 @@ const getUserBalance = require("../../functions/mint/getUserBalance");
 const withdrawFunds = require("../../functions/mint/withdrawFunds");
 
 router.post("/", async (req, res) => {
-  console.log(req.headers)
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("origin_url", fullUrl);
   console.log(req.get("host"));
@@ -23,6 +22,8 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Invalid host" });
     }
   }
+
+  console.log("Minting request received");
 
   let { frameId, recipientAddress } = req.body;
 
@@ -49,7 +50,7 @@ router.post("/", async (req, res) => {
 
   let sponsored = await prisma.user_funds.findUnique({
     where: {
-      userId: user.id
+      userId: user.id,
     },
     select: {
       sponsored: true,
@@ -84,13 +85,21 @@ router.get("/", auth, async (req, res) => {
   });
 });
 
-router.post("/withdraw" , auth, async (req, res) => {
+router.post("/withdraw", auth, async (req, res) => {
   let userId = req.user.user_id;
-  let { recipientAddress , amount } = req.body;
-  let tx = await withdrawFunds(userId,recipientAddress, amount);
+  let { to, amount } = req.body;
+
+  if(!to){
+    return res.status(400).json({message : "Invalid input"})
+  }
+
+  let tx = await withdrawFunds(userId, to, amount);
+  if (tx.code === 503) {
+    return res.status(503).json({ message: "Insufficient funds" });
+  }
   res.send({
     message: "Withdrawn successfully",
-    tx: tx,
+    tx: tx.success,
   });
 });
 
