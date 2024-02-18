@@ -18,6 +18,8 @@ const {
   usedRemoveBG,
 } = require("../../functions/points/removeBG");
 const { invitedUser } = require("../../functions/points/inviteUser");
+const canvasSharedAsFrame = require("../../functions/events/canvasSharedAsFrame");
+const usedRemoveBGEvent = require("../../functions/events/usedRemoveBG.event");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
@@ -70,6 +72,7 @@ utilRouter.post("/remove-bg", auth, async (req, res) => {
     let result = await uploadImageToS3(imageBuffer, `temp/${Date.now()}.png`);
 
     await usedRemoveBG(user_id);
+    usedRemoveBGEvent(user_id);
 
     res.send({
       id: id,
@@ -343,8 +346,9 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
   });
 });
 
-utilRouter.post("/create-frame-data", async (req, res) => {
+utilRouter.post("/create-frame-data", auth, async (req, res) => {
   try {
+    let userId = req.user.user_id;
     let {
       canvasId,
       metadata,
@@ -399,6 +403,8 @@ utilRouter.post("/create-frame-data", async (req, res) => {
     let frame = await prisma.frames.create({
       data,
     });
+
+    canvasSharedAsFrame(canvasId, userId, frame.id);
 
     res.status(200).send({ status: "success", frameId: frame.id });
   } catch (error) {

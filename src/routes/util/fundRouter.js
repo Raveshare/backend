@@ -6,8 +6,10 @@ const getOrCreateWallet = require("../../functions/mint/getOrCreateWallet");
 const auth = require("../../middleware/auth/auth");
 const { ethers } = require("ethers");
 const getUserBalance = require("../../functions/mint/getUserBalance");
+const withdrawFunds = require("../../functions/mint/withdrawFunds");
 
 router.post("/", async (req, res) => {
+  console.log(req.headers)
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
   console.log("origin_url", fullUrl);
   console.log(req.get("host"));
@@ -17,7 +19,7 @@ router.post("/", async (req, res) => {
   let NODE_ENV = process.env.NODE_ENV;
 
   if (NODE_ENV === "production") {
-    if (host !== "frames.lenspost.xyz") {
+    if (host !== "frames.lenspost.xyz" || host !== "api.lenspost.xyz") {
       return res.status(400).json({ message: "Invalid host" });
     }
   }
@@ -79,6 +81,16 @@ router.get("/", auth, async (req, res) => {
   res.send({
     publicAddress: userWallet.publicAddress,
     balance: balance,
+  });
+});
+
+router.post("/withdraw" , auth, async (req, res) => {
+  let userId = req.user.user_id;
+  let { recipientAddress , amount } = req.body;
+  let tx = await withdrawFunds(userId,recipientAddress, amount);
+  res.send({
+    message: "Withdrawn successfully",
+    tx: tx,
   });
 });
 
