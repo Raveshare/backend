@@ -18,6 +18,7 @@ async function checkIfNFTExists(nft) {
     `nft_${nft.tokenId}_${nft.address}_${nft.chainId}`
   );
 
+  // let nftData = "false";
   nftData = nftData === "true" ? true : false;
 
   if (!nftData) {
@@ -51,17 +52,26 @@ async function updateEVMNFTs(user_id, evm_address) {
 
   let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
   let finalNFTs = [];
-  
+
   console.log("Exist checks start", new Date().toISOString());
-  const existChecks = latestNFTs.map((nft) => checkIfNFTExists(nft));
-  const existResults = await Promise.all(existChecks);
+
+  const processBatch = async (batch) => {
+    const existChecks = batch.map((nft) => checkIfNFTExists(nft));
+    return await Promise.all(existChecks);
+  };
+  const existResults = [];
+  for (let i = 0; i < latestNFTs.length; i += 10) {
+    const batch = latestNFTs.slice(i, i + 10);
+    const batchResults = await processBatch(batch);
+    existResults.push(...batchResults);
+  }
   console.log("Exist checks are done", new Date().toISOString());
 
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
     let doesExist = existResults[i];
-    
+
     if (doesExist) continue;
 
     console.log(

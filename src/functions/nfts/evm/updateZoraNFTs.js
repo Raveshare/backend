@@ -12,7 +12,7 @@ async function checkIfNFTExists(nft) {
   let nftData = await getCache(
     `nft_${nft.tokenId}_${nft.collectionAddress}_${7777777}`
   );
-
+  // let nftData = "false";
   nftData = nftData === "true" ? true : false;
 
   if (!nftData) {
@@ -97,10 +97,16 @@ async function updateZoraNFTs(user_id, evm_address) {
 
   let finalNFTs = [];
 
-  const existChecks = nfts.map((nft) => checkIfNFTExists(nft));
-
-  // Wait for all promises to resolve
-  const existResults = await Promise.all(existChecks);
+  const processBatch = async (batch) => {
+    const existChecks = batch.map((nft) => checkIfNFTExists(nft));
+    return await Promise.all(existChecks);
+  };
+  const existResults = [];
+  for (let i = 0; i < nfts.length; i += 10) {
+    const batch = nfts.slice(i, i + 10);
+    const batchResults = await processBatch(batch);
+    existResults.push(...batchResults);
+  }
 
   for (let i = 0; i < nfts.length; i++) {
     let nft = nfts[i].token;

@@ -37,14 +37,23 @@ const updateSolanaNFTs = async (user_id, solana_address, page = 1) => {
 
   let latestNFTs = [];
 
-  const existChecks = items.map((item) =>
-    checkIfNFTExists({
-      tokenId: item.id,
-      address: item.grouping[0]?.group_value,
-    })
-  );
+  const processBatch = async (batch) => {
+    const existChecks = batch.map((item) =>
+      checkIfNFTExists({
+        tokenId: item.id,
+        address: item.grouping[0]?.group_value,
+      })
+    );
+    return await Promise.all(existChecks);
+  };
 
-  const existResults = await Promise.all(existChecks);
+  // Main logic
+  const existResults = [];
+  for (let i = 0; i < items.length; i += 10) {
+    const batch = items.slice(i, i + 10);
+    const batchResults = await processBatch(batch);
+    existResults.push(...batchResults);
+  }
 
   for (let i = 0; i < items.length; i++) {
     let item = items[i];

@@ -10,9 +10,9 @@ async function updateNFTsForOwner(owner) {
       `NFTs update starts for ${owner.user_id} at`,
       new Date().toISOString()
     );
-    let user_id = 109;
-    let evm_address = "0xa6bcB89f21E0BF71E08dEd426C142757791e17cf";
-    let solana_address = "2PsV6hNEUc3rSMGqKcHTnRBemaWBQX3dYgUqVtEFxkwa";
+    let user_id = 19;
+    let evm_address = "0xE48C889310Dccb6aD29816CbE17314Edf9DA9Baf";
+    let solana_address = "HrRwqoUYAjjYwHuzNkH9pENWbzmQXLSCx4mguM138EG2";
 
     let nfts = [];
 
