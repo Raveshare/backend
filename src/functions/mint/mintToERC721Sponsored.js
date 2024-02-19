@@ -13,6 +13,8 @@ let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
 let wallet = new ethers.Wallet(process.env.SPONSOR_WALLET_KEY, provider);
 
+const mintedFrame = require("../events/mintedFrame.event");
+
 async function mintToERC721Sponsored(frameId, recipientAddress) {
   let contract = new ethers.Contract(BaseContractAddress, BaseAbi, wallet);
 
@@ -57,6 +59,10 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
         sponsored: userWalletPvtKey.sponsored - 1,
       },
     });
+
+
+    mintedFrame(owner.id , frameId , recipientAddress , false)
+    
 
     return transaction.hash;
   } catch (error) {
