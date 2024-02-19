@@ -61,7 +61,7 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
     });
 
 
-    mintedFrame(owner.id , frameId , recipientAddress , false)
+    mintedFrame(owner.id , frameId , recipientAddress , true)
     
 
     return transaction.hash;

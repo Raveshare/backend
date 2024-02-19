@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
     },
   });
 
-  if (frame.owner === null) {
+  if (!frame?.owner) {
     return res.status(400).json({ message: "Frame not found" });
   }
 
@@ -49,6 +49,10 @@ router.post("/", async (req, res) => {
       id: true,
     },
   });
+
+  if (!user?.id) {
+    return res.status(400).json({ message: "User not found" });
+  }
 
   let sponsored = await prisma.user_funds.findUnique({
     where: {
