@@ -1,6 +1,7 @@
 const getBaseNFT = require("../reservoir/getBaseNFT");
 const getEthNFT = require("../reservoir/getEthNFT");
 const getPolygonNFT = require("../reservoir/getPolygonNFT");
+const getOptimismNFT = require("../reservoir/getOptimismNFT");
 const { isEmpty } = require("lodash");
 
 const prisma = require("../../../prisma");
@@ -45,12 +46,14 @@ async function checkIfNFTExists(nft) {
 }
 
 async function updateEVMNFTs(user_id, evm_address) {
-  let ethNFTs = await getEthNFT(user_id, evm_address);
-  let polNFTs = await getPolygonNFT(user_id, evm_address);
-  let baseNFTs = await getBaseNFT(user_id, evm_address);
-  console.log("Eth, Poly and Base NFTs are fetched");
+  // let ethNFTs = await getEthNFT(user_id, evm_address);
+  // let polNFTs = await getPolygonNFT(user_id, evm_address);
+  // let baseNFTs = await getBaseNFT(user_id, evm_address);
+  let optimismNFT = await getOptimismNFT(user_id, evm_address);
+  console.log("Eth, Poly, Base & Optimism NFTs are fetched");
 
-  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs);
+  // let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs).concat(optimismNFT);
+  let latestNFTs = optimismNFT;
   let finalNFTs = [];
 
   console.log("Exist checks start", new Date().toISOString());
