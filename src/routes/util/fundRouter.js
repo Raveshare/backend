@@ -10,15 +10,13 @@ const withdrawFunds = require("../../functions/mint/withdrawFunds");
 
 router.post("/", async (req, res) => {
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
-  console.log("origin_url", fullUrl);
-  console.log(req.get("host"));
 
-  host = req.get("host");
+  let host = req.get("host");
 
   let NODE_ENV = process.env.NODE_ENV;
 
   if (NODE_ENV === "production") {
-    if (host !== "frames.lenspost.xyz" || host !== "api.lenspost.xyz") {
+    if (host != "api.lenspost.xyz") {
       return res.status(400).json({ message: "Invalid host" });
     }
   }
@@ -89,8 +87,8 @@ router.post("/withdraw", auth, async (req, res) => {
   let userId = req.user.user_id;
   let { to, amount } = req.body;
 
-  if(!to){
-    return res.status(400).json({message : "Invalid input"})
+  if (!to) {
+    return res.status(400).json({ message: "Invalid input" });
   }
 
   let tx = await withdrawFunds(userId, to, amount);
