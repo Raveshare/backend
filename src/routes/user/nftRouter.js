@@ -8,7 +8,7 @@ const sendError = require("../../functions/webhook/sendError.webhook");
 const {
   getCache,
   setCache,
-  deleteCacheMatchPattern
+  deleteCacheMatchPattern,
 } = require("../../functions/cache/handleCache");
 
 nftRouter.post("/update", async (req, res) => {
@@ -17,16 +17,16 @@ nftRouter.post("/update", async (req, res) => {
   await deleteCacheMatchPattern(`nfts_${user_id}`);
   await deleteCacheMatchPattern(`total_nfts_${user_id}`);
 
-  let user
+  let user;
   let userCache = await getCache(`user_${user_id}`);
   if (!userCache) {
-  user = await prisma.owners.findUnique({
-    where: {
-      id: user_id,
-    },
-  });
+    user = await prisma.owners.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
 
-  await setCache(`user_${user_id}`, JSON.stringify(user));
+    await setCache(`user_${user_id}`, JSON.stringify(user));
   } else {
     user = JSON.parse(userCache);
   }
@@ -189,7 +189,10 @@ nftRouter.get("/", async (req, res) => {
         skip: offset,
       });
 
-      await setCache(`nfts_${user_id}_${chainId}_${page}` , JSON.stringify(queriedNFTs));
+      await setCache(
+        `nfts_${user_id}_${chainId}_${page}`,
+        JSON.stringify(queriedNFTs)
+      );
     } else {
       queriedNFTs = JSON.parse(queriedNFTsCache);
     }

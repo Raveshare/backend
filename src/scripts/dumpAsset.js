@@ -11,9 +11,10 @@ async function dumpAsset(name) {
   //   data: assets,
   //   skipDuplicates: true,
   // });
-  const data = await prisma.tasks.deleteMany({
+
+  const data = await prisma.nftData.count({
     where: {
-      description: "Lenspost Admin Test",
+      ownerId: 19,
     },
   });
   console.log(data);
