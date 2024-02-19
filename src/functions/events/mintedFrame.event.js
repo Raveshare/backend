@@ -4,7 +4,7 @@ const mintedFrame =  (userId, frameId, recipientAddress , isSponsored) => {
     try {
          posthogClient.capture({
             distinctId: userId,
-            event: 'Canvas Created',
+            event: 'Minted as Frame',
             properties: {
                 frameId: frameId,
                 recipientAddress: recipientAddress,
