@@ -37,6 +37,10 @@ router.post("/", async (req, res) => {
     },
   });
 
+  if (frame.owner === null) {
+    return res.status(400).json({ message: "Frame not found" });
+  }
+
   let user = await prisma.owners.findUnique({
     where: {
       evm_address: frame.owner,
