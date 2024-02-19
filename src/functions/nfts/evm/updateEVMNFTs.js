@@ -46,30 +46,27 @@ async function checkIfNFTExists(nft) {
 }
 
 async function updateEVMNFTs(user_id, evm_address) {
-  // let ethNFTs = await getEthNFT(user_id, evm_address);
-  // let polNFTs = await getPolygonNFT(user_id, evm_address);
-  // let baseNFTs = await getBaseNFT(user_id, evm_address);
+  let ethNFTs = await getEthNFT(user_id, evm_address);
+  let polNFTs = await getPolygonNFT(user_id, evm_address);
+  let baseNFTs = await getBaseNFT(user_id, evm_address);
   let optimismNFT = await getOptimismNFT(user_id, evm_address);
   console.log("Eth, Poly, Base & Optimism NFTs are fetched");
 
-  // let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs).concat(optimismNFT);
-  let latestNFTs = optimismNFT;
+  let latestNFTs = ethNFTs.concat(polNFTs).concat(baseNFTs).concat(optimismNFT);
   let finalNFTs = [];
-
-  console.log("Exist checks start", new Date().toISOString());
 
   const processBatch = async (batch) => {
     const existChecks = batch.map((nft) => checkIfNFTExists(nft));
     return await Promise.all(existChecks);
   };
+
   const existResults = [];
   for (let i = 0; i < latestNFTs.length; i += 10) {
     const batch = latestNFTs.slice(i, i + 10);
     const batchResults = await processBatch(batch);
     existResults.push(...batchResults);
   }
-  console.log("Exist checks are done", new Date().toISOString());
-
+  
   for (let i = 0; i < latestNFTs.length; i++) {
     let nft = latestNFTs[i];
 
@@ -80,6 +77,7 @@ async function updateEVMNFTs(user_id, evm_address) {
     console.log(
       `NFT ${nft.tokenId} ${nft.address} ${nft.chainId} doesn't exist. Adding to finalNFTs array`
     );
+
     if (nft.permaLink.includes("ipfs://")) {
       nft.permaLink = nft.permaLink.replace(
         "ipfs://",

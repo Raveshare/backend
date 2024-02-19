@@ -6,10 +6,6 @@ const prisma = require("../../prisma");
 
 async function updateNFTsForOwner(owner) {
   try {
-    console.log(
-      `NFTs update starts for ${owner.user_id} at`,
-      new Date().toISOString()
-    );
     let user_id = owner.user_id;
     let evm_address = owner.evm_address;
     let solana_address = owner.solana_address;
@@ -19,11 +15,7 @@ async function updateNFTsForOwner(owner) {
     if (solana_address)
       nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
     if (evm_address) {
-      nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
-      console.log(
-        "EVM NFTs are fetched on updateNFTsForOwner",
-        new Date().toISOString()
-      );
+    nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
       nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
     }
 
@@ -33,11 +25,10 @@ async function updateNFTsForOwner(owner) {
       return rest;
     });
     try {
-      let res = await prisma.nftData.createMany({
+      await prisma.nftData.createMany({
         data: updatedNFT,
         skipDuplicates: true,
       });
-      console.log(res.count);
     } catch (e) {
       console.error(e);
       console.log(`Error saving nfts for ${owner.user_id}`);
@@ -72,11 +63,9 @@ async function updateNFTsForOwner(owner) {
     }
 
     const results = await Promise.all(uploadPromises);
-    console.log(results);
 
     for (let index = 0; index < results.length; index++) {
       const res = results[index];
-      console.log(res == "");
       if (res == "") {
         await prisma.nftData.delete({
           where: {
@@ -85,7 +74,6 @@ async function updateNFTsForOwner(owner) {
             chainId: nfts[index].chainId,
           },
         });
-        console.log("shit bangla");
         continue;
       }
 
@@ -93,13 +81,9 @@ async function updateNFTsForOwner(owner) {
       nft.dimensions = res.dimensions;
       nft.imageURL = res.s3Link;
 
-      console.log(nft.imageURL);
-      console.log(nft.dimensions);
-
       try {
         await prisma.nftData.updateMany({
           where: {
-            // id: nft.id,
             tokenId: nft.tokenId,
             address: nft.address,
             chainId: nft.chainId,
@@ -111,14 +95,12 @@ async function updateNFTsForOwner(owner) {
         });
       } catch (error) {
         console.error("Error in updating NFT data");
-        // Handle the error appropriately
       }
     }
 
     console.log(`NFTs update ends for ${user_id} at`, new Date().toISOString());
     return true;
   } catch (e) {
-    // console.log(e);
     return false;
   }
 }
