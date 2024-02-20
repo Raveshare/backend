@@ -56,6 +56,7 @@ async function mintToERC721(frameId, recipientAddress) {
     return transaction.hash;
   } catch (error) {
     console.error("Error:", error);
+    return "Gas not enough"
   }
 }
 

@@ -67,6 +67,7 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
     return transaction.hash;
   } catch (error) {
     console.error("Error:", error);
+    return "Gas not enough";
   }
 }
 

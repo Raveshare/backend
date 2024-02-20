@@ -1,6 +1,5 @@
 const updateEVMNFTs = require("./evm/updateEVMNFTs");
 const updateSolanaNFTs = require("./solana/updateSolanaNFTs");
-const updateZoraNFTs = require("./evm/updateZoraNFTs");
 const uploadImageFromLinkToS3 = require("../image/uploadImageFromLinkToS3");
 const prisma = require("../../prisma");
 
@@ -15,8 +14,7 @@ async function updateNFTsForOwner(owner) {
     if (solana_address)
       nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
     if (evm_address) {
-    nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
-      nfts = nfts.concat(await updateZoraNFTs(user_id, evm_address));
+      nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
     }
 
     let updatedNFT = nfts.map((item) => {

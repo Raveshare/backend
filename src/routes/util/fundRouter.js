@@ -88,6 +88,7 @@ router.get("/", auth, async (req, res) => {
   res.send({
     publicAddress: userWallet.publicAddress,
     balance: balance,
+    sponsored : userWallet.sponsored
   });
 });
 

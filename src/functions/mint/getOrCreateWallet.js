@@ -12,6 +12,7 @@ const getOrCreateWallet = async (userId) => {
     return {
       publicAddress: userWallet.wallet,
       balance: userWallet.topup,
+      sponsored : userWallet.sponsored
     };
   } else {
     let wallet = ethers.Wallet.createRandom();
@@ -25,6 +26,7 @@ const getOrCreateWallet = async (userId) => {
     return {
         publicAddress: userWallet.wallet,
         balance: userWallet.topup,
+        sponsored : userWallet.sponsored
     }
   }
 };
