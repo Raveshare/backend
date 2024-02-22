@@ -5,15 +5,16 @@ dotenv.config();
 
 let NODE_ENV = process.env.NODE_ENV;
 
-let rpc = NODE_ENV === "production" ? `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_BASE_API_KEY}` : "https://sepolia.base.org";
+let rpc =
+  NODE_ENV === "production"
+    ? `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_BASE_API_KEY}`
+    : "https://sepolia.base.org";
 
 let provider = new ethers.JsonRpcProvider(rpc);
 
 let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
 let wallet = new ethers.Wallet(process.env.SPONSOR_WALLET_KEY, provider);
-
-const mintedFrame = require("../events/mintedFrame.event");
 
 async function mintToERC721Sponsored(frameId, recipientAddress) {
   let contract = new ethers.Contract(BaseContractAddress, BaseAbi, wallet);
@@ -60,14 +61,15 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
       },
     });
 
-
-    mintedFrame(owner.id , frameId , recipientAddress , true)
-    
-
-    return transaction.hash;
+    return {
+      status: 200,
+      hash: transaction.hash,
+    };
   } catch (error) {
-    console.error("Error:", error);
-    return "Gas not enough";
+    return {
+      status: 400,
+      message: "Gas not enough",
+    };
   }
 }
 

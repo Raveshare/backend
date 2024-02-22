@@ -3,7 +3,6 @@ const prisma = require("../../prisma");
 const canvasPosted = require("../events/canvasPosted.event");
 
 const uploadToFarcaster = async (postMetadata, ownerData) => {
-  console.log(ownerData);
   let { image, content } = postMetadata;
 
   let embeds = image.map((url) => ({ url }));

@@ -4,8 +4,8 @@ const mintToERC721 = require("../../functions/mint/mintToERC721");
 const mintToERC721Sponsored = require("../../functions/mint/mintToERC721Sponsored");
 const getOrCreateWallet = require("../../functions/mint/getOrCreateWallet");
 const auth = require("../../middleware/auth/auth");
-const { ethers } = require("ethers");
 const getUserBalance = require("../../functions/mint/getUserBalance");
+const mintedFrame = require("../../functions/events/mintedFrame.event");
 const withdrawFunds = require("../../functions/mint/withdrawFunds");
 
 router.post("/", async (req, res) => {
@@ -68,17 +68,30 @@ router.post("/", async (req, res) => {
   if (sponsoredMint <= 0) {
     console.log("Minting to ERC721");
     let tx = await mintToERC721(frame.id, recipientAddress);
-    res.send({
-      message: "Minted successfully",
-      tx: tx,
-    });
+
+    if (tx.status === 400) {
+      res.status(400).json({ message: "Gas not enough" });
+    } else {
+      mintedFrame(owner.id, frameId, recipientAddress, false);
+
+      res.send({
+        message: "Minted successfully",
+        tx: tx.hash,
+      });
+    }
   } else {
     console.log("Minting to ERC721 Sponsored");
     let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
-    res.send({
-      message: "Minted successfully",
-      tx: tx,
-    });
+    if (tx.status === 400) {
+      res.status(400).json({ message: "Gas not enough" });
+    } else {
+      mintedFrame(owner.id, frameId, recipientAddress, true);
+
+      res.send({
+        message: "Minted successfully",
+        tx: tx.hash,
+      });
+    }
   }
 });
 
@@ -88,7 +101,7 @@ router.get("/", auth, async (req, res) => {
   res.send({
     publicAddress: userWallet.publicAddress,
     balance: balance,
-    sponsored : userWallet.sponsored
+    sponsored: userWallet.sponsored,
   });
 });
 

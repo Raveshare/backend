@@ -14,8 +14,6 @@ let rpc =
 let provider = new ethers.JsonRpcProvider(rpc);
 let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
-const mintedFrame = require("../events/mintedFrame.event");
-
 async function mintToERC721(frameId, recipientAddress) {
   let frame = await prisma.frames.findUnique({
     where: {
@@ -51,12 +49,15 @@ async function mintToERC721(frameId, recipientAddress) {
       frame.tokenUri
     );
 
-    mintedFrame(owner.id , frameId , recipientAddress , false)
-    
-    return transaction.hash;
+    return {
+      status: 200,
+      hash: transaction.hash,
+    };
   } catch (error) {
-    console.error("Error:", error);
-    return "Gas not enough"
+    return {
+      status: 400,
+      message: "Gas not enough",
+    };
   }
 }
 
