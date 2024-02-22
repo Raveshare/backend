@@ -4,6 +4,8 @@ const BASE_URL = "https://api-base.reservoir.tools/users/";
 const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
 const getBaseNFT = async (user_id, evm_address) => {
+
+  console.log("BASE NFTs API Calls end", new Date().toISOString());
   let nfts = [];
 
   let continuation = "";

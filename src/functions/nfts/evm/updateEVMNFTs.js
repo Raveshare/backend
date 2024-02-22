@@ -88,8 +88,12 @@ async function updateEVMNFTs(user_id, evm_address) {
       console.log(`Error with ${nft.tokenId} ${nft.address}`);
     }
 
+    console.log()
+
     finalNFTs.push(nft);
   }
+
+  console.log("Eth NFTs API Calls end", new Date().toISOString());
   return finalNFTs;
 }
 

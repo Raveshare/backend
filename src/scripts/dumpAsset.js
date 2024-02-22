@@ -12,7 +12,7 @@ async function dumpAsset(name) {
   //   skipDuplicates: true,
   // });
 
-  const data = await prisma.nftData.count({
+  const data = await prisma.nftData.deleteMany({
     where: {
       ownerId: 19,
     },

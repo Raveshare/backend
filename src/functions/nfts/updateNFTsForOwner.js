@@ -5,23 +5,19 @@ const prisma = require("../../prisma");
 
 async function updateNFTsForOwner(owner) {
   try {
-    let user_id = owner.user_id;
-    let evm_address = owner.evm_address;
-    let solana_address = owner.solana_address;
+    const { user_id, evm_address, solana_address } = owner;
 
     let nfts = [];
-
     if (solana_address)
       nfts = nfts.concat(await updateSolanaNFTs(user_id, solana_address));
-    if (evm_address) {
+    if (evm_address)
       nfts = nfts.concat(await updateEVMNFTs(user_id, evm_address));
-    }
 
-    let updatedNFT = nfts.map((item) => {
-      const { imageLink, ...rest } = item; // Use object destructuring to remove 'ownership' property
+    let updatedNFT = nfts.map(({ imageLink, ...rest }) => {
       rest.description = rest.description?.replace(/[^\x00-\x7F]+/g, "");
       return rest;
     });
+
     try {
       await prisma.nftData.createMany({
         data: updatedNFT,
@@ -29,78 +25,71 @@ async function updateNFTsForOwner(owner) {
       });
     } catch (e) {
       console.error(e);
-      console.log(`Error saving nfts for ${owner.user_id}`);
+      console.log(`Error saving nfts for ${user_id}`);
     }
 
-    let uploadPromises = [];
-
-    for (let i = 0; i < nfts.length; i++) {
-      let nft = nfts[i];
-      let imagePath =
-        (nft.chainId == 2
-          ? "sol/"
-          : nft.chainId == 7777777
-          ? "zora/"
-          : nft.chainId == 8453
-          ? "base"
-          : nft.chainId == 137
-          ? "matic/"
-          : nft.chainId == 10
-          ? "optimism/"
-          : "eth/") +
-        nft.title +
-        Date.now();
-
-      uploadPromises.push(
-        uploadImageFromLinkToS3(
-          nft.imageLink || nft.permaLink,
-          user_id,
-          imagePath
-        )
-      );
-    }
-
-    const results = await Promise.all(uploadPromises);
-
-    for (let index = 0; index < results.length; index++) {
-      const res = results[index];
-      if (res == "") {
-        await prisma.nftData.delete({
-          where: {
-            tokenId: nfts[index].tokenId,
-            address: nfts[index].address,
-            chainId: nfts[index].chainId,
-          },
-        });
-        continue;
-      }
-
-      let nft = nfts[index];
-      nft.dimensions = res.dimensions;
-      nft.imageURL = res.s3Link;
-
-      try {
-        await prisma.nftData.updateMany({
-          where: {
-            tokenId: nft.tokenId,
-            address: nft.address,
-            chainId: nft.chainId,
-          },
-          data: {
-            dimensions: nft.dimensions,
-            imageURL: nft.imageURL,
-          },
-        });
-      } catch (error) {
-        console.error("Error in updating NFT data");
-      }
-    }
+    await processInBatches(nfts, 10, uploadAndUpdateNFT);
 
     console.log(`NFTs update ends for ${user_id} at`, new Date().toISOString());
     return true;
   } catch (e) {
     return false;
   }
+}
+
+async function processInBatches(items, batchSize, processFunction) {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    await Promise.all(batch.map((item) => processFunction(item)));
+  }
+}
+
+async function uploadAndUpdateNFT(nft) {
+  const imagePath = getImagePath(nft);
+  const result = await uploadImageFromLinkToS3(
+    nft.imageLink || nft.permaLink,
+    nft.user_id,
+    imagePath
+  );
+
+  if (result == "") {
+    await prisma.nftData.delete({
+      where: {
+        tokenId: nft.tokenId,
+        address: nft.address,
+        chainId: nft.chainId,
+      },
+    });
+  } else {
+    nft.dimensions = result.dimensions;
+    nft.imageURL = result.s3Link;
+    try {
+      await prisma.nftData.updateMany({
+        where: {
+          tokenId: nft.tokenId,
+          address: nft.address,
+          chainId: nft.chainId,
+        },
+        data: { dimensions: nft.dimensions, imageURL: nft.imageURL },
+      });
+    } catch (error) {
+      console.error("Error in updating NFT data");
+    }
+  }
+}
+
+function getImagePath(nft) {
+  const chainPath = {
+    2: "sol/",
+    7777777: "zora/",
+    8453: "base",
+    137: "matic/",
+    10: "optimism/",
+    default: "eth/",
+  };
+  return `${chainPath[nft.chainId] || chainPath.default}${
+    nft.title
+  }${Date.now()}`;
 }
 
 module.exports = updateNFTsForOwner;

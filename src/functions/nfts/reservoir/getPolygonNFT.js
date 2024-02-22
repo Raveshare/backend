@@ -5,7 +5,7 @@ const RESERVOIR_API_KEY = process.env.RESERVOIR_API_KEY;
 
 const getPolygonNFTs = async (user_id, evm_address) => {
 
-  console.log("Polygon NFTs API Calls end", new Date().toISOString());
+  console.log("Polygon NFTs API Calls Start", new Date().toISOString());
   let nfts = [];
 
   let continuation = "";
