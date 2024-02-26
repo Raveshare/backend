@@ -42,6 +42,7 @@ model canvases {
   owner                      owners                    @relation(fields: [ownerId], references: [id])
   user_published_canvases    user_published_canvases[]
   shared_canvas              shared_canvas[]
+  shared_mint_canvas         shared_mint_canvas[]
 }
 
 model collections {
@@ -262,18 +263,21 @@ view template_view {
 }
 
 model frames {
-  id           Int      @id @default(autoincrement())
-  imageUrl     String   @db.VarChar(255)
-  tokenUri     String   @db.VarChar(255)
-  minters      Json[]   @default([])
-  owner        String   @db.VarChar(255)
-  isTopUp      Boolean  @default(false)
-  allowedMints Int      @default(0)
-  isLike       Boolean  @default(false)
-  isRecast     Boolean  @default(false)
-  isFollow     Boolean  @default(false)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  id           Int     @id @default(autoincrement())
+  imageUrl     String  @db.VarChar(255)
+  tokenUri     String  @db.VarChar(255)
+  minters      Json[]  @default([])
+  owner        String  @db.VarChar(255)
+  isTopUp      Boolean @default(false)
+  allowedMints Int     @default(0)
+  isLike       Boolean @default(false)
+  isRecast     Boolean @default(false)
+  isFollow     Boolean @default(false)
+
+  redirectLink String? @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   owners owners @relation(fields: [owner], references: [evm_address])
 }
@@ -283,6 +287,18 @@ model shared_canvas {
   slug     String  @unique
   canvasId Int
   isPublic Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  canvas canvases @relation(fields: [canvasId], references: [id])
+}
+
+model shared_mint_canvas {
+  id       Int    @id @default(autoincrement())
+  slug     String @unique
+  canvasId Int
+  contract String @db.VarChar(255)
+  chain    String @db.VarChar(255)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 

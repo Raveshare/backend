@@ -27,6 +27,7 @@ const ipfs_auth =
   "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
 const { v4: uuid } = require("uuid");
 const axios = require("axios");
+const message = require("cabin/lib/message");
 
 const getIpfsClient = async () => {
   const { create } = await import("ipfs-http-client");
@@ -349,15 +350,16 @@ utilRouter.get("/get-image-canvas", async (req, res) => {
 utilRouter.post("/create-frame-data", auth, async (req, res) => {
   try {
     let userId = req.user.user_id;
+    let owner = req.user.evm_address;
     let {
       canvasId,
       metadata,
       isLike,
       isRecast,
       isFollow,
-      owner,
       isTopUp,
       allowedMints,
+      redirectLink
     } = req.body;
 
     let imageIpfsLink;
@@ -398,6 +400,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       owner,
       isTopUp,
       allowedMints,
+      redirectLink
     };
 
     let frame = await prisma.frames.create({
@@ -446,17 +449,20 @@ utilRouter.get("/get-frame-data", async (req, res) => {
   try {
     let { frameId } = req.query;
     frameId = parseInt(frameId);
+
     if (!frameId) {
       return res
         .status(400)
         .send({ status: "error", message: "No frameId provided" });
     }
+
     const data = await prisma.frames.findUnique({
       where: {
         id: frameId,
       },
     });
-    res.status(200).send({ status: "success", data });
+
+    res.status(200).send({message : data});
   } catch (error) {
     console.log(error.message);
     res.status(500).send({ status: "error", message: error.message });
