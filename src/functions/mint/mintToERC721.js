@@ -1,4 +1,6 @@
-const { ethers } = require("ethers");
+const { createWalletClient, http } = require("viem");
+const { privateKeyToAccount } = require("viem/accounts");
+const { base, baseSepolia } = require("viem/chains");
 const dotenv = require("dotenv");
 
 const prisma = require("../../prisma");
@@ -11,7 +13,6 @@ let rpc =
     ? `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_BASE_API_KEY}`
     : "https://sepolia.base.org";
 
-let provider = new ethers.JsonRpcProvider(rpc);
 let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
 async function mintToERC721(frameId, recipientAddress) {
@@ -40,18 +41,25 @@ async function mintToERC721(frameId, recipientAddress) {
     },
   });
 
-  let wallet = new ethers.Wallet(userWalletPvtKey.wallet_pvtKey, provider);
-  let contract = new ethers.Contract(BaseContractAddress, BaseAbi, wallet);
-  let contractWithSigner = contract.connect(wallet);
+  let account = privateKeyToAccount(userWalletPvtKey.wallet_pvtKey);
+
+  let walletClient = createWalletClient({
+    account,
+    chain: NODE_ENV === "production" ? base : baseSepolia,
+    transport: http(rpc),
+  });
+
   try {
-    const transaction = await contractWithSigner.mint(
-      recipientAddress,
-      frame.tokenUri
-    );
+    let hash = await walletClient.writeContract({
+      abi: BaseAbi,
+      address: BaseContractAddress,
+      functionName: "mint",
+      args: [recipientAddress, frame.tokenUri],
+    });
 
     return {
       status: 200,
-      hash: transaction.hash,
+      hash: hash,
     };
   } catch (error) {
     return {

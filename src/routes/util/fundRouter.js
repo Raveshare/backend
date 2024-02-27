@@ -72,7 +72,7 @@ router.post("/", async (req, res) => {
     if (tx.status === 400) {
       res.status(400).json({ message: "Gas not enough" });
     } else {
-      mintedFrame(owner.id, frameId, recipientAddress, false);
+      mintedFrame(user.id, frameId, recipientAddress, false);
 
       res.send({
         message: "Minted successfully",
@@ -85,7 +85,7 @@ router.post("/", async (req, res) => {
     if (tx.status === 400) {
       res.status(400).json({ message: "Gas not enough" });
     } else {
-      mintedFrame(owner.id, frameId, recipientAddress, true);
+      mintedFrame(user.id, frameId, recipientAddress, true);
 
       res.send({
         message: "Minted successfully",

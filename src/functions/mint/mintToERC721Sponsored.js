@@ -1,6 +1,9 @@
-const { ethers } = require("ethers");
-const prisma = require("../../prisma");
+const { createWalletClient, http } = require("viem");
+const { privateKeyToAccount } = require("viem/accounts");
+const { base, baseSepolia } = require("viem/chains");
 const dotenv = require("dotenv");
+
+const prisma = require("../../prisma");
 dotenv.config();
 
 let NODE_ENV = process.env.NODE_ENV;
@@ -10,14 +13,17 @@ let rpc =
     ? `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_BASE_API_KEY}`
     : "https://sepolia.base.org";
 
-let provider = new ethers.JsonRpcProvider(rpc);
-
 let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
-let wallet = new ethers.Wallet(process.env.SPONSOR_WALLET_KEY, provider);
+let account = privateKeyToAccount(process.env.SPONSOR_WALLET_KEY);
+
+let walletClient = createWalletClient({
+  account,
+  chain: NODE_ENV === "production" ? base : baseSepolia,
+  transport: http(rpc),
+});
 
 async function mintToERC721Sponsored(frameId, recipientAddress) {
-  let contract = new ethers.Contract(BaseContractAddress, BaseAbi, wallet);
 
   let frame = await prisma.frames.findUnique({
     where: {
@@ -45,12 +51,13 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
     },
   });
 
-  let contractWithSigner = contract.connect(wallet);
   try {
-    const transaction = await contractWithSigner.mint(
-      recipientAddress,
-      frame.tokenUri
-    );
+    let hash = await walletClient.writeContract({
+      abi: BaseAbi,
+      address: BaseContractAddress,
+      functionName: "mint",
+      args: [recipientAddress, frame.tokenUri],
+    });
 
     await prisma.user_funds.update({
       where: {
@@ -63,7 +70,7 @@ async function mintToERC721Sponsored(frameId, recipientAddress) {
 
     return {
       status: 200,
-      hash: transaction.hash,
+      hash: hash,
     };
   } catch (error) {
     return {
