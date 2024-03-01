@@ -317,34 +317,65 @@ utilRouter.post("/redeem-code", async (req, res) => {
 });
 
 utilRouter.get("/get-image-canvas", async (req, res) => {
-  let { id } = req.query;
+  let { id, slug } = req.query;
 
   id = parseInt(id);
 
-  if (!id) {
+  if (!(id || slug)) {
     return res.send({
       status: "error",
-      message: "No id provided",
+      message: "Invalid params",
     });
   }
 
-  let canvas = await prisma.canvases.findUnique({
-    where: {
-      id: id,
-    },
-  });
+  if (id) {
+    let canvas = await prisma.canvases.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        imageLink: true,
+      },
+    });
 
-  if (!canvas) {
-    return res.send({
-      status: "error",
-      message: "No canvas found",
+    if (!canvas) {
+      return res.send({
+        status: "error",
+        message: "No canvas found",
+      });
+    }
+
+    res.send({
+      status: "success",
+      message: canvas.imageLink[0],
+    });
+  } else {
+    let sharedCanvas = await prisma.shared_canvas.findUnique({
+      where: {
+        slug: slug,
+      },
+    });
+
+    if (!sharedCanvas) {
+      res.status(404).send({
+        message: "Canvas Not Found",
+      });
+      return;
+    }
+
+    let canvas = await prisma.canvases.findUnique({
+      where: {
+        id: sharedCanvas.canvasId,
+      },
+      select: {
+        imageLink: true,
+      },
+    });
+
+    res.send({
+      image: canvas?.imageLink[0] || "",
     });
   }
-
-  res.send({
-    status: "success",
-    message: canvas.imageLink[0],
-  });
 });
 
 utilRouter.post("/create-frame-data", auth, async (req, res) => {
@@ -359,7 +390,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       isFollow,
       isTopUp,
       allowedMints,
-      redirectLink
+      redirectLink,
     } = req.body;
 
     let imageIpfsLink;
@@ -400,7 +431,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       owner,
       isTopUp,
       allowedMints,
-      redirectLink
+      redirectLink,
     };
 
     let frame = await prisma.frames.create({
@@ -462,7 +493,7 @@ utilRouter.get("/get-frame-data", async (req, res) => {
       },
     });
 
-    res.status(200).send({message : data});
+    res.status(200).send({ message: data });
   } catch (error) {
     console.log(error.message);
     res.status(500).send({ status: "error", message: error.message });

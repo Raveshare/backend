@@ -698,7 +698,7 @@ canvasRouter.get("/get-shared-canvas", async (req, res) => {
 
   res.send({
     data: canvas?.data || {},
-    image : canvas?.imageLink[0] || ""
+    image: canvas?.imageLink[0] || "",
   });
 });
 
