@@ -470,16 +470,18 @@ utilRouter.get("/get-frame-data", async (req, res) => {
   }
 });
 
-utilRouter.post("/generate-image", async (req, res) => {
+utilRouter.get("/generate-image", auth, async (req, res) => {
   const galverse_model =
     "galverse/setc-t1_label:65a7ee5a8c875fe9f38111699edf72f6c07f84dda7b7be5720e843ebb9f9c876";
-  const webhook_url = "https://api.lenspost.xyz/util/webhook-endpoint";
+
+  const host = req.get("host");
+  const webhook_url = `https://${host}/util/webhook-endpoint`;
 
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN,
   });
 
-  const prompt = req.body.prompt;
+  const prompt = req.query.prompt;
 
   if (!prompt) {
     return res
