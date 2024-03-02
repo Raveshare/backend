@@ -20,6 +20,7 @@ const {
 const { invitedUser } = require("../../functions/points/inviteUser");
 const canvasSharedAsFrame = require("../../functions/events/canvasSharedAsFrame");
 const usedRemoveBGEvent = require("../../functions/events/usedRemoveBG.event");
+const Replicate = require("replicate");
 
 const projectId = process.env.IPFS_PROJECT_ID;
 const projectSecret = process.env.IPFS_PROJECT_SECRET;
@@ -498,6 +499,46 @@ utilRouter.get("/get-frame-data", async (req, res) => {
     console.log(error.message);
     res.status(500).send({ status: "error", message: error.message });
   }
+});
+
+utilRouter.get("/generate-image", auth, async (req, res) => {
+  const galverse_model =
+    "galverse/setc-t1_label:65a7ee5a8c875fe9f38111699edf72f6c07f84dda7b7be5720e843ebb9f9c876";
+
+  const host = req.get("host");
+  const webhook_url = `https://${host}/util/webhook-endpoint`;
+
+  const replicate = new Replicate({
+    auth: process.env.REPLICATE_API_TOKEN,
+  });
+
+  const prompt = req.query.prompt;
+
+  if (!prompt) {
+    return res
+      .status(400)
+      .send({ status: "failed", message: "No prompt provided" });
+  }
+
+  try {
+    const output = await replicate.run(galverse_model, {
+      input: {
+        prompt: prompt,
+      },
+      webhook: webhook_url,
+      webhook_events_filter: ["completed"],
+    });
+
+    res.status(200).send({ status: "success", message: output });
+  } catch (error) {
+    res.status(500).send({ status: "failed", message: error.message });
+  }
+});
+
+utilRouter.post("/webhook-endpoint", (req, res) => {
+  console.log("Webhook endpoint hit");
+  // console.log("Request body:", req.body);
+  res.status(200).send({ status: "success", message: "Webhook received" });
 });
 
 module.exports = utilRouter;
