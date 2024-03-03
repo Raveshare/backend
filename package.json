@@ -16,7 +16,7 @@
     "@prisma/client": "^5.2.0",
     "@prisma/instrumentation": "^5.2.0",
     "@solana/web3.js": "^1.87.1",
-    "@zoralabs/zora-721-contracts": "^1.15.1",
+    "@zoralabs/zora-721-contracts": "^1.15.2",
     "alchemy-sdk": "^2.8.1",
     "apicache": "^1.6.3",
     "aws-sdk": "^2.1377.0",
