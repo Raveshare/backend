@@ -1,4 +1,4 @@
-const { createWalletClient , createPublicClient, http } = require("viem");
+const { createWalletClient, http, createPublicClient } = require("viem");
 const { privateKeyToAccount } = require("viem/accounts");
 const {
   base,

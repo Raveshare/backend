@@ -8,6 +8,7 @@ const getUserBalance = require("../../functions/mint/getUserBalance");
 const mintedFrame = require("../../functions/events/mintedFrame.event");
 const withdrawFunds = require("../../functions/mint/withdrawFunds");
 const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
+const { v4: uuidv4 } = require("uuid");
 
 router.post("/", async (req, res) => {
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
@@ -126,7 +127,7 @@ router.post("/withdraw", auth, async (req, res) => {
 
 router.post("/deploy-contract", auth, async (req, res) => {
   let user_id = req.user.user_id;
-  let { contract_type, chainId, args } = req.body;
+  let { contract_type, canvasId, chainId, args } = req.body;
 
   if (!contract_type || !chainId || !args) {
     return res.status(400).json({ message: "Invalid input" });
@@ -135,10 +136,26 @@ router.post("/deploy-contract", auth, async (req, res) => {
   if (contract_type == 721) {
     let tx = await mintAsZoraERC721(user_id, chainId, args);
 
+    const uuid = uuidv4();
+
+    let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
+
+    await prisma.shared_mint_canvas.create({
+      data: {
+        slug: slug,
+        canvasId: canvasId,
+        contract: tx.contract,
+        hash: tx.hash,
+        chain: chainId,
+      },
+    });
+
     if (tx.status == 200) {
       res.send({
         message: "Minted successfully",
         tx: tx.hash,
+        contract_address: tx.contract,
+        slug : slug
       });
     } else {
       res.status(400).json({ message: tx.message });
