@@ -44,6 +44,9 @@ const getIpfsClient = async () => {
   return ipfsClient;
 };
 
+const BaseContractAddress = NODE_ENV === "production" ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad" : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
+
+
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
 });
@@ -432,6 +435,8 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       isTopUp,
       allowedMints,
       redirectLink,
+      chainId : 8453,
+      contract_address: BaseContractAddress,
     };
 
     let frame = await prisma.frames.create({
