@@ -1,4 +1,9 @@
-const { createWalletClient , createPublicClient, http } = require("viem");
+const {
+  createWalletClient,
+  createPublicClient,
+  http,
+  keccak256,
+} = require("viem");
 const { privateKeyToAccount } = require("viem/accounts");
 const {
   base,
@@ -10,13 +15,20 @@ const {
   optimism,
   zoraSepolia,
 } = require("viem/chains");
-const { zoraNftCreatorV1Config } = require("@zoralabs/zora-721-contracts");
+const {
+  zoraNftCreatorV1Config,
+  erc721DropABI,
+} = require("@zoralabs/zora-721-contracts");
+
 const dotenv = require("dotenv");
 
 const prisma = require("../../prisma");
 dotenv.config();
 
-let ZORA_ABI = zoraNftCreatorV1Config.abi;
+const ZORA_ABI = zoraNftCreatorV1Config.abi;
+
+let LENSPOST_ACC = privateKeyToAccount(process.env.SPONSOR_WALLET_KEY);
+let MINTER_ROLE = keccak256("MINTER");
 
 const chainConfig = {
   1: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -40,7 +52,7 @@ const chainIdToChain = {
   420: optimismGoerli,
 };
 
-async function mintAsZoraERC721(userId, chainId, args) {
+async function mintAsZoraERC721(userId, chainId, args, sponsored) {
   try {
     let ZORA_CONTRACT_ADDRESS = zoraNftCreatorV1Config.address[chainId];
 
@@ -73,8 +85,6 @@ async function mintAsZoraERC721(userId, chainId, args) {
       args: args,
     });
 
-    console.log(result);
-
     let drop_address = result;
 
     let hash = await walletClient.writeContract({
@@ -84,10 +94,24 @@ async function mintAsZoraERC721(userId, chainId, args) {
       args: args,
     });
 
+    if (sponsored) {
+      await publicClient.waitForTransactionReceipt(hash);
+
+      let tx = await walletClient.writeContract({
+        abi: erc721DropABI,
+        address: drop_address,
+        functionName: "grantRole",
+        args: [MINTER_ROLE, LENSPOST_ACC.address],
+        account: account,
+        gas: gas,
+      });
+      console.log(tx);
+    }
+
     return {
       status: 200,
       hash: hash,
-      contract : drop_address
+      contract: drop_address,
     };
   } catch (error) {
     console.log(error);

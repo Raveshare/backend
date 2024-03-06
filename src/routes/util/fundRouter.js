@@ -24,11 +24,11 @@ router.post("/", async (req, res) => {
 
   let NODE_ENV = process.env.NODE_ENV;
 
-  // if (NODE_ENV === "production") {
-  //   if (host != "api.lenspost.xyz") {
-  //     return res.status(400).json({ message: "Invalid host" });
-  //   }
-  // }
+  if (NODE_ENV === "production") {
+    if (host != "api.lenspost.xyz") {
+      return res.status(400).json({ message: "Invalid host" });
+    }
+  }
 
   console.log("Minting request received");
 
@@ -75,7 +75,6 @@ router.post("/", async (req, res) => {
   });
 
   let sponsoredMint = sponsored.sponsored || 0;
-
   if (sponsoredMint <= 0) {
     if (frame.contract_address === BaseContractAddress) {
       console.log("Minting to ERC721");
@@ -97,7 +96,8 @@ router.post("/", async (req, res) => {
         user.id,
         frame.chainId,
         frame.contract_address,
-        recipientAddress
+        recipientAddress,
+        false
       );
       if (tx.status === 400) {
         res.status(400).json({ message: "Insufficient funds" });
@@ -106,7 +106,7 @@ router.post("/", async (req, res) => {
       res.send({
         message: "Minted successfully",
         tx: tx.hash,
-        tokenId : tx.tokenId.toString()
+        tokenId: tx.tokenId.toString(),
       });
     }
   } else {
@@ -129,7 +129,8 @@ router.post("/", async (req, res) => {
         user.id,
         frame.chainId,
         frame.contract_address,
-        recipientAddress
+        recipientAddress,
+        true
       );
       if (tx.status === 400) {
         res.status(400).json({ message: "Insufficient funds" });
@@ -138,7 +139,7 @@ router.post("/", async (req, res) => {
       res.send({
         message: "Minted successfully",
         tx: tx.hash,
-        tokenId : tx.tokenId.toString()
+        tokenId: tx.tokenId.toString(),
       });
     }
   }
@@ -180,8 +181,19 @@ router.post("/deploy-contract", auth, async (req, res) => {
     return res.status(400).json({ message: "Invalid input" });
   }
 
+  let sponsored = await prisma.user_funds.findUnique({
+    where: {
+      userId: user_id
+    },
+    select: {
+      sponsored: true,
+    },
+  });
+
+  sponsored = sponsored.sponsored > 0 ? true : false;
+  
   if (contract_type == 721) {
-    let tx = await mintAsZoraERC721(user_id, chainId, args);
+    let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);
 
     const uuid = uuidv4();
 

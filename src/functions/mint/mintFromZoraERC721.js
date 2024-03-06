@@ -18,6 +18,10 @@ dotenv.config();
 
 let ERC721_ABI = erc721DropABI;
 
+let LENSPOST_SPONSOR_WALLET = privateKeyToAccount(
+  process.env.SPONSOR_WALLET_KEY
+);
+
 const chainConfig = {
   1: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
   7777777: "https://rpc.zora.energy",
@@ -40,7 +44,13 @@ const chainIdToChain = {
   420: optimismGoerli,
 };
 
-async function mintFromZoraERC721(userId, chainId, contractAddress, recipient) {
+async function mintFromZoraERC721(
+  userId,
+  chainId,
+  contractAddress,
+  recipient,
+  sponsored
+) {
   try {
     let userWalletPvtKey = await prisma.user_funds.findUnique({
       where: {
@@ -53,11 +63,20 @@ async function mintFromZoraERC721(userId, chainId, contractAddress, recipient) {
 
     let account = privateKeyToAccount(userWalletPvtKey.wallet_pvtKey);
 
-    let walletClient = createWalletClient({
-      account,
-      chain: chainIdToChain[chainId],
-      transport: http(chainConfig[chainId]),
-    });
+    let walletClient;
+    if (sponsored) {
+      walletClient = createWalletClient({
+        account: LENSPOST_SPONSOR_WALLET,
+        chain: chainIdToChain[chainId],
+        transport: http(chainConfig[chainId]),
+      });
+    } else {
+      walletClient = createWalletClient({
+        account,
+        chain: chainIdToChain[chainId],
+        transport: http(chainConfig[chainId]),
+      });
+    }
 
     let publicClient = createPublicClient({
       chain: chainIdToChain[chainId],
@@ -82,7 +101,7 @@ async function mintFromZoraERC721(userId, chainId, contractAddress, recipient) {
     return {
       status: 200,
       hash: hash,
-      tokenId : result
+      tokenId: result,
     };
   } catch (error) {
     console.log(error);
