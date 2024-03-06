@@ -263,16 +263,18 @@ view template_view {
 }
 
 model frames {
-  id           Int     @id @default(autoincrement())
-  imageUrl     String  @db.VarChar(255)
-  tokenUri     String  @db.VarChar(255)
-  minters      Json[]  @default([])
-  owner        String  @db.VarChar(255)
-  isTopUp      Boolean @default(false)
-  allowedMints Int     @default(0)
-  isLike       Boolean @default(false)
-  isRecast     Boolean @default(false)
-  isFollow     Boolean @default(false)
+  id               Int     @id @default(autoincrement())
+  imageUrl         String  @db.VarChar(255)
+  tokenUri         String  @db.VarChar(255)
+  minters          Json[]  @default([])
+  owner            String  @db.VarChar(255)
+  isTopUp          Boolean @default(false)
+  allowedMints     Int     @default(0)
+  isLike           Boolean @default(false)
+  isRecast         Boolean @default(false)
+  isFollow         Boolean @default(false)
+  chainId          Int     
+  contract_address String   @db.VarChar(255)
 
   redirectLink String? @db.VarChar(255)
 
@@ -298,7 +300,8 @@ model shared_mint_canvas {
   slug     String @unique
   canvasId Int
   contract String @db.VarChar(255)
-  chain    String @db.VarChar(255)
+  hash     String @db.VarChar(255)
+  chainId  Int
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
