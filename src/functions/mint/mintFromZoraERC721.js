@@ -10,13 +10,13 @@ const {
   optimism,
   zoraSepolia,
 } = require("viem/chains");
-const { zoraNftCreatorV1Config } = require("@zoralabs/zora-721-contracts");
+const { erc721DropABI } = require("@zoralabs/zora-721-contracts");
 const dotenv = require("dotenv");
 
 const prisma = require("../../prisma");
 dotenv.config();
 
-let ZORA_ABI = zoraNftCreatorV1Config.abi;
+let ERC721_ABI = erc721DropABI;
 
 const chainConfig = {
   1: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -40,10 +40,8 @@ const chainIdToChain = {
   420: optimismGoerli,
 };
 
-async function mintAsZoraERC721(userId, chainId, args) {
+async function mintFromZoraERC721(userId, chainId, contractAddress, recipient) {
   try {
-    let ZORA_CONTRACT_ADDRESS = zoraNftCreatorV1Config.address[chainId];
-
     let userWalletPvtKey = await prisma.user_funds.findUnique({
       where: {
         userId: userId,
@@ -67,27 +65,24 @@ async function mintAsZoraERC721(userId, chainId, args) {
     });
 
     let { result } = await publicClient.simulateContract({
-      abi: ZORA_ABI,
-      address: ZORA_CONTRACT_ADDRESS,
-      functionName: "createEditionWithReferral",
-      args: args,
+      abi: ERC721_ABI,
+      address: contractAddress,
+      functionName: "adminMint",
+      args: [recipient, 1],
+      account: account,
     });
 
-    console.log(result);
-
-    let drop_address = result;
-
     let hash = await walletClient.writeContract({
-      abi: ZORA_ABI,
-      address: ZORA_CONTRACT_ADDRESS,
-      functionName: "createEditionWithReferral",
-      args: args,
+      abi: ERC721_ABI,
+      address: contractAddress,
+      functionName: "adminMint",
+      args: [recipient, 1],
     });
 
     return {
       status: 200,
       hash: hash,
-      contract : drop_address
+      tokenId : result
     };
   } catch (error) {
     console.log(error);
@@ -98,4 +93,4 @@ async function mintAsZoraERC721(userId, chainId, args) {
   }
 }
 
-module.exports = mintAsZoraERC721;
+module.exports = mintFromZoraERC721;
