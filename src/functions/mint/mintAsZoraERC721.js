@@ -103,7 +103,6 @@ async function mintAsZoraERC721(userId, chainId, args, sponsored) {
         functionName: "grantRole",
         args: [MINTER_ROLE, LENSPOST_ACC.address],
         account: account,
-        gas: gas,
       });
       console.log(tx);
     }
