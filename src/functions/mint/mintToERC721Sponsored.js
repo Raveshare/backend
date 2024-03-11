@@ -24,7 +24,6 @@ let walletClient = createWalletClient({
 });
 
 async function mintToERC721Sponsored(frameId, recipientAddress) {
-
   let frame = await prisma.frames.findUnique({
     where: {
       id: frameId,

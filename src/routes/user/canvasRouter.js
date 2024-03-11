@@ -25,6 +25,10 @@ const canvasSharedClicked = require("../../functions/events/canvasSharedClicked.
 const sendError = require("../../functions/webhook/sendError.webhook");
 
 const {
+  handleAddRewards,
+} = require("../../functions/poster-service/posterService");
+
+const {
   getCache,
   setCache,
   deleteCacheMatchPattern,
@@ -418,6 +422,9 @@ canvasRouter.post("/publish", async (req, res) => {
     }
 
     await canvasPostedToLens(canvasId, user_id);
+
+    const data = await handleAddRewards(owner.id, owner.evm_address, 1);
+    console.log(data);
   } else if (platform == "solana-cnft") {
     let postMetadata = {
       name: name,
@@ -474,6 +481,9 @@ canvasRouter.post("/publish", async (req, res) => {
       });
       return;
     }
+
+    const data = await handleAddRewards(owner.id, owner.evm_address, 0);
+    console.log(data)
   }
 
   res.send(resp);

@@ -7,6 +7,18 @@ const auth = require("../../middleware/auth/auth");
 const getUserBalance = require("../../functions/mint/getUserBalance");
 const mintedFrame = require("../../functions/events/mintedFrame.event");
 const withdrawFunds = require("../../functions/mint/withdrawFunds");
+const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
+const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
+const { v4: uuidv4 } = require("uuid");
+const {
+  handleAddRewards,
+} = require("../../functions/poster-service/posterService");
+const NODE_ENV = process.env.NODE_ENV;
+
+const BaseContractAddress =
+  NODE_ENV === "production"
+    ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad"
+    : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
 
 router.post("/", async (req, res) => {
   const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
@@ -34,6 +46,8 @@ router.post("/", async (req, res) => {
     select: {
       owner: true,
       id: true,
+      chainId: true,
+      contract_address: true,
     },
   });
 
@@ -64,33 +78,95 @@ router.post("/", async (req, res) => {
   });
 
   let sponsoredMint = sponsored.sponsored || 0;
-
   if (sponsoredMint <= 0) {
-    console.log("Minting to ERC721");
-    let tx = await mintToERC721(frame.id, recipientAddress);
+    if (frame.contract_address === BaseContractAddress) {
+      console.log("Minting to ERC721");
+      let tx = await mintToERC721(frame.id, recipientAddress);
 
-    if (tx.status === 400) {
-      res.status(400).json({ message: "Gas not enough" });
+      if (tx.status === 400) {
+        res.status(400).json({ message: "Gas not enough" });
+      } else {
+        mintedFrame(user.id, frameId, recipientAddress, false);
+        const posterServiceResponse = await handleAddRewards(
+          user.id,
+          user.evm_address,
+          5
+        );
+        console.log(posterServiceResponse);
+        res.send({
+          message: "Minted successfully",
+          tx: tx.hash,
+        });
+      }
     } else {
-      mintedFrame(user.id, frameId, recipientAddress, false);
-
+      console.log("Minting to Zora");
+      let tx = await mintFromZoraERC721(
+        user.id,
+        frame.chainId,
+        frame.contract_address,
+        recipientAddress,
+        false
+      );
+      if (tx.status === 400) {
+        res.status(400).json({ message: "Insufficient funds" });
+        return;
+      }
       res.send({
         message: "Minted successfully",
         tx: tx.hash,
+        tokenId: tx.tokenId.toString(),
       });
+      const posterServiceResponse = await handleAddRewards(
+        user.id,
+        user.evm_address,
+        5
+      );
+      console.log(posterServiceResponse);
     }
   } else {
-    console.log("Minting to ERC721 Sponsored");
-    let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
-    if (tx.status === 400) {
-      res.status(400).json({ message: "Gas not enough" });
-    } else {
-      mintedFrame(user.id, frameId, recipientAddress, true);
+    if (frame.contract_address === BaseContractAddress) {
+      console.log("Minting to ERC721 Sponsored");
+      let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
+      if (tx.status === 400) {
+        res.status(400).json({ message: "Gas not enough" });
+      } else {
+        mintedFrame(user.id, frameId, recipientAddress, true);
 
+        res.send({
+          message: "Minted successfully",
+          tx: tx.hash,
+        });
+        const posterServiceResponse = await handleAddRewards(
+          user.id,
+          user.evm_address,
+          5
+        );
+        console.log(posterServiceResponse);
+      }
+    } else {
+      console.log("Minting to Zora Sponsored");
+      let tx = await mintFromZoraERC721(
+        user.id,
+        frame.chainId,
+        frame.contract_address,
+        recipientAddress,
+        true
+      );
+      if (tx.status === 400) {
+        res.status(400).json({ message: "Insufficient funds" });
+        return;
+      }
       res.send({
         message: "Minted successfully",
         tx: tx.hash,
+        tokenId: tx.tokenId.toString(),
       });
+      const posterServiceResponse = await handleAddRewards(
+        user.id,
+        user.evm_address,
+        5
+      );
+      console.log(posterServiceResponse);
     }
   }
 });
@@ -121,6 +197,57 @@ router.post("/withdraw", auth, async (req, res) => {
     message: "Withdrawn successfully",
     tx: tx.success,
   });
+});
+
+router.post("/deploy-contract", auth, async (req, res) => {
+  let user_id = req.user.user_id;
+  let { contract_type, canvasId, chainId, args } = req.body;
+
+  if (!contract_type || !chainId || !args) {
+    return res.status(400).json({ message: "Invalid input" });
+  }
+
+  let sponsored = await prisma.user_funds.findUnique({
+    where: {
+      userId: user_id,
+    },
+    select: {
+      sponsored: true,
+    },
+  });
+
+  sponsored = sponsored.sponsored > 0 ? true : false;
+
+  if (contract_type == 721) {
+    let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);
+
+    const uuid = uuidv4();
+
+    let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
+
+    await prisma.shared_mint_canvas.create({
+      data: {
+        slug: slug,
+        canvasId: canvasId,
+        contract: tx.contract,
+        hash: tx.hash,
+        chainId: chainId,
+      },
+    });
+
+    if (tx.status == 200) {
+      res.send({
+        message: "Minted successfully",
+        tx: tx.hash,
+        contract_address: tx.contract,
+        slug: slug,
+      });
+    } else {
+      res.status(400).json({ message: tx.message });
+    }
+  } else {
+    res.status(400).json({ message: "Invalid contract type" });
+  }
 });
 
 module.exports = router;

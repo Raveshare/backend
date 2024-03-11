@@ -8,6 +8,9 @@ const jsonwebtoken = require("jsonwebtoken");
 const prisma = require("../../prisma");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 const sendMail = require("../../functions/mail/sendMail");
+const {
+  handleAddRewards,
+} = require("../../functions/poster-service/posterService");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.
@@ -73,6 +76,13 @@ evmRouter.post("/", async (req, res) => {
           },
         });
         username && mailId && sendMail(mailId, "Lenspost Login", username);
+
+        const posterServiceResponse = await handleAddRewards(
+          ownerData.id,
+          ownerData.evm_address,
+          4
+        );
+        console.log(posterServiceResponse);
       } else {
         // if the user is already present, then update the user's data.
         await prisma.owners.update({
