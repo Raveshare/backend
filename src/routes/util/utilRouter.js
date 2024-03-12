@@ -317,66 +317,44 @@ utilRouter.post("/redeem-code", async (req, res) => {
   });
 });
 
-utilRouter.get("/get-image-canvas", async (req, res) => {
-  let { id, slug } = req.query;
+utilRouter.get("/get-slug-details", async (req, res) => {
+  let { slug } = req.query;
 
-  id = parseInt(id);
-
-  if (!(id || slug)) {
+  if (!slug) {
     return res.send({
       status: "error",
       message: "Invalid params",
     });
   }
 
-  if (id) {
-    let canvas = await prisma.canvases.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        imageLink: true,
-      },
-    });
+  let sharedCanvas = await prisma.shared_mint_canvas.findUnique({
+    where: {
+      slug: slug,
+    },
+  });
 
-    if (!canvas) {
-      return res.send({
-        status: "error",
-        message: "No canvas found",
-      });
-    }
-
-    res.send({
-      status: "success",
-      message: canvas.imageLink[0],
+  if (!sharedCanvas) {
+    res.status(404).send({
+      message: "Canvas Not Found",
     });
-  } else {
-    let sharedCanvas = await prisma.shared_canvas.findUnique({
-      where: {
-        slug: slug,
-      },
-    });
-
-    if (!sharedCanvas) {
-      res.status(404).send({
-        message: "Canvas Not Found",
-      });
-      return;
-    }
-
-    let canvas = await prisma.canvases.findUnique({
-      where: {
-        id: sharedCanvas.canvasId,
-      },
-      select: {
-        imageLink: true,
-      },
-    });
-
-    res.send({
-      image: canvas?.imageLink[0] || "",
-    });
+    return;
   }
+
+  let canvas = await prisma.canvases.findUnique({
+    where: {
+      id: sharedCanvas.canvasId,
+    },
+    select: {
+      imageLink: true,
+    },
+  });
+
+  res.send({
+    image: canvas?.imageLink[0] || "",
+    contract: sharedCanvas.contract,
+    chainId: sharedCanvas.chainId,
+    contractType: sharedCanvas.contractType,
+  });
 });
 
 utilRouter.post("/create-frame-data", auth, async (req, res) => {
@@ -435,8 +413,8 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       isTopUp,
       allowedMints,
       redirectLink,
-      chainId : parseInt(chainId),
-      contract_address : contractAddress
+      chainId: parseInt(chainId),
+      contract_address: contractAddress,
     };
 
     let frame = await prisma.frames.create({

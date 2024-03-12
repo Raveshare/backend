@@ -206,6 +206,7 @@ router.post("/deploy-contract", auth, async (req, res) => {
         contract: tx.contract,
         hash: tx.hash,
         chainId: chainId,
+        contractType: "ERC721",
       },
     });
 

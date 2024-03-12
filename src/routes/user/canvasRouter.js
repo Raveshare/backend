@@ -605,6 +605,10 @@ canvasRouter.post("/minted", async (req, res) => {
   let xChain = req.body.chain;
   let userId = req.user.user_id;
 
+  let contractType = req.body.contractType;
+  let chainId = req.body.chainId;
+  let hash = req.body.hash;
+
   await canvasPosted(
     canvasId,
     userId,
@@ -615,8 +619,38 @@ canvasRouter.post("/minted", async (req, res) => {
   );
   canvasMintedToXChain(canvasId, userId, platform, xChain);
 
+  const uuid = uuidv4();
+
+  let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
+
+  let contract = mintLink.split(":")
+  contract = contract[contract.length - 1]
+
+  console.log({
+    canvasId,
+    chainId,
+    contractType,
+    slug,
+    contract,
+    hash,
+  })
+
+
+  await prisma.shared_mint_canvas.create({
+    data : {
+      canvasId,
+      chainId,
+      contractType,
+      slug,
+      contract,
+      hash,
+    }
+  })
+
   res.send({
-    message: "Record created",
+    slug : slug,
+    contract,
+    chainId,
   });
 });
 
