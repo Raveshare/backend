@@ -200,6 +200,15 @@ router.post("/deploy-contract", auth, async (req, res) => {
 
       let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
 
+      console.log({
+        slug: slug,
+        canvasId: canvasId,
+        contract: tx.contract,
+        hash: tx.hash,
+        chainId: chainId,
+        contractType: "ERC721",
+      });
+
       await prisma.shared_mint_canvas.create({
         data: {
           slug: slug,
