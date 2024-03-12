@@ -55,6 +55,9 @@ const chainIdToChain = {
 async function mintAsZoraERC721(userId, chainId, args, sponsored) {
   try {
     let ZORA_CONTRACT_ADDRESS = zoraNftCreatorV1Config.address[chainId];
+    if (chainId === 8453) {
+      ZORA_CONTRACT_ADDRESS = "0x58C3ccB2dcb9384E5AB9111CD1a5DEA916B0f33c";
+    }
 
     let userWalletPvtKey = await prisma.user_funds.findUnique({
       where: {
@@ -94,17 +97,21 @@ async function mintAsZoraERC721(userId, chainId, args, sponsored) {
       args: args,
     });
 
-    if (sponsored) {
-      await publicClient.waitForTransactionReceipt(hash);
+    try {
+      if (sponsored) {
+        await publicClient.waitForTransactionReceipt(hash);
 
-      let tx = await walletClient.writeContract({
-        abi: erc721DropABI,
-        address: drop_address,
-        functionName: "grantRole",
-        args: [MINTER_ROLE, LENSPOST_ACC.address],
-        account: account,
-      });
-      console.log(tx);
+        let tx = await walletClient.writeContract({
+          abi: erc721DropABI,
+          address: drop_address,
+          functionName: "grantRole",
+          args: [MINTER_ROLE, LENSPOST_ACC.address],
+          account: account,
+        });
+        console.log(tx);
+      }
+    } catch (error) {
+      console.log(error);
     }
 
     return {
