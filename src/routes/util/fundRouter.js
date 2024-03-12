@@ -174,54 +174,59 @@ router.post("/withdraw", auth, async (req, res) => {
 });
 
 router.post("/deploy-contract", auth, async (req, res) => {
-  let user_id = req.user.user_id;
-  let { contract_type, canvasId, chainId, args } = req.body;
+  try {
+    let user_id = req.user.user_id;
+    let { contract_type, canvasId, chainId, args } = req.body;
 
-  if (!contract_type || !chainId || !args) {
-    return res.status(400).json({ message: "Invalid input" });
-  }
+    if (!contract_type || !chainId || !args) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
 
-  let sponsored = await prisma.user_funds.findUnique({
-    where: {
-      userId: user_id
-    },
-    select: {
-      sponsored: true,
-    },
-  });
-
-  sponsored = sponsored.sponsored > 0 ? true : false;
-  
-  if (contract_type == 721) {
-    let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);
-
-    const uuid = uuidv4();
-
-    let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
-
-    await prisma.shared_mint_canvas.create({
-      data: {
-        slug: slug,
-        canvasId: canvasId,
-        contract: tx.contract,
-        hash: tx.hash,
-        chainId: chainId,
-        contractType: "ERC721",
+    let sponsored = await prisma.user_funds.findUnique({
+      where: {
+        userId: user_id,
+      },
+      select: {
+        sponsored: true,
       },
     });
 
-    if (tx.status == 200) {
-      res.send({
-        message: "Minted successfully",
-        tx: tx.hash,
-        contract_address: tx.contract,
-        slug: slug,
+    sponsored = sponsored.sponsored > 0 ? true : false;
+
+    if (contract_type == 721) {
+      let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);
+
+      const uuid = uuidv4();
+
+      let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
+
+      await prisma.shared_mint_canvas.create({
+        data: {
+          slug: slug,
+          canvasId: canvasId,
+          contract: tx.contract,
+          hash: tx.hash,
+          chainId: chainId,
+          contractType: "ERC721",
+        },
       });
+
+      if (tx.status == 200) {
+        res.send({
+          message: "Minted successfully",
+          tx: tx.hash,
+          contract_address: tx.contract,
+          slug: slug,
+        });
+      } else {
+        res.status(400).json({ message: tx.message });
+      }
     } else {
-      res.status(400).json({ message: tx.message });
+      res.status(400).json({ message: "Invalid contract type" });
     }
-  } else {
-    res.status(400).json({ message: "Invalid contract type" });
+  } catch (e) {
+    console.log(e);
+    res.status(400).json({ message: e });
   }
 });
 
