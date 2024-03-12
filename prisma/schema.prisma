@@ -302,6 +302,7 @@ model shared_mint_canvas {
   contract String @db.VarChar(255)
   hash     String @db.VarChar(255)
   chainId  Int
+  contractType String @db.VarChar(255) 
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
