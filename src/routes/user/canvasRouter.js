@@ -24,9 +24,7 @@ const canvasSharedClicked = require("../../functions/events/canvasSharedClicked.
 
 const sendError = require("../../functions/webhook/sendError.webhook");
 
-const {
-  handleAddRewards,
-} = require("../../functions/poster/posterService");
+const { handleAddRewards } = require("../../functions/poster/posterService");
 
 const {
   getCache,
@@ -423,8 +421,7 @@ canvasRouter.post("/publish", async (req, res) => {
 
     await canvasPostedToLens(canvasId, user_id);
 
-    const data = await handleAddRewards(owner.id, owner.evm_address, 1);
-    console.log(data);
+    await handleAddRewards(owner.id, owner.evm_address, 1);
   } else if (platform == "solana-cnft") {
     let postMetadata = {
       name: name,
@@ -482,8 +479,7 @@ canvasRouter.post("/publish", async (req, res) => {
       return;
     }
 
-    const data = await handleAddRewards(owner.id, owner.evm_address, 0);
-    console.log(data)
+    await handleAddRewards(owner.id, owner.evm_address, 0);
   }
 
   res.send(resp);
@@ -633,8 +629,8 @@ canvasRouter.post("/minted", async (req, res) => {
 
   let slug = "lp-canvas" + "-" + canvasId + "-" + uuid.split("-")[0];
 
-  let contract = mintLink.split(":")
-  contract = contract[contract.length - 1]
+  let contract = mintLink.split(":");
+  contract = contract[contract.length - 1];
 
   console.log({
     canvasId,
@@ -643,22 +639,21 @@ canvasRouter.post("/minted", async (req, res) => {
     slug,
     contract,
     hash,
-  })
-
+  });
 
   await prisma.shared_mint_canvas.create({
-    data : {
+    data: {
       canvasId,
       chainId,
       contractType,
       slug,
       contract,
       hash,
-    }
-  })
+    },
+  });
 
   res.send({
-    slug : slug,
+    slug: slug,
     contract,
     chainId,
   });

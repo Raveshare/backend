@@ -10,9 +10,7 @@ const withdrawFunds = require("../../functions/mint/withdrawFunds");
 const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
 const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
 const { v4: uuidv4 } = require("uuid");
-const {
-  handleAddRewards,
-} = require("../../functions/poster/posterService");
+const { handleAddRewards } = require("../../functions/poster/posterService");
 const NODE_ENV = process.env.NODE_ENV;
 
 const BaseContractAddress =
@@ -61,7 +59,7 @@ router.post("/", async (req, res) => {
     },
     select: {
       id: true,
-      evm_address: true
+      evm_address: true,
     },
   });
 
@@ -88,12 +86,8 @@ router.post("/", async (req, res) => {
         res.status(400).json({ message: "Gas not enough" });
       } else {
         mintedFrame(user.id, frameId, recipientAddress, false);
-        const posterServiceResponse = await handleAddRewards(
-          user.id,
-          user.evm_address,
-          5
-        );
-        console.log(posterServiceResponse);
+        await handleAddRewards(user.id, user.evm_address, 5);
+
         res.send({
           message: "Minted successfully",
           tx: tx.hash,
@@ -117,12 +111,7 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
-      const posterServiceResponse = await handleAddRewards(
-        user.id,
-        user.evm_address,
-        5
-      );
-      console.log(posterServiceResponse);
+      await handleAddRewards(user.id, user.evm_address, 5);
     }
   } else {
     if (frame.contract_address === BaseContractAddress) {
@@ -137,12 +126,7 @@ router.post("/", async (req, res) => {
           message: "Minted successfully",
           tx: tx.hash,
         });
-        const posterServiceResponse = await handleAddRewards(
-          user.id,
-          user.evm_address,
-          5
-        );
-        console.log(posterServiceResponse);
+        await handleAddRewards(user.id, user.evm_address, 5);
       }
     } else {
       console.log("Minting to Zora Sponsored");
@@ -162,12 +146,7 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
-      const posterServiceResponse = await handleAddRewards(
-        user.id,
-        user.evm_address,
-        5
-      );
-      console.log(posterServiceResponse);
+      await handleAddRewards(user.id, user.evm_address, 5);
     }
   }
 });

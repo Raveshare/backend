@@ -43,12 +43,11 @@ const usedInvite = async (ownerId) => {
     },
   });
 
-  const posterServiceResponse = await handleAddRewards(
+await handleAddRewards(
     owner.id,
     owner.evm_address,
     3
   );
-  console.log(posterServiceResponse);
 };
 
 // reduces the points of the user by 1

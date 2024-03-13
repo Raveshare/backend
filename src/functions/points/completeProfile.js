@@ -12,7 +12,7 @@ const completedProfile = async (ownerId) => {
 
   console.log(hasAlreadyCompleted);
 
-  if (hasAlreadyCompleted) return;
+  // if (hasAlreadyCompleted) return;
   console.log("completed profile");
 
   await prisma.owners.updateMany({
@@ -40,13 +40,12 @@ const completedProfile = async (ownerId) => {
     },
   });
 
-  const posterServiceResponse = await handleAddRewards(
+ await handleAddRewards(
     owner.id,
     owner.evm_address,
     2
   );
 
-  console.log(posterServiceResponse);
 };
 
 module.exports = {
