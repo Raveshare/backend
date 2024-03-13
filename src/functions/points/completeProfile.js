@@ -1,5 +1,5 @@
 const prisma = require("../../prisma");
-const { handleAddRewards } = require("../poster-service/posterService.js");
+const { handleAddRewards } = require("../poster/posterService");
 
 // reduces the points of the user by 1
 const completedProfile = async (ownerId) => {
@@ -9,6 +9,8 @@ const completedProfile = async (ownerId) => {
       taskId: 5,
     },
   });
+
+  console.log(hasAlreadyCompleted);
 
   if (hasAlreadyCompleted) return;
   console.log("completed profile");

@@ -12,7 +12,7 @@ const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
 const { v4: uuidv4 } = require("uuid");
 const {
   handleAddRewards,
-} = require("../../functions/poster-service/posterService");
+} = require("../../functions/poster/posterService");
 const NODE_ENV = process.env.NODE_ENV;
 
 const BaseContractAddress =
@@ -61,6 +61,7 @@ router.post("/", async (req, res) => {
     },
     select: {
       id: true,
+      evm_address: true
     },
   });
 

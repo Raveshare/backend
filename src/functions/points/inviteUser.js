@@ -1,5 +1,5 @@
 const prisma = require("../../prisma");
-const { handleAddRewards } = require("../poster-service/posterService");
+const { handleAddRewards } = require("../poster/posterService");
 
 const canInvite = async (ownerId) => {
   let owner = await prisma.owners.findUnique({

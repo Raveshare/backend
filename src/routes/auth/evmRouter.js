@@ -10,7 +10,7 @@ const sendLogin = require("../../functions/webhook/sendLogin.webhook");
 const sendMail = require("../../functions/mail/sendMail");
 const {
   handleAddRewards,
-} = require("../../functions/poster-service/posterService");
+} = require("../../functions/poster/posterService");
 
 evmRouter.post("/", async (req, res) => {
   // To check if the request is already authenticated, and user_id is present.

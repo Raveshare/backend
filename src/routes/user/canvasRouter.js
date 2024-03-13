@@ -26,7 +26,7 @@ const sendError = require("../../functions/webhook/sendError.webhook");
 
 const {
   handleAddRewards,
-} = require("../../functions/poster-service/posterService");
+} = require("../../functions/poster/posterService");
 
 const {
   getCache,
