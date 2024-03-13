@@ -10,6 +10,9 @@ const withdrawFunds = require("../../functions/mint/withdrawFunds");
 const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
 const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
 const { v4: uuidv4 } = require("uuid");
+const {
+  handleAddRewards,
+} = require("../../functions/poster-service/posterService");
 const NODE_ENV = process.env.NODE_ENV;
 
 const BaseContractAddress =
@@ -84,7 +87,12 @@ router.post("/", async (req, res) => {
         res.status(400).json({ message: "Gas not enough" });
       } else {
         mintedFrame(user.id, frameId, recipientAddress, false);
-
+        const posterServiceResponse = await handleAddRewards(
+          user.id,
+          user.evm_address,
+          5
+        );
+        console.log(posterServiceResponse);
         res.send({
           message: "Minted successfully",
           tx: tx.hash,
@@ -108,6 +116,12 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
+      const posterServiceResponse = await handleAddRewards(
+        user.id,
+        user.evm_address,
+        5
+      );
+      console.log(posterServiceResponse);
     }
   } else {
     if (frame.contract_address === BaseContractAddress) {
@@ -122,6 +136,12 @@ router.post("/", async (req, res) => {
           message: "Minted successfully",
           tx: tx.hash,
         });
+        const posterServiceResponse = await handleAddRewards(
+          user.id,
+          user.evm_address,
+          5
+        );
+        console.log(posterServiceResponse);
       }
     } else {
       console.log("Minting to Zora Sponsored");
@@ -141,6 +161,12 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
+      const posterServiceResponse = await handleAddRewards(
+        user.id,
+        user.evm_address,
+        5
+      );
+      console.log(posterServiceResponse);
     }
   }
 });
@@ -183,7 +209,7 @@ router.post("/deploy-contract", auth, async (req, res) => {
 
   let sponsored = await prisma.user_funds.findUnique({
     where: {
-      userId: user_id
+      userId: user_id,
     },
     select: {
       sponsored: true,
@@ -191,7 +217,6 @@ router.post("/deploy-contract", auth, async (req, res) => {
   });
 
   sponsored = sponsored.sponsored > 0 ? true : false;
-  
   if (contract_type == 721) {
     let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);
 
