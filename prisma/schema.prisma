@@ -275,6 +275,7 @@ model frames {
   isFollow         Boolean @default(false)
   chainId          Int     
   contract_address String   @db.VarChar(255)
+  contract_type    String   @db.VarChar(255) @default("ERC721")
 
   redirectLink String? @db.VarChar(255)
   creatorSponsored Boolean @default(false)

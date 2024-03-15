@@ -378,6 +378,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       contractAddress,
       chainId,
       creatorSponsored,
+      contractType,
     } = req.body;
 
     let imageIpfsLink;
@@ -421,6 +422,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       redirectLink,
       chainId: parseInt(chainId),
       contract_address: contractAddress,
+      contract_type : contractType,
       creatorSponsored,
     };
 
