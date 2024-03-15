@@ -277,6 +277,7 @@ model frames {
   contract_address String   @db.VarChar(255)
 
   redirectLink String? @db.VarChar(255)
+  creatorSponsored Boolean @default(false)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

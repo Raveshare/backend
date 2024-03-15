@@ -377,6 +377,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       redirectLink,
       contractAddress,
       chainId,
+      creatorSponsored,
     } = req.body;
 
     let imageIpfsLink;
@@ -420,6 +421,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       redirectLink,
       chainId: parseInt(chainId),
       contract_address: contractAddress,
+      creatorSponsored,
     };
 
     let frame = await prisma.frames.create({
