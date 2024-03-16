@@ -64,7 +64,7 @@ userRouter.post("/update", async (req, res) => {
 userRouter.get("/", async (req, res) => {
   try {
     let user_id = req.user?.user_id;
-    console.log(user_id);
+  
     let poster = await axios.get(
       `${process.env.POSTER_SERVICE_URL}/reward/balance/${user_id}`
     );
