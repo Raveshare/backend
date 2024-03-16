@@ -12,17 +12,14 @@ async function dumpAsset(name) {
   //   data: assets,
   //   skipDuplicates: true,
   // });
-
   // const data = await prisma.user_published_canvases.findMany({
   //   where: {
   //     platform: "farcaster",
   //   },
   // });
-
   // let totalLikes = 0;
   // let totalRecasts = 0;
   // let countedCasts = 0;
-
   // for (const canvas of data) {
   //   console.log(canvas.txHash);
   //   try {
@@ -38,14 +35,12 @@ async function dumpAsset(name) {
   //         "content-type": "application/json",
   //       },
   //     });
-
   //     if (response.data?.cast !== "") {
   //       const cast = response.data.cast;
   //       // Check if any embeds contain 'frame' in the URL
   //       const hasFrameInEmbeds = cast.embeds.some((embed) =>
   //         embed.url.includes("frame")
   //       );
-
   //       if (hasFrameInEmbeds) {
   //         console.log(cast);
   //         totalLikes += cast.reactions.likes.length;
@@ -57,27 +52,44 @@ async function dumpAsset(name) {
   //     console.error("Error fetching data for canvas:", canvas.txHash, error);
   //   }
   // }
-
   // const stats = {
   //   totalLikes,
   //   totalRecasts,
   //   averageLikes: countedCasts > 0 ? totalLikes / countedCasts : 0,
   //   averageRecasts: countedCasts > 0 ? totalRecasts / countedCasts : 0,
   // };
-
   // console.log("Stats:", stats);
+  // const uniqueCampaignNames = await prisma.assets.updateMany({
+  //   where: {
+  //     campaign: "monniverse",
+  //   },
+  //   data: {
+  //     featured: true,
+  //     tags: ["monniverse", "moon", "mermaid", "characters", "hair", "tail", "fish"],
+  //   },
+  // });
+  // console.log(uniqueCampaignNames);
 
-  const uniqueCampaignNames = await prisma.assets.updateMany({
-    where: {
-      campaign: "monniverse",
-    },
-    data: {
-      featured: true,
-      tags: ["monniverse", "moon", "mermaid", "characters", "hair", "tail", "fish"],
-    },
-  });
+  const data = {
+    items: [
+      {
+        wallet: "0x41A0Bd13CbC4281a07C72F1124dCC6655a3c5CFc",
+        network: "ZORA",
+        type: "CONTRACT",
+      },
+    ],
+  };
 
-  console.log(uniqueCampaignNames);
+  for (const item of data.items) {
+    await prisma.wallet_whitelisted_registry.create({
+      data: {
+        wallet: item.wallet,
+        network: item.network,
+        type: item.type,
+      },
+    });
+    console.log(`Added wallet ${item.wallet} to the database.`);
+  }
 }
 
 module.exports = dumpAsset;

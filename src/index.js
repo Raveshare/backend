@@ -40,7 +40,7 @@ app.use("/user", auth, userRouter);
 app.use("/auth", authRouter);
 app.use("/util", utilRouter);
 app.use("/template", auth, templateRouter);
-app.use("/asset", auth, assetRouter);
+app.use("/asset", assetRouter);
 app.use("/public", publicRouter);
 app.use("/mint", fundRouter);
 

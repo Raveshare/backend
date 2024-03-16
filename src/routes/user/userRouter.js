@@ -5,7 +5,7 @@ const uploadedRouter = require("./uploadedRouter");
 const loyaltyRouter = require("./loyaltyRouter");
 const prisma = require("../../prisma");
 
-const {completedProfile} = require("../../functions/points/completeProfile");
+const { completedProfile } = require("../../functions/points/completeProfile");
 
 userRouter.use("/nft", nftRouter);
 userRouter.use("/canvas", canvasRouter);
@@ -42,12 +42,12 @@ userRouter.post("/update", async (req, res) => {
         id: user_id,
       },
       select: {
-        username : true,
-        mail : true,
+        username: true,
+        mail: true,
       },
     });
 
-    if(user.username && user.mail) await completedProfile(user_id);
+    if (user.username && user.mail) await completedProfile(user_id);
 
     res.status(200).send({
       message: "Updated Successfully",
