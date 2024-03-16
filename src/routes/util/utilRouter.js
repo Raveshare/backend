@@ -479,13 +479,24 @@ utilRouter.get("/get-frame-data", async (req, res) => {
         .send({ status: "error", message: "No frameId provided" });
     }
 
-    const data = await prisma.frames.findUnique({
+    let data = await prisma.frames.findUnique({
       where: {
         id: frameId,
       },
     });
 
-    res.status(200).send({ message: data });
+    let slug = await prisma.shared_mint_canvas.findFirst({
+      where: {
+        contract: data.contract_address,
+      }
+    })
+
+    data = {
+      ...data,
+      slug : slug?.slug || ""
+    }
+
+    res.status(200).send(data);
   } catch (error) {
     console.log(error.message);
     res.status(500).send({ status: "error", message: error.message });
