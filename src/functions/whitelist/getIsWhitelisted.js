@@ -1,6 +1,10 @@
 const { Alchemy, Network } = require("alchemy-sdk");
 const checkIfFollow = require("../../lens/api-v2").checkIfFollow;
 const axios = require("axios");
+const { request, gql } = require("graphql-request");
+
+const AIRSTACK_API_KEY = process.env.AIRSTACK_API_KEY;
+const AIRSTACK_API_URL = "https://api.airstack.xyz/gql";
 
 const eth_config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Replace with your API key
@@ -47,6 +51,45 @@ const base_alchemy = new Alchemy(base_config);
 const arb_alchemy = new Alchemy(arb_config);
 const opt_alchemy = new Alchemy(opt_config);
 
+const checkZoraNetwork = async (walletAddress, tokenAddress) => {
+  const query = gql`
+    query MyQuery(
+      $_eq: Address
+      $_eq1: Identity
+      $blockchain: TokenBlockchain!
+    ) {
+      TokenBalances(
+        input: {
+          filter: { tokenAddress: { _eq: $_eq }, owner: { _eq: $_eq1 } }
+          blockchain: $blockchain
+        }
+      ) {
+        TokenBalance {
+          amount
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    _eq: tokenAddress,
+    _eq1: walletAddress,
+    blockchain: "zora",
+  };
+
+  const response = await request(AIRSTACK_API_URL, query, variables, {
+    headers: {
+      Authorization: `${AIRSTACK_API_KEY}`,
+    },
+  });
+
+  const tokenBalance = response.TokenBalances?.TokenBalance;
+  return (
+    tokenBalance &&
+    tokenBalance.length > 0 &&
+    parseInt(tokenBalance[0].amount) > 0
+  );
+};
 const getIsWhitelisted = async (walletAddress) => {
   try {
     let follow = false;
@@ -105,11 +148,25 @@ const getIsWhitelisted = async (walletAddress) => {
           response = await base_alchemy.core.getTokenBalances(walletAddress, [
             registry.wallet,
           ]);
+        } else if (registry.network === "OPETH") {
+          response = await opt_alchemy.core.getTokenBalances(walletAddress, [
+            registry.wallet,
+          ]);
         }
         if (response?.tokenBalances[0]?.tokenBalance) {
           let tokenBalance = response.tokenBalances[0].tokenBalance;
           tokenBalance = parseInt(tokenBalance);
           if (tokenBalance > 0) {
+            return true;
+          }
+        }
+
+        if (registry.network === "ZORA") {
+          const isWhitelisted = await checkZoraNetwork(
+            walletAddress,
+            registry.wallet
+          );
+          if (isWhitelisted) {
             return true;
           }
         }
@@ -134,7 +191,6 @@ const getIsWhitelisted = async (walletAddress) => {
             },
           }
         );
-
 
         if (response.data.result.total > 0) {
           return true;
