@@ -6,6 +6,7 @@ const loyaltyRouter = require("./loyaltyRouter");
 const prisma = require("../../prisma");
 
 const { completedProfile } = require("../../functions/points/completeProfile");
+const axios = require("axios");
 
 userRouter.use("/nft", nftRouter);
 userRouter.use("/canvas", canvasRouter);
@@ -61,23 +62,35 @@ userRouter.post("/update", async (req, res) => {
 });
 
 userRouter.get("/", async (req, res) => {
-  let user_id = req.user?.user_id;
+  try {
+    let user_id = req.user?.user_id;
+    console.log(user_id);
+    let poster = await axios.get(
+      `${process.env.POSTER_SERVICE_URL}/reward/balance/${user_id}`
+    );
 
-  let user = await prisma.owners.findUnique({
-    where: {
-      id: user_id,
-    },
-    select: {
-      username: true,
-      mail: true,
-      lens_handle: true,
-      points: true,
-    },
-  });
+    let user = await prisma.owners.findUnique({
+      where: {
+        id: user_id,
+      },
+      select: {
+        username: true,
+        mail: true,
+        lens_handle: true,
+        points: true,
+      },
+    });
+    user.balance = poster.data.netAmount;
 
-  res.send({
-    message: user,
-  });
+    res.send({
+      message: user,
+    });
+  } catch (err) {
+    console.log(err.message);
+    res
+      .status(500)
+      .send({ status: "error", message: "Error fetching user details" });
+  }
 });
 
 module.exports = userRouter;
