@@ -273,10 +273,12 @@ model frames {
   isLike           Boolean @default(false)
   isRecast         Boolean @default(false)
   isFollow         Boolean @default(false)
-  chainId          Int     
-  contract_address String   @db.VarChar(255)
+  chainId          Int
+  contract_address String  @db.VarChar(255)
+  contract_type    String  @default("ERC721") @db.VarChar(255)
 
-  redirectLink String? @db.VarChar(255)
+  redirectLink     String? @db.VarChar(255)
+  creatorSponsored Boolean @default(false)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -296,13 +298,13 @@ model shared_canvas {
 }
 
 model shared_mint_canvas {
-  id       Int    @id @default(autoincrement())
-  slug     String @unique
-  canvasId Int
-  contract String @db.VarChar(255)
-  hash     String @db.VarChar(255)
-  chainId  Int
-  contractType String @db.VarChar(255) 
+  id           Int    @id @default(autoincrement())
+  slug         String @unique
+  canvasId     Int
+  contract     String @db.VarChar(255)
+  hash         String @db.VarChar(255)
+  chainId      Int
+  contractType String @db.VarChar(255)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
@@ -318,4 +320,11 @@ model user_funds {
   userId        Int     @unique
 
   owner owners @relation(fields: [userId], references: [id])
+}
+
+model contractRegistry {
+  id       Int    @id @default(autoincrement())
+  contract String
+  network  String
+  type     String
 }

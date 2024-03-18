@@ -1,4 +1,5 @@
 const prisma = require("../../prisma");
+const { handleAddRewards } = require("../poster/posterService");
 
 // reduces the points of the user by 1
 const completedProfile = async (ownerId) => {
@@ -9,7 +10,9 @@ const completedProfile = async (ownerId) => {
     },
   });
 
-  if (hasAlreadyCompleted) return;
+  console.log(hasAlreadyCompleted);
+
+  // if (hasAlreadyCompleted) return;
   console.log("completed profile");
 
   await prisma.owners.updateMany({
@@ -30,6 +33,19 @@ const completedProfile = async (ownerId) => {
       amount: 10,
     },
   });
+
+  const owner = await prisma.owners.findUnique({
+    where: {
+      id: ownerId,
+    },
+  });
+
+ await handleAddRewards(
+    owner.id,
+    owner.evm_address,
+    2
+  );
+
 };
 
 module.exports = {

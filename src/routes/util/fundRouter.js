@@ -10,6 +10,7 @@ const withdrawFunds = require("../../functions/mint/withdrawFunds");
 const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
 const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
 const { v4: uuidv4 } = require("uuid");
+const { handleAddRewards } = require("../../functions/poster/posterService");
 const NODE_ENV = process.env.NODE_ENV;
 
 const BaseContractAddress =
@@ -58,6 +59,7 @@ router.post("/", async (req, res) => {
     },
     select: {
       id: true,
+      evm_address: true,
     },
   });
 
@@ -84,6 +86,7 @@ router.post("/", async (req, res) => {
         res.status(400).json({ message: "Gas not enough" });
       } else {
         mintedFrame(user.id, frameId, recipientAddress, false);
+        await handleAddRewards(user.id, user.evm_address, 5);
 
         res.send({
           message: "Minted successfully",
@@ -108,6 +111,7 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
+      await handleAddRewards(user.id, user.evm_address, 5);
     }
   } else {
     if (frame.contract_address === BaseContractAddress) {
@@ -122,6 +126,7 @@ router.post("/", async (req, res) => {
           message: "Minted successfully",
           tx: tx.hash,
         });
+        await handleAddRewards(user.id, user.evm_address, 5);
       }
     } else {
       console.log("Minting to Zora Sponsored");
@@ -141,6 +146,7 @@ router.post("/", async (req, res) => {
         tx: tx.hash,
         tokenId: tx.tokenId.toString(),
       });
+      await handleAddRewards(user.id, user.evm_address, 5);
     }
   }
 });
@@ -182,16 +188,16 @@ router.post("/deploy-contract", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid input" });
     }
 
-    let sponsored = await prisma.user_funds.findUnique({
-      where: {
-        userId: user_id,
-      },
-      select: {
-        sponsored: true,
-      },
-    });
+  let sponsored = await prisma.user_funds.findUnique({
+    where: {
+      userId: user_id,
+    },
+    select: {
+      sponsored: true,
+    },
+  });
 
-    sponsored = sponsored.sponsored > 0 ? true : false;
+  sponsored = sponsored.sponsored > 0 ? true : false;
 
     if (contract_type == 721) {
       let tx = await mintAsZoraERC721(user_id, chainId, args, sponsored);

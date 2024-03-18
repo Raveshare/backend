@@ -1,4 +1,5 @@
 const prisma = require("../../prisma");
+const { handleAddRewards } = require("../poster/posterService");
 
 const canInvite = async (ownerId) => {
   let owner = await prisma.owners.findUnique({
@@ -35,11 +36,22 @@ const usedInvite = async (ownerId) => {
       amount: -5,
     },
   });
+
+  const owner = await prisma.owners.findUnique({
+    where: {
+      id: ownerId,
+    },
+  });
+
+await handleAddRewards(
+    owner.id,
+    owner.evm_address,
+    3
+  );
 };
 
 // reduces the points of the user by 1
 const invitedUser = async (ownerId) => {
-
   let hasAlreadyInvited = await prisma.referral.findFirst({
     where: {
       ownerId: ownerId,
@@ -71,7 +83,7 @@ const invitedUser = async (ownerId) => {
 };
 
 module.exports = {
-    invitedUser,
-    canInvite,
-    usedInvite,
+  invitedUser,
+  canInvite,
+  usedInvite,
 };
