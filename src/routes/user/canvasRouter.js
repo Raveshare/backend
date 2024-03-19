@@ -612,7 +612,9 @@ canvasRouter.post("/minted", async (req, res) => {
   let userId = req.user.user_id;
 
   let contractType = req.body.contractType;
+  contractType = String(contractType);
   let chainId = req.body.chainId;
+  chainId = parseInt(chainId);
   let hash = req.body.hash;
 
   await canvasPosted(
@@ -631,15 +633,6 @@ canvasRouter.post("/minted", async (req, res) => {
 
   let contract = mintLink.split(":");
   contract = contract[contract.length - 1];
-
-  console.log({
-    canvasId,
-    chainId,
-    contractType,
-    slug,
-    contract,
-    hash,
-  });
 
   await prisma.shared_mint_canvas.create({
     data: {
