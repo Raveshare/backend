@@ -1,17 +1,14 @@
-const posthogClient = require('../../utils/posthog/posthogClient.js')
+const mixpanelClient = require('../../utils/mixpanel/mixpanel.js');
 
 const canvasPostedToTwitter = async (canvasId, userId) => {
     try {
-        await posthogClient.capture({
-            distinctId: userId,
-            event: 'Canvas Posted To Twitter',
-            properties: {
-                canvasId: canvasId
-            }
-        })
+        mixpanelClient.track('Canvas Posted To Twitter', {
+            distinct_id: userId,
+            canvasId: canvasId,
+        });
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 }
 
-module.exports = canvasPostedToTwitter
+module.exports = canvasPostedToTwitter;

@@ -1,13 +1,16 @@
-const posthogClient = require('../../utils/posthog/posthogClient.js')
+const mixpanel = require("../../utils/mixpanel/mixpanel.js");
 
 const userLogin = async (userId) => {
-    try {
-        await posthogClient.identify({
-            distinctId: userId,
-        })
-    } catch (err) {
-        console.log(err)
-    }
-}
+  try {
+    mixpanel.track("User Logged In",{
+      distinctId: userId,
+    });
+    mixpanel.people.set(userId, {
+      $last_login: new Date(),
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-module.exports = userLogin
+module.exports = userLogin;

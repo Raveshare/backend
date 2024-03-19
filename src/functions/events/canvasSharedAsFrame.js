@@ -1,14 +1,11 @@
-const posthogClient = require("../../utils/posthog/posthogClient.js");
+const mixpanelClient = require("../../utils/mixpanel/mixpanel.js");
 
 const canvasSharedAsFrame = async (canvasId, userId, frameId) => {
   try {
-    posthogClient.capture({
-      distinctId: userId,
-      event: "Canvas shared as Frame",
-      properties: {
-        canvasId: canvasId,
-        frameId: frameId,
-      },
+    mixpanelClient.track("Canvas shared as Frame", {
+      distinct_id: userId,
+      canvasId: canvasId,
+      frameId: frameId,
     });
   } catch (err) {
     console.log(err);

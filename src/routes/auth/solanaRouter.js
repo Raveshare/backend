@@ -5,6 +5,7 @@ const bs58 = require("bs58");
 const prisma = require("../../prisma");
 const generateJwt = require("../../utils/auth/generateJwt");
 const sendLogin = require("../../functions/webhook/sendLogin.webhook");
+const userLogin = require("../../functions/events/userLogin.event");
 const jsonwebtoken = require("jsonwebtoken");
 
 solanaRouter.post("/", async (req, res) => {
@@ -112,6 +113,8 @@ solanaRouter.post("/", async (req, res) => {
           ownerData.solana_address,
           ownerData.username
         );
+
+      ownerData.id ? userLogin(ownerData.id) : "";
       res.status(200).send({
         status: "success",
         profileId: hasExpired

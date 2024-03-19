@@ -1,17 +1,14 @@
-const posthogClient = require('../../utils/posthog/posthogClient.js')
+const mixpanelClient = require('../../utils/mixpanel/mixpanel.js');
 
 const canvasShared = async (canvasId, userId) => {
     try {
-        await posthogClient.capture({
-            distinctId: userId,
-            event: 'Canvas Shared as Link',
-            properties: {
-                canvasId: canvasId
-            }
-        })
+        mixpanelClient.track('Canvas Shared as Link', {
+            distinct_id: userId,
+            canvasId: canvasId,
+        });
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 }
 
-module.exports = canvasShared
+module.exports = canvasShared;

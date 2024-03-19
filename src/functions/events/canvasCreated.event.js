@@ -1,17 +1,16 @@
-const posthogClient = require('../../utils/posthog/posthogClient.js')
+// Require the Mixpanel client from your project-specific location
+const mixpanelClient = require('../../utils/mixpanel/mixpanel.js');
 
 const canvasCreated = async (canvasId, userId) => {
     try {
-        await posthogClient.capture({
-            distinctId: userId,
-            event: 'Canvas Created',
-            properties: {
-                canvasId: canvasId
-            }
-        })
+        // Correctly structured event tracking with Mixpanel
+        mixpanelClient.track('Canvas Created', {
+            distinct_id: userId,
+            canvasId: canvasId
+        });
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 }
 
-module.exports = canvasCreated
+module.exports = canvasCreated;

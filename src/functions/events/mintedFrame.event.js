@@ -1,19 +1,16 @@
-const posthogClient = require('../../utils/posthog/posthogClient.js')
+const mixpanelClient = require('../../utils/mixpanel/mixpanel.js');
 
 const mintedFrame =  (userId, frameId, recipientAddress , isSponsored) => {
     try {
-         posthogClient.capture({
-            distinctId: userId,
-            event: 'Minted as Frame',
-            properties: {
-                frameId: frameId,
-                recipientAddress: recipientAddress,
-                isSponsored: isSponsored
-            }
-        })
+         mixpanelClient.track('Minted as Frame', {
+            distinct_id: userId,
+            frameId: frameId,
+            recipientAddress: recipientAddress,
+            isSponsored: isSponsored,
+        });
     } catch (err) {
-        console.log(err)
+        console.log(err);
     }
 }
 
-module.exports = mintedFrame
+module.exports = mintedFrame;
