@@ -30,6 +30,11 @@ const { v4: uuid } = require("uuid");
 const axios = require("axios");
 const message = require("cabin/lib/message");
 
+const airstack = require("@airstack/frames");
+const { gql } = require("graphql-request");
+
+airstack.init(process.env.AIRSTACK_API_KEY);
+
 const getIpfsClient = async () => {
   const { create } = await import("ipfs-http-client");
 
@@ -47,8 +52,10 @@ const getIpfsClient = async () => {
 
 const NODE_ENV = process.env.NODE_ENV;
 
-const BaseContractAddress = NODE_ENV === "production" ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad" : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
-
+const BaseContractAddress =
+  NODE_ENV === "production"
+    ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad"
+    : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -422,7 +429,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       redirectLink,
       chainId: parseInt(chainId),
       contract_address: contractAddress,
-      contract_type : contractType,
+      contract_type: contractType,
       creatorSponsored,
     };
 
@@ -488,13 +495,13 @@ utilRouter.get("/get-frame-data", async (req, res) => {
     let slug = await prisma.shared_mint_canvas.findFirst({
       where: {
         contract: data.contract_address,
-      }
-    })
+      },
+    });
 
     data = {
       ...data,
-      slug : slug?.slug || ""
-    }
+      slug: slug?.slug || "",
+    };
 
     res.status(200).send(data);
   } catch (error) {
@@ -541,6 +548,45 @@ utilRouter.post("/webhook-endpoint", (req, res) => {
   console.log("Webhook endpoint hit");
   // console.log("Request body:", req.body);
   res.status(200).send({ status: "success", message: "Webhook received" });
+});
+
+utilRouter.get("/participant-of-a-channel", async (req, res) => {
+  try {
+    const { channel, fid } = req.query;
+    if (!channel || !fid) {
+      return res
+        .status(400)
+        .send({ status: "error", message: "Channel and FID is mandatory" });
+    }
+    const input = {
+      channel,
+      actionType: [
+        airstack.FarcasterChannelActionType.Cast,
+        airstack.FarcasterChannelActionType.Reply,
+      ],
+      lastActionTimestamp: {
+        after: "2024-02-01T00:00:00Z",
+        before: "2024-02-28T00:00:00Z",
+      },
+      limit: 100,
+    };
+    const { data, error } = await airstack.getFarcasterChannelParticipants(
+      input
+    );
+
+    if (error) return res.status(500).send({ status: "error", message: error });
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].fid === fid) {
+        return res.status(200).send({ status: "success", message: true });
+      }
+    }
+
+    return res.status(200).send({ status: "success", message: false });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send({ status: "error", message: error.message });
+  }
 });
 
 module.exports = utilRouter;

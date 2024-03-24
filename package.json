@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@0xsplits/splits-sdk": "^2.15.0",
+    "@airstack/frames": "^1.0.20",
     "@airstack/node": "^0.0.5",
     "@fal-ai/serverless-client": "^0.8.6",
     "@lighthouse-web3/sdk": "^0.3.0",
