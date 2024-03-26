@@ -283,7 +283,9 @@ model frames {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  owners owners @relation(fields: [owner], references: [evm_address])
+  owners          owners  @relation(fields: [owner], references: [evm_address])
+  gatedChannel    String?
+  gatedCollection String?
 }
 
 model shared_canvas {
