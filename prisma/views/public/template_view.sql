@@ -5,7 +5,7 @@ SELECT
   templates.image,
   templates."createdAt",
   templates."updatedAt",
-  templates."tags"
+  templates.tags
 FROM
   templates
 ORDER BY
