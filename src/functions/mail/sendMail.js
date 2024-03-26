@@ -669,7 +669,7 @@ const sendMail = async (email, subject, username) => {
 
   if (error) {
     console.error("Error: ", error);
-    throw new Error(error);
+    return error;
   }
 
   return data.id;
