@@ -12,7 +12,11 @@ const {
   uploadMediaToIpfs,
   uploadJSONToIpfs,
 } = require("../../functions/uploadToIPFS");
-const { getCache, setCache } = require("../../functions/cache/handleCache");
+const {
+  getCache,
+  setCache,
+  deleteCache,
+} = require("../../functions/cache/handleCache");
 const {
   canUseRemoveBG,
   usedRemoveBG,
@@ -414,8 +418,7 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       "https://lenspost.infura-ipfs.io/ipfs/" +
       (await uploadJSONToIpfs(metaData));
 
-    if (gatedCollection)
-      gatedCollection = `0x${gatedCollection}`;
+    if (gatedCollection) gatedCollection = `0x${gatedCollection}`;
 
     const data = {
       imageUrl,
@@ -453,15 +456,22 @@ utilRouter.post("/update-frame-data", async (req, res) => {
     let { frameId, minterAddress, txHash } = req.body;
     frameId = parseInt(frameId);
 
-    const frame = await prisma.frames.findUnique({
-      where: {
-        id: frameId,
-      },
-    });
+    let frame;
+    let frameCache = await getCache(`frame-${frameId}`);
+    if (!frameCache) {
+      frame = await prisma.frames.findUnique({
+        where: {
+          id: frameId,
+        },
+      });
+      await setCache(`frame-${frameId}`, JSON.stringify(data));
+    } else {
+      frame = await JSON.parse(frameCache);
+    }
 
     const minterData = [...frame.minters, { minterAddress, txHash }];
 
-    await prisma.frames.update({
+    frame = await prisma.frames.update({
       where: {
         id: frameId,
       },
@@ -469,6 +479,9 @@ utilRouter.post("/update-frame-data", async (req, res) => {
         minters: minterData,
       },
     });
+
+    await deleteCache(`frame-${frameId}`);
+    await setCache(`frame-${frameId}`, JSON.stringify(frame));
 
     res.status(200).send({ status: "success" });
   } catch (error) {
@@ -487,12 +500,18 @@ utilRouter.get("/get-frame-data", async (req, res) => {
         .status(400)
         .send({ status: "error", message: "No frameId provided" });
     }
-
-    let data = await prisma.frames.findUnique({
-      where: {
-        id: frameId,
-      },
-    });
+    let data;
+    let frameCache = await getCache(`frame-${frameId}`);
+    if (!frameCache) {
+      data = await prisma.frames.findUnique({
+        where: {
+          id: frameId,
+        },
+      });
+      await setCache(`frame-${frameId}`, JSON.stringify(data));
+    } else {
+      data = JSON.parse(frameCache);
+    }
 
     let slug = await prisma.shared_mint_canvas.findFirst({
       where: {

@@ -11,6 +11,8 @@ const mintAsZoraERC721 = require("../../functions/mint/mintAsZoraERC721");
 const mintFromZoraERC721 = require("../../functions/mint/mintFromZoraERC721");
 const { v4: uuidv4 } = require("uuid");
 const { handleAddRewards } = require("../../functions/poster/posterService");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
+
 const NODE_ENV = process.env.NODE_ENV;
 
 const BaseContractAddress =
@@ -38,17 +40,33 @@ router.post("/", async (req, res) => {
 
     frameId = parseInt(frameId);
 
-    let frame = await prisma.frames.findUnique({
-      where: {
-        id: frameId,
-      },
-      select: {
-        owner: true,
-        id: true,
-        chainId: true,
-        contract_address: true,
-      },
-    });
+    let frame = null;
+    const frameCache = await getCache(`frame-${frameId}`);
+    if (!frameCache) {
+      let data = await prisma.frames.findUnique({
+        where: {
+          id: frameId,
+        },
+      });
+
+      await setCache(`frame-${frameId}`, JSON.stringify(data));
+      frame = {
+        owner: data.owner,
+        id: data.id,
+        chainId: data.chainId,
+        contract_address: data.contract_address,
+      };
+    } else {
+      let data = JSON.parse(frameCache);
+      frame = {
+        owner: data.owner,
+        id: data.id,
+        chainId: data.chainId,
+        contract_address: data.contract_address,
+      };
+    }
+
+    console.log("Frame", frame)
 
     if (!frame?.owner) {
       return res.status(400).json({ message: "Frame not found" });

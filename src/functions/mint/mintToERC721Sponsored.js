@@ -1,6 +1,7 @@
 const { createWalletClient, http } = require("viem");
 const { privateKeyToAccount } = require("viem/accounts");
 const { base, baseSepolia } = require("viem/chains");
+const { getCache, setCache } = require("../../functions/cache/handleCache");
 const dotenv = require("dotenv");
 
 const prisma = require("../../prisma");
@@ -24,16 +25,29 @@ let walletClient = createWalletClient({
 });
 
 async function mintToERC721Sponsored(frameId, recipientAddress) {
-  let frame = await prisma.frames.findUnique({
-    where: {
-      id: frameId,
-    },
-    select: {
-      tokenUri: true,
-      owner: true,
-    },
-  });
+  let frame;
+  const frameCache = await getCache(`frame-${frameId}`);
+  if (!frameCache) {
+    let data = await prisma.frames.findUnique({
+      where: {
+        id: frameId,
+      },
+    });
 
+    await setCache(`frame-${frameId}`, JSON.stringify(data));
+    frame = {
+      tokenUri: data.tokenUri,
+      owner: data.owner,
+    };
+  } else {
+    let data = JSON.parse(frameCache);
+    frame = {
+      tokenUri: data.tokenUri,
+      owner: data.owner,
+    };
+  }
+
+  // implement owner cache here
   let owner = await prisma.owners.findUnique({
     where: {
       evm_address: frame.owner,

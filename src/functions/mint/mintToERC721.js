@@ -16,16 +16,30 @@ let rpc =
 let { BaseAbi, BaseContractAddress } = require("./BaseContract.js");
 
 async function mintToERC721(frameId, recipientAddress) {
-  let frame = await prisma.frames.findUnique({
-    where: {
-      id: frameId,
-    },
-    select: {
-      tokenUri: true,
-      owner: true,
-    },
-  });
+  let frame;
+  const frameCache = await getCache(`frame-${frameId}`);
+  if (!frameCache) {
+    let data = await prisma.frames.findUnique({
+      where: {
+        id: frameId,
+      },
+    });
 
+    await setCache(`frame-${frameId}`, JSON.stringify(data));
+    frame = {
+      tokenUri: data.tokenUri,
+      owner: data.owner,
+    };
+  } else {
+    let data = JSON.parse(frameCache);
+    frame = {
+      tokenUri: data.tokenUri,
+      owner: data.owner,
+    };
+  }
+
+  
+  //implement owner Cache here
   let owner = await prisma.owners.findUnique({
     where: {
       evm_address: frame.owner,
