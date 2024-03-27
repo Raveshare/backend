@@ -12,9 +12,9 @@ SELECT
   canvases."isGated",
   canvases."allowList",
   canvases."gatedWith",
-  canvases."tags",
-  canvases."assetsRecipientElementData"
-  canvases."ownerId"
+  canvases."assetsRecipientElementData",
+  canvases."ownerId",
+  canvases.tags
 FROM
   canvases
 WHERE

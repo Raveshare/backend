@@ -37,12 +37,12 @@ model canvases {
   allowList                  String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   gatedWith                  String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   assetsRecipientElementData Json[]                    @default([])
-  tags                       String[]                  @default([]) @db.VarChar(255)
   ownerId                    Int
+  tags                       String[]                  @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
   owner                      owners                    @relation(fields: [ownerId], references: [id])
-  user_published_canvases    user_published_canvases[]
   shared_canvas              shared_canvas[]
   shared_mint_canvas         shared_mint_canvas[]
+  user_published_canvases    user_published_canvases[]
 }
 
 model collections {
@@ -84,17 +84,15 @@ model nftData {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
   ownerAddress String?  @db.VarChar(255)
-  chainId      Int?
   dimensions   Int[]
   creators     Json[]   @default([])
   ownerId      Int
+  chainId      Int?
   owner        owners   @relation(fields: [ownerId], references: [id])
 }
 
 model owners {
   mail                    String?                   @db.VarChar(255)
-  farcaster_signer_uuid   String?                   @db.VarChar(255)
-  farcaster_id            String?                   @db.VarChar(255)
   lens_auth_token         Json?
   twitter_auth_token      Json?
   lens_handle             String?                   @db.VarChar(255)
@@ -104,21 +102,23 @@ model owners {
   updatedAt               DateTime                  @updatedAt @db.Timestamptz(6)
   solana_address          String?                   @unique @db.VarChar(255)
   evm_address             String?                   @unique @db.VarChar(255)
-  points                  Int                       @default(0)
   id                      Int                       @id @default(autoincrement())
-  canvases                canvases[]
-  nftData                 nftData[]
   username                String?                   @unique @db.VarChar(255)
-  public_canvas_templates public_canvas_templates[]
-  uploadeds               uploadeds[]
+  points                  Int                       @default(0)
+  farcaster_signer_uuid   String?                   @db.VarChar(255)
+  farcaster_id            String?                   @db.VarChar(255)
+  canvases                canvases[]
+  frames                  frames[]
+  nftData                 nftData[]
   points_history          points_history[]
-  socials                 socials[]
   referral                referral[]
-  user_published_canvases user_published_canvases[]
   room                    room[]
   participants            room_participants[]
-  user_funds              user_funds[]
-  frames                  frames[]
+  socials                 socials[]
+  uploadeds               uploadeds[]
+  user_funds              user_funds?
+  user_published_canvases user_published_canvases[]
+  public_canvas_templates public_canvas_templates[]
 }
 
 model socials {
@@ -139,9 +139,9 @@ model templates {
   data      Json     @db.Json
   name      String   @db.VarChar(255)
   image     String   @db.VarChar(255)
-  tags      String[] @default([]) @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  tags      String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
 }
 
 model uploadeds {
@@ -161,16 +161,16 @@ model user_collected_posts {
 
 model tasks {
   id             Int              @id @default(autoincrement())
-  name           String           @db.VarChar(255)
   description    String           @db.VarChar(255)
-  amount         Int              @default(0)
   campaign       String?          @db.VarChar(255)
   locked         Boolean?         @default(true)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
+  amount         Int              @default(0)
+  name           String           @db.VarChar(255)
   tag            String?          @db.VarChar(255)
   groupId        String?          @db.VarChar(255)
   taskIdInGroup  Int?             @default(0)
-  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime         @updatedAt @db.Timestamptz(6)
   points_history points_history[]
 }
 
@@ -179,9 +179,9 @@ model points_history {
   ownerId   Int
   amount    Int      @default(0)
   taskId    Int?
-  reason    String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  reason    String?  @db.VarChar(255)
   owner     owners   @relation(fields: [ownerId], references: [id])
   task      tasks?   @relation(fields: [taskId], references: [id])
 }
@@ -191,50 +191,28 @@ model room {
   name         String              @db.VarChar(255)
   createdAt    DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
-  host         owners?             @relation(fields: [hostId], references: [id])
   hostId       Int?
+  host         owners?             @relation(fields: [hostId], references: [id])
   participants room_participants[]
 }
 
 model room_participants {
   id            Int     @id @default(autoincrement())
-  participant   owners? @relation(fields: [participantId], references: [id])
   roomId        Int?
   participantId Int?
+  participant   owners? @relation(fields: [participantId], references: [id])
   room          room?   @relation(fields: [roomId], references: [id])
 }
 
-view public_canvas_templates {
-  id                         Int      @id @default(autoincrement())
-  data                       Json
-  params                     Json?
-  isPublic                   Boolean  @default(false)
-  ipfsLink                   String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  imageLink                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  createdAt                  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
-  ownerAddress               String?  @db.VarChar(255)
-  referredFrom               String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  isGated                    Boolean? @default(false)
-  allowList                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  gatedWith                  String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  assetsRecipientElementData Json[]   @default([])
-  tags                       String[] @default([]) @db.VarChar(255)
-  ownerId                    Int
-  owner                      owners   @relation(fields: [ownerId], references: [id])
-}
-
 model referral {
-  id Int @id @default(autoincrement())
-
+  id           Int      @id @default(autoincrement())
   ownerId      Int
-  referralCode String  @unique
-  referred     String? @db.VarChar(255)
-  hasClaimed   Boolean @default(false)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-  owner     owners   @relation(fields: [ownerId], references: [id])
+  referralCode String   @unique
+  referred     String?  @db.VarChar(255)
+  hasClaimed   Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  owner        owners   @relation(fields: [ownerId], references: [id])
 }
 
 model user_published_canvases {
@@ -242,75 +220,57 @@ model user_published_canvases {
   canvasId    Int?
   ownerId     Int?
   platform    String    @db.VarChar(255)
-  xChain      String?   @db.VarChar(255)
   createdAt   DateTime  @default(now()) @db.Timestamptz(6)
   scheduledAt DateTime? @db.Timestamptz(6)
   txHash      String?   @db.VarChar(255)
   metadata    Json?     @db.Json
-
-  owner  owners?   @relation(fields: [ownerId], references: [id])
-  canvas canvases? @relation(fields: [canvasId], references: [id])
-}
-
-view template_view {
-  id        Int       @unique
-  data      Json?     @db.Json
-  name      String?   @db.VarChar(255)
-  image     String?   @db.VarChar(255)
-  tags      String[]  @default([]) @db.VarChar(255)
-  createdAt DateTime? @db.Timestamptz(6)
-  updatedAt DateTime? @db.Timestamptz(6)
+  xChain      String?   @db.VarChar(255)
+  canvas      canvases? @relation(fields: [canvasId], references: [id])
+  owner       owners?   @relation(fields: [ownerId], references: [id])
 }
 
 model frames {
-  id               Int     @id @default(autoincrement())
-  imageUrl         String  @db.VarChar(255)
-  tokenUri         String  @db.VarChar(255)
-  minters          Json[]  @default([])
-  owner            String  @db.VarChar(255)
-  isTopUp          Boolean @default(false)
-  allowedMints     Int     @default(0)
-  isLike           Boolean @default(false)
-  isRecast         Boolean @default(false)
-  isFollow         Boolean @default(false)
+  id               Int      @id @default(autoincrement())
+  imageUrl         String   @db.VarChar(255)
+  tokenUri         String   @db.VarChar(255)
+  isLike           Boolean  @default(false)
+  isRecast         Boolean  @default(false)
+  isFollow         Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+  minters          Json[]   @default([])
+  allowedMints     Int      @default(0)
+  isTopUp          Boolean  @default(false)
+  owner            String   @db.VarChar(255)
+  redirectLink     String?  @db.VarChar(255)
   chainId          Int
-  contract_address String  @db.VarChar(255)
-  contract_type    String  @default("ERC721") @db.VarChar(255)
-
-  redirectLink     String? @db.VarChar(255)
-  creatorSponsored Boolean @default(false)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  owners          owners  @relation(fields: [owner], references: [evm_address])
-  gatedChannel    String?
-  gatedCollection String?
+  contract_address String   @db.VarChar(255)
+  creatorSponsored Boolean  @default(false)
+  contract_type    String   @default("ERC721") @db.VarChar(255)
+  gatedChannels    String?
+  gatedCollections String?
+  owners           owners   @relation(fields: [owner], references: [evm_address])
 }
 
 model shared_canvas {
-  id       Int     @id @default(autoincrement())
-  slug     String  @unique
-  canvasId Int
-  isPublic Boolean @default(true)
-
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  canvasId  Int
+  isPublic  Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
-
-  canvas canvases @relation(fields: [canvasId], references: [id])
+  canvas    canvases @relation(fields: [canvasId], references: [id])
 }
 
 model shared_mint_canvas {
-  id           Int    @id @default(autoincrement())
-  slug         String @unique
+  id           Int      @id @default(autoincrement())
+  slug         String   @unique
   canvasId     Int
-  contract     String @db.VarChar(255)
-  hash         String @db.VarChar(255)
+  contract     String   @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  hash         String   @db.VarChar(255)
   chainId      Int
-  contractType String @db.VarChar(255)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-
-  canvas canvases @relation(fields: [canvasId], references: [id])
+  contractType String   @db.VarChar(255)
+  canvas       canvases @relation(fields: [canvasId], references: [id])
 }
 
 model user_funds {
@@ -318,10 +278,9 @@ model user_funds {
   topup         Int     @default(0)
   wallet        String? @db.VarChar(255)
   wallet_pvtKey String? @db.VarChar(255)
-  sponsored     Int     @default(10)
   userId        Int     @unique
-
-  owner owners @relation(fields: [userId], references: [id])
+  sponsored     Int     @default(10)
+  owner         owners  @relation(fields: [userId], references: [id])
 }
 
 model contractRegistry {
@@ -329,4 +288,34 @@ model contractRegistry {
   contract String
   network  String
   type     String
+}
+
+view public_canvas_templates {
+  id                         Int      @id
+  data                       Json
+  params                     Json?
+  isPublic                   Boolean
+  ipfsLink                   String[] @db.VarChar(255)
+  imageLink                  String[] @db.VarChar(255)
+  createdAt                  DateTime @db.Timestamptz(6)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
+  ownerAddress               String?  @db.VarChar(255)
+  referredFrom               String[] @db.VarChar(255)
+  isGated                    Boolean?
+  allowList                  String[] @db.VarChar(255)
+  gatedWith                  String[] @db.VarChar(255)
+  assetsRecipientElementData Json[]
+  ownerId                    Int
+  tags                       String[] @db.VarChar(255)
+  owner                      owners   @relation(fields: [ownerId], references: [id])
+}
+
+view template_view {
+  id        Int       @unique
+  data      Json?     @db.Json
+  name      String?   @db.VarChar(255)
+  image     String?   @db.VarChar(255)
+  createdAt DateTime? @db.Timestamptz(6)
+  updatedAt DateTime? @db.Timestamptz(6)
+  tags      String[]  @db.VarChar(255)
 }

@@ -7,6 +7,7 @@ const app = express({
 
 const compression = require("compression");
 const logger = require("./middleware/log");
+logger();
 
 const cors = require("cors");
 const auth = require("./middleware/auth/auth");
