@@ -47,8 +47,10 @@ const getIpfsClient = async () => {
 
 const NODE_ENV = process.env.NODE_ENV;
 
-const BaseContractAddress = NODE_ENV === "production" ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad" : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
-
+const BaseContractAddress =
+  NODE_ENV === "production"
+    ? "0x769C1417485ad9d74FbB27F4be47890Fd00A96ad"
+    : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
 
 utilRouter.get("/", async (req, res) => {
   res.send("Util Router");
@@ -379,6 +381,8 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       chainId,
       creatorSponsored,
       contractType,
+      gatedChannel,
+      gatedCollection,
     } = req.body;
 
     let imageIpfsLink;
@@ -410,6 +414,9 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       "https://lenspost.infura-ipfs.io/ipfs/" +
       (await uploadJSONToIpfs(metaData));
 
+    if (gatedCollection)
+      gatedCollection = `0x${gatedCollection}`;
+
     const data = {
       imageUrl,
       tokenUri,
@@ -422,8 +429,10 @@ utilRouter.post("/create-frame-data", auth, async (req, res) => {
       redirectLink,
       chainId: parseInt(chainId),
       contract_address: contractAddress,
-      contract_type : contractType,
+      contract_type: contractType,
       creatorSponsored,
+      gatedChannel,
+      gatedCollection,
     };
 
     let frame = await prisma.frames.create({
@@ -488,13 +497,13 @@ utilRouter.get("/get-frame-data", async (req, res) => {
     let slug = await prisma.shared_mint_canvas.findFirst({
       where: {
         contract: data.contract_address,
-      }
-    })
+      },
+    });
 
     data = {
       ...data,
-      slug : slug?.slug || ""
-    }
+      slug: slug?.slug || "",
+    };
 
     res.status(200).send(data);
   } catch (error) {
