@@ -19,135 +19,139 @@ const BaseContractAddress =
     : "0x14a60C55a51b40B5A080A6E175a8b0FDae3565cF";
 
 router.post("/", async (req, res) => {
-  const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
+  try {
+    const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
 
-  let host = req.get("host");
+    let host = req.get("host");
 
-  let NODE_ENV = process.env.NODE_ENV;
+    let NODE_ENV = process.env.NODE_ENV;
 
-  if (NODE_ENV === "production") {
-    if (host != "api.lenspost.xyz") {
-      return res.status(400).json({ message: "Invalid host" });
+    if (NODE_ENV === "production") {
+      if (host != "api.lenspost.xyz") {
+        return res.status(400).json({ message: "Invalid host" });
+      }
     }
-  }
 
-  console.log("Minting request received");
+    console.log("Minting request received");
 
-  let { frameId, recipientAddress } = req.body;
+    let { frameId, recipientAddress } = req.body;
 
-  frameId = parseInt(frameId);
+    frameId = parseInt(frameId);
 
-  let frame = await prisma.frames.findUnique({
-    where: {
-      id: frameId,
-    },
-    select: {
-      owner: true,
-      id: true,
-      chainId: true,
-      contract_address: true,
-    },
-  });
+    let frame = await prisma.frames.findUnique({
+      where: {
+        id: frameId,
+      },
+      select: {
+        owner: true,
+        id: true,
+        chainId: true,
+        contract_address: true,
+      },
+    });
 
-  if (!frame?.owner) {
-    return res.status(400).json({ message: "Frame not found" });
-  }
+    if (!frame?.owner) {
+      return res.status(400).json({ message: "Frame not found" });
+    }
 
-  let user = await prisma.owners.findUnique({
-    where: {
-      evm_address: frame.owner,
-    },
-    select: {
-      id: true,
-      evm_address: true,
-    },
-  });
+    let user = await prisma.owners.findUnique({
+      where: {
+        evm_address: frame.owner,
+      },
+      select: {
+        id: true,
+        evm_address: true,
+      },
+    });
 
-  if (!user?.id) {
-    return res.status(400).json({ message: "User not found" });
-  }
+    if (!user?.id) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
-  let sponsored = await prisma.user_funds.findUnique({
-    where: {
-      userId: user.id,
-    },
-    select: {
-      sponsored: true,
-    },
-  });
+    let sponsored = await prisma.user_funds.findUnique({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        sponsored: true,
+      },
+    });
 
-  let sponsoredMint = sponsored.sponsored || 0;
-  if (sponsoredMint <= 0) {
-    if (frame.contract_address === BaseContractAddress) {
-      console.log("Minting to ERC721");
-      let tx = await mintToERC721(frame.id, recipientAddress);
+    let sponsoredMint = sponsored.sponsored || 0;
+    if (sponsoredMint <= 0) {
+      if (frame.contract_address === BaseContractAddress) {
+        console.log("Minting to ERC721");
+        let tx = await mintToERC721(frame.id, recipientAddress);
 
-      if (tx.status === 400) {
-        res.status(400).json({ message: "Gas not enough" });
+        if (tx.status === 400) {
+          res.status(400).json({ message: "Gas not enough" });
+        } else {
+          mintedFrame(user.id, frameId, recipientAddress, false);
+          await handleAddRewards(user.id, user.evm_address, 5);
+
+          res.send({
+            message: "Minted successfully",
+            tx: tx.hash,
+          });
+        }
       } else {
-        mintedFrame(user.id, frameId, recipientAddress, false);
-        await handleAddRewards(user.id, user.evm_address, 5);
-
+        console.log("Minting to Zora");
+        let tx = await mintFromZoraERC721(
+          user.id,
+          frame.chainId,
+          frame.contract_address,
+          recipientAddress,
+          false
+        );
+        if (tx.status === 400) {
+          res.status(400).json({ message: "Insufficient funds" });
+          return;
+        }
         res.send({
           message: "Minted successfully",
           tx: tx.hash,
-        });
-      }
-    } else {
-      console.log("Minting to Zora");
-      let tx = await mintFromZoraERC721(
-        user.id,
-        frame.chainId,
-        frame.contract_address,
-        recipientAddress,
-        false
-      );
-      if (tx.status === 400) {
-        res.status(400).json({ message: "Insufficient funds" });
-        return;
-      }
-      res.send({
-        message: "Minted successfully",
-        tx: tx.hash,
-        tokenId: tx.tokenId.toString(),
-      });
-      await handleAddRewards(user.id, user.evm_address, 5);
-    }
-  } else {
-    if (frame.contract_address === BaseContractAddress) {
-      console.log("Minting to ERC721 Sponsored");
-      let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
-      if (tx.status === 400) {
-        res.status(400).json({ message: "Gas not enough" });
-      } else {
-        mintedFrame(user.id, frameId, recipientAddress, true);
-
-        res.send({
-          message: "Minted successfully",
-          tx: tx.hash,
+          tokenId: tx.tokenId.toString(),
         });
         await handleAddRewards(user.id, user.evm_address, 5);
       }
     } else {
-      console.log("Minting to Zora Sponsored");
-      let tx = await mintFromZoraERC721(
-        user.id,
-        frame.chainId,
-        frame.contract_address,
-        recipientAddress,
-        true
-      );
-      if (tx.status === 400) {
-        res.status(400).json({ message: "Insufficient funds" });
-        return;
+      if (frame.contract_address === BaseContractAddress) {
+        console.log("Minting to ERC721 Sponsored");
+        let tx = await mintToERC721Sponsored(frame.id, recipientAddress);
+        if (tx.status === 400) {
+          res.status(400).json({ message: "Gas not enough" });
+        } else {
+          mintedFrame(user.id, frameId, recipientAddress, true);
+
+          res.send({
+            message: "Minted successfully",
+            tx: tx.hash,
+          });
+          await handleAddRewards(user.id, user.evm_address, 5);
+        }
+      } else {
+        console.log("Minting to Zora Sponsored");
+        let tx = await mintFromZoraERC721(
+          user.id,
+          frame.chainId,
+          frame.contract_address,
+          recipientAddress,
+          true
+        );
+        if (tx.status === 400) {
+          res.status(400).json({ message: "Insufficient funds" });
+          return;
+        }
+        res.send({
+          message: "Minted successfully",
+          tx: tx.hash,
+          tokenId: tx.tokenId.toString(),
+        });
+        await handleAddRewards(user.id, user.evm_address, 5);
       }
-      res.send({
-        message: "Minted successfully",
-        tx: tx.hash,
-        tokenId: tx.tokenId.toString(),
-      });
-      await handleAddRewards(user.id, user.evm_address, 5);
     }
+  } catch (error) {
+    res.status(400).json({ message: `Error ${error}` });
   }
 });
 

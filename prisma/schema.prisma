@@ -247,8 +247,8 @@ model frames {
   contract_address String   @db.VarChar(255)
   creatorSponsored Boolean  @default(false)
   contract_type    String   @default("ERC721") @db.VarChar(255)
-  gatedChannels    String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
-  gatedCollections String[] @default(dbgenerated("(ARRAY[]::character varying[])::character varying(255)[]")) @db.VarChar(255)
+  gatedChannels    String?
+  gatedCollections String?
   owners           owners   @relation(fields: [owner], references: [evm_address])
 }
 
